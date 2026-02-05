@@ -1,0 +1,32 @@
+{
+  "status_quo": {
+    "name": "Status Quo",
+    "total_costs_million": 12575.466570858775,
+    "total_capex_million": 577.7382352941177,
+    "total_opex_million": 1464.588,
+    "total_fuel_million": 10533.140335564653,
+    "total_emissions_mtco2": 27.258559058880007,
+    "final_re_share": 0.015150786397960657,
+    "final_diesel_share": 0.9848492136020394
+  },
+  "green_transition": {
+    "name": "Green Transition",
+    "total_costs_million": 6539.429331855741,
+    "total_capex_million": 1428.894538010376,
+    "total_opex_million": 1013.879,
+    "total_fuel_million": 4096.655793845365,
+    "total_emissions_mtco2": 11.2681441612992,
+    "final_re_share": 0.7000229515721828,
+    "final_diesel_share": 0.2999770484278173
+  },
+  "one_grid": {
+    "name": "One Grid",
+    "total_costs_million": 5694.917477748439,
+    "total_capex_million": 984.3340353982251,
+    "total_opex_million": 863.855,
+    "total_fuel_million": 3846.728442350215,
+    "total_emissions_mtco2": 17.41070995119175,
+    "final_re_share": 0.30000892219842973,
+    "final_diesel_share": 0.050008922198429694
+  }
+}

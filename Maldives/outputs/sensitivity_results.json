@@ -1,0 +1,278 @@
+{
+  "status_quo": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.1,
+      "base_npv": 5472871433.235994,
+      "low_npv": 8040375509.367425,
+      "high_npv": 3584820495.2013106,
+      "range": 4455555014.166115
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 5472871433.235994,
+      "low_npv": 4145351680.3769817,
+      "high_npv": 6800391186.095009,
+      "range": 2655039505.718027
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 5472871433.235994,
+      "low_npv": 4503607300.687738,
+      "high_npv": 7669814883.635704,
+      "range": 3166207582.9479656
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1000,
+      "low_value": 700,
+      "high_value": 1300,
+      "base_npv": 5472871433.235994,
+      "low_npv": 5471191053.29355,
+      "high_npv": 5474551813.17844,
+      "range": 3360759.8848905563
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 400,
+      "low_value": 200,
+      "high_value": 600,
+      "base_npv": 5472871433.235994,
+      "low_npv": 5472871433.235994,
+      "high_npv": 5472871433.235994,
+      "range": 0.0
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 2000000,
+      "low_value": 1400000,
+      "high_value": 3000000,
+      "base_npv": 5472871433.235994,
+      "low_npv": 5472871433.235994,
+      "high_npv": 5472871433.235994,
+      "range": 0.0
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.08,
+      "low_value": 0.05,
+      "high_value": 0.12,
+      "base_npv": 5472871433.235994,
+      "low_npv": 5472871433.235994,
+      "high_npv": 5472871433.235994,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 80,
+      "low_value": 0,
+      "high_value": 200,
+      "base_npv": 5472871433.235994,
+      "low_npv": 5472871433.235994,
+      "high_npv": 5472871433.235994,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 0.3,
+      "low_value": 0.25,
+      "high_value": 1.0,
+      "base_npv": 5472871433.235994,
+      "low_npv": 5472871433.235994,
+      "high_npv": 5472871433.235994,
+      "range": 0.0
+    }
+  },
+  "green_transition": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.1,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 4623285492.672357,
+      "high_npv": 2567016046.681892,
+      "range": 2056269445.9904647
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 2853514574.395807,
+      "high_npv": 4096202848.88694,
+      "range": 1242688274.4911332
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 3129803587.135834,
+      "high_npv": 4221179218.9754047,
+      "range": 1091375631.8395705
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1000,
+      "low_value": 700,
+      "high_value": 1300,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 3350157775.9250813,
+      "high_npv": 3599559647.357664,
+      "range": 249401871.43258286
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 400,
+      "low_value": 200,
+      "high_value": 600,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 3328297389.6518097,
+      "high_npv": 3621420033.6309357,
+      "range": 293122643.979126
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 2000000,
+      "low_value": 1400000,
+      "high_value": 3000000,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 3474858711.6413727,
+      "high_npv": 3474858711.6413727,
+      "range": 0.0
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.08,
+      "low_value": 0.05,
+      "high_value": 0.12,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 3474858711.6413727,
+      "high_npv": 3474858711.6413727,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 80,
+      "low_value": 0,
+      "high_value": 200,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 3474858711.6413727,
+      "high_npv": 3474858711.6413727,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 0.3,
+      "low_value": 0.25,
+      "high_value": 1.0,
+      "base_npv": 3474858711.6413727,
+      "low_npv": 3474858711.6413727,
+      "high_npv": 3474858711.6413727,
+      "range": 0.0
+    }
+  },
+  "one_grid": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.1,
+      "base_npv": 3121544873.466556,
+      "low_npv": 4083487396.8414507,
+      "high_npv": 2360750522.832988,
+      "range": 1722736874.008463
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 3121544873.466556,
+      "low_npv": 2773331558.0555205,
+      "high_npv": 3469758188.8775907,
+      "range": 696426630.8220701
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 3121544873.466556,
+      "low_npv": 3024898296.632531,
+      "high_npv": 3311144986.58528,
+      "range": 286246689.9527488
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1000,
+      "low_value": 700,
+      "high_value": 1300,
+      "base_npv": 3121544873.466556,
+      "low_npv": 3075451137.9443746,
+      "high_npv": 3167638608.9887376,
+      "range": 92187471.04436302
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 400,
+      "low_value": 200,
+      "high_value": 600,
+      "base_npv": 3121544873.466556,
+      "low_npv": 3080306531.6351857,
+      "high_npv": 3162783215.2979255,
+      "range": 82476683.66273975
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 2000000,
+      "low_value": 1400000,
+      "high_value": 3000000,
+      "base_npv": 3121544873.466556,
+      "low_npv": 2966246031.333504,
+      "high_npv": 3380376277.0216417,
+      "range": 414130245.68813753
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.08,
+      "low_value": 0.05,
+      "high_value": 0.12,
+      "base_npv": 3121544873.466556,
+      "low_npv": 2801953032.1165533,
+      "high_npv": 3547667328.599893,
+      "range": 745714296.4833398
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 80,
+      "low_value": 0,
+      "high_value": 200,
+      "base_npv": 3121544873.466556,
+      "low_npv": 3121544873.466556,
+      "high_npv": 3121544873.466556,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 0.3,
+      "low_value": 0.25,
+      "high_value": 1.0,
+      "base_npv": 3121544873.466556,
+      "low_npv": 3066035547.3533735,
+      "high_npv": 3898675439.0511065,
+      "range": 832639891.6977329
+    }
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "short": {
+    "horizon_info": {
+      "label": "Short-term (20 years)",
+      "years": 20,
+      "end_year": 2046,
+      "time_horizon": [
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+        2032,
+        2033,
+        2034,
+        2035,
+        2036,
+        2037,
+        2038,
+        2039,
+        2040,
+        2041,
+        2042,
+        2043,
+        2044,
+        2045,
+        2046
+      ]
+    },
+    "scenarios": {
+      "bau": {
+        "label": "BAU (Diesel)",
+        "pv_total_costs_million": 7108.235464828349,
+        "pv_capex_million": 402.81606402337917,
+        "pv_fuel_million": 6202.401647407811,
+        "lcoe_usd_kwh": 0.33775292650153776,
+        "total_emissions_mtco2": 26.702152208819996,
+        "final_re_share": 0.03597615295004454
+      },
+      "full_integration": {
+        "label": "Full Integration",
+        "pv_total_costs_million": 4022.293867715964,
+        "pv_capex_million": 796.3043311152829,
+        "pv_fuel_million": 1827.175179897731,
+        "lcoe_usd_kwh": 0.18248093596965406,
+        "total_emissions_mtco2": 19.106080840445646,
+        "final_re_share": 0.26000124626121635
+      },
+      "national_grid": {
+        "label": "National Grid",
+        "pv_total_costs_million": 4668.875471722021,
+        "pv_capex_million": 754.1806751560302,
+        "pv_fuel_million": 3494.6585503951574,
+        "lcoe_usd_kwh": 0.24290766938578923,
+        "total_emissions_mtco2": 13.998796965372,
+        "final_re_share": 0.6199900423201394
+      },
+      "islanded_green": {
+        "label": "Islanded Green",
+        "pv_total_costs_million": 4830.55404258701,
+        "pv_capex_million": 609.4403287903573,
+        "pv_fuel_million": 3743.65525328837,
+        "lcoe_usd_kwh": 0.2513193233432152,
+        "total_emissions_mtco2": 15.130723122215999,
+        "final_re_share": 0.5580034851879513
+      }
+    }
+  },
+  "medium": {
+    "horizon_info": {
+      "label": "Medium-term (30 years)",
+      "years": 30,
+      "end_year": 2056,
+      "time_horizon": [
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+        2032,
+        2033,
+        2034,
+        2035,
+        2036,
+        2037,
+        2038,
+        2039,
+        2040,
+        2041,
+        2042,
+        2043,
+        2044,
+        2045,
+        2046,
+        2047,
+        2048,
+        2049,
+        2050,
+        2051,
+        2052,
+        2053,
+        2054,
+        2055,
+        2056
+      ]
+    },
+    "scenarios": {
+      "bau": {
+        "label": "BAU (Diesel)",
+        "pv_total_costs_million": 11008.619018165566,
+        "pv_capex_million": 511.2381692651255,
+        "pv_fuel_million": 9782.585446629222,
+        "lcoe_usd_kwh": 0.3708229180082906,
+        "total_emissions_mtco2": 53.69902621302,
+        "final_re_share": 0.022086199280620937
+      },
+      "full_integration": {
+        "label": "Full Integration",
+        "pv_total_costs_million": 4963.520651773263,
+        "pv_capex_million": 842.0092974108114,
+        "pv_fuel_million": 2035.0775308540392,
+        "lcoe_usd_kwh": 0.15611636949955054,
+        "total_emissions_mtco2": 32.06649329850866,
+        "final_re_share": 0.300001824051949
+      },
+      "national_grid": {
+        "label": "National Grid",
+        "pv_total_costs_million": 5741.588041058363,
+        "pv_capex_million": 846.0321532118269,
+        "pv_fuel_million": 4343.640877146718,
+        "lcoe_usd_kwh": 0.220842074725226,
+        "total_emissions_mtco2": 20.300730699204,
+        "final_re_share": 0.7500070073156375
+      },
+      "islanded_green": {
+        "label": "Islanded Green",
+        "pv_total_costs_million": 6161.698414499584,
+        "pv_capex_million": 695.5747016227864,
+        "pv_fuel_million": 4821.377852548227,
+        "lcoe_usd_kwh": 0.23700102688635089,
+        "total_emissions_mtco2": 23.180218165704005,
+        "final_re_share": 0.6499985985368725
+      }
+    }
+  },
+  "long": {
+    "horizon_info": {
+      "label": "Long-term (50 years)",
+      "years": 50,
+      "end_year": 2076,
+      "time_horizon": [
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+        2032,
+        2033,
+        2034,
+        2035,
+        2036,
+        2037,
+        2038,
+        2039,
+        2040,
+        2041,
+        2042,
+        2043,
+        2044,
+        2045,
+        2046,
+        2047,
+        2048,
+        2049,
+        2050,
+        2051,
+        2052,
+        2053,
+        2054,
+        2055,
+        2056,
+        2057,
+        2058,
+        2059,
+        2060,
+        2061,
+        2062,
+        2063,
+        2064,
+        2065,
+        2066,
+        2067,
+        2068,
+        2069,
+        2070,
+        2071,
+        2072,
+        2073,
+        2074,
+        2075,
+        2076
+      ]
+    },
+    "scenarios": {
+      "bau": {
+        "label": "BAU (Diesel)",
+        "pv_total_costs_million": 20018.65685250055,
+        "pv_capex_million": 657.3049034168116,
+        "pv_fuel_million": 18275.036666821066,
+        "lcoe_usd_kwh": 0.44788553006461695,
+        "total_emissions_mtco2": 171.03023822141995,
+        "final_re_share": 0.008324018360406213
+      },
+      "full_integration": {
+        "label": "Full Integration",
+        "pv_total_costs_million": 6869.4698184242,
+        "pv_capex_million": 885.8830953166795,
+        "pv_fuel_million": 2557.9084457532767,
+        "lcoe_usd_kwh": 0.13748151193198874,
+        "total_emissions_mtco2": 77.10931107039751,
+        "final_re_share": 0.300002500593891
+      },
+      "national_grid": {
+        "label": "National Grid",
+        "pv_total_costs_million": 7320.105743187117,
+        "pv_capex_million": 926.4609676140221,
+        "pv_fuel_million": 5648.345541790003,
+        "lcoe_usd_kwh": 0.2020365920269662,
+        "total_emissions_mtco2": 37.84740768746401,
+        "final_re_share": 0.7999974416046256
+      },
+      "islanded_green": {
+        "label": "Islanded Green",
+        "pv_total_costs_million": 8508.609191479436,
+        "pv_capex_million": 748.6944585557748,
+        "pv_fuel_million": 6862.819219714665,
+        "lcoe_usd_kwh": 0.23483955891426295,
+        "total_emissions_mtco2": 51.026503704816,
+        "final_re_share": 0.6499987208023128
+      }
+    }
+  }
+}

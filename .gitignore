@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Quarto intermediate
+.quarto/
+*_files/
+
+# Large data files
+*.tif
+*.tiff
+*.zip
+
+# Caches
+.mypy_cache/
+.deepeval/
+.pytest_cache/
+
+# Archive (optional — remove this line to track archive)
+_archive/
