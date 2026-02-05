@@ -31,5 +31,8 @@ desktop.ini
 .deepeval/
 .pytest_cache/
 
+# Generated outputs
+Maldives/outputs/
+
 # Archive (optional — remove this line to track archive)
 _archive/
