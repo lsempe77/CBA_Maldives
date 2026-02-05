@@ -41,7 +41,7 @@ Solar,Capacity Factor,0.175,ratio,World Bank/Solargis Maldives Atlas,PVOUT ~1530
 Solar,Lifetime,30,years,Industry standard 2025,Modern PV warranted 25-30 years
 ,,,,,
 # TECHNOLOGY COSTS - BATTERY STORAGE,,,,,
-Battery,CAPEX 2026,150,USD/kWh,BNEF Dec 2025; Ember Dec 2025,Pack $70/kWh; system $117-125/kWh; +20-25% island premium
+Battery,CAPEX 2026,120,USD/kWh,BNEF 2025; Ember 2025,Global system $117/kWh (BNEF 2025); Maldives +small island logistics
 Battery,CAPEX Annual Decline,0.06,%/year,BNEF/NREL 2025 projections,Slowing from 30-45% recent drops; 6% forward average
 Battery,OPEX,5,USD/kWh/year,Ember LCOS model 2025,Modern LFP lower maintenance costs
 Battery,Round-trip Efficiency,0.88,ratio,LFP battery specs 2025,Modern LFP systems 87-92% RTE
