@@ -28,6 +28,8 @@ execute:
   warning: false
   message: false
 bibliography: references.bib
+nocite: |
+  @*
 ---
 
 ```{python}

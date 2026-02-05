@@ -1,7 +1,7 @@
 Category,Parameter,Value,Unit,Source,Notes
 #,,,,,
 # MALDIVES CBA MODEL - INPUT PARAMETERS,,,,,
-# Updated Feb 2026 with verified values from IRENA, BNEF, EPA, GoM Energy Roadmap,,,,,
+# Updated 5 Feb 2026 with verified values from IRENA RPGC 2024, BNEF 2025, EPA SCC 2023, GoM Energy Roadmap,,,,,
 # See parameter_review_summary.md for detailed source documentation,,,,,
 #,,,,,
 ,,,,,
@@ -15,7 +15,7 @@ Time,Horizon 50yr,2076,year,,Long-term analysis end
 Current System,Total Installed Capacity,600,MW,GoM Energy Roadmap Nov 2024,Confirmed ~600 MW as of July 2024
 Current System,Diesel Capacity,531.5,MW,Derived (600 - 68.5 solar),Greater Male 140 MW + outer islands 181 MW + resorts 211 MW
 Current System,Solar PV Capacity,68.5,MW,GoM Energy Roadmap 2024,+164 MW under construction (Dec 2025)
-Current System,Battery Storage,8,MWh,GoM Energy Roadmap 2024,~8 MWh installed; 80 MWh under ADB/WB contracts
+Current System,Battery Storage,8,MWh,GoM Energy Roadmap 2024; ADB POISED PCR 2023,~8 MWh installed; 80 MWh under ADB/WB contracts; POISED achieved 28% fuel savings
 Current System,Diesel Generation Share,0.93,%,IRENA/Ember 2023,93% of electricity from diesel
 Current System,RE Generation Share,0.06,%,GoM Energy Roadmap 2024,~6% from solar per Energy Roadmap
 ,,,,,
@@ -28,20 +28,20 @@ Demand,Growth Rate - National Grid,0.04,%/year,With efficiency gains,~1% reducti
 Demand,Growth Rate - Full Integration,0.055,%/year,Induced demand,+0.5% above BAU from cheaper imports
 ,,,,,
 # FUEL COSTS,,,,,
-Fuel,Diesel Price 2026,0.90,USD/liter,STO retail pricing 2024-25,Retail ~$0.90-0.97/L; weighted avg with outer island delivery
+Fuel,Diesel Price 2026,0.85,USD/liter,Platts Dec 2025; STO import data 2023-24,Maldives actual $0.82 (2023) / $0.87 (2024); $0.85 conservative midpoint
 Fuel,Diesel Price Escalation,0.02,%/year,IEA WEO projection,2% real price increase
 Fuel,Fuel Efficiency,3.5,kWh/liter,Standard diesel gen specs,Typical for medium-speed diesel
 Fuel,CO2 Emission Factor,0.72,kgCO2/kWh,IPCC 2006 Guidelines,From diesel combustion
 ,,,,,
 # TECHNOLOGY COSTS - SOLAR PV,,,,,
-Solar,CAPEX 2026,750,USD/kW,IRENA RPGC 2024 (pub. Jul 2025),Global <$600/kW by 2026; Asia ~$500; +25-50% island premium
+Solar,CAPEX 2026,750,USD/kW,IRENA RPGC 2024 (pub. Jul 2025); pv magazine 2025,Global avg $691/kW; Asia ex-China/India $1133/kW; Maldives SIDS premium applied
 Solar,CAPEX Annual Decline,0.04,%/year,IRENA learning rates,4% forward-looking learning rate
 Solar,OPEX (% of CAPEX),0.015,%,Industry standard,1.5% of CAPEX annually
 Solar,Capacity Factor,0.175,ratio,World Bank/Solargis Maldives Atlas,PVOUT ~1530 kWh/kWp; GHI 2000-2050 kWh/m2/yr
 Solar,Lifetime,30,years,Industry standard 2025,Modern PV warranted 25-30 years
 ,,,,,
 # TECHNOLOGY COSTS - BATTERY STORAGE,,,,,
-Battery,CAPEX 2026,120,USD/kWh,BNEF 2025; Ember 2025,Global system $117/kWh (BNEF 2025); Maldives +small island logistics
+Battery,CAPEX 2026,120,USD/kWh,BNEF Battery Price Survey 2025,Global turnkey $117/kWh (31% YoY decline); pack $70/kWh; markets outside China/US ~$125/kWh
 Battery,CAPEX Annual Decline,0.06,%/year,BNEF/NREL 2025 projections,Slowing from 30-45% recent drops; 6% forward average
 Battery,OPEX,5,USD/kWh/year,Ember LCOS model 2025,Modern LFP lower maintenance costs
 Battery,Round-trip Efficiency,0.88,ratio,LFP battery specs 2025,Modern LFP systems 87-92% RTE
@@ -54,7 +54,7 @@ Diesel Gen,Lifetime,20,years,,
 ,,,,,
 # INDIA CABLE (FULL INTEGRATION),,,,,
 Cable,Length to India,700,km,Geographic + routing premium,Direct ~600 km + 15-20% for routing
-Cable,CAPEX per km,3000000,USD/km,Recent HVDC project benchmarks,Deep ocean Indian Ocean crossing; $2-5M/km range
+Cable,CAPEX per km,3000000,USD/km,IRENA; NordLink/NorNed/Basslink benchmarks,Deep ocean Indian Ocean; IRENA range $1-3M/km; $3M upper end for unprecedented depth
 Cable,Capacity,200,MW,OSOWOG proposal,Sized for Maldives demand
 Cable,GoM Cost Share,0.3,%,Negotiation assumption,30% Maldives / 70% India
 Cable,Online Year,2032,year,Realistic timeline,5-7 years from decision; no contract signed yet
@@ -67,7 +67,7 @@ Inter-Island Grid,Build Start Year,2027,year,,
 Inter-Island Grid,Build End Year,2030,year,,3-year phased construction
 ,,,,,
 # POWER PURCHASE AGREEMENT (IMPORTS FROM INDIA),,,,,
-PPA,Import Price 2030,0.06,USD/kWh,Indian wholesale + transmission,India avg power exchange ~$0.04-0.05 + cable premium
+PPA,Import Price 2030,0.06,USD/kWh,India Energy Exchange (IEX) 2024-25,IEX day-ahead avg Rs 3.5-4.5/kWh ($0.04-$0.05) + cross-border premium
 PPA,Price Escalation,0.01,%/year,,1% real increase
 PPA,Transmission Charge,0.01,USD/kWh,Cross-border wheeling,Included in import price estimate
 ,,,,,
@@ -82,7 +82,7 @@ RE Targets,2076,0.80,%,Model assumption,50-year horizon target
 ,,,,,
 # ECONOMICS,,,,,
 Economics,Discount Rate,0.06,%,ADB standard for SIDS,6% real social discount rate
-Economics,Social Cost of Carbon,190,USD/tCO2,EPA 2023; Rennert et al. 2022 Nature,Central estimate at 2% discount rate
+Economics,Social Cost of Carbon,190,USD/tCO2,US EPA Report on SCC 2023; Rennert et al. 2022 Nature,Central estimate at 2% near-term discount rate; IWG interim $51/t at 3%
 Economics,Value of Lost Load,5,USD/kWh,Island system standard,Tourism-dependent economy reliability value
 ,,,,,
 # ISLANDED GREEN SCENARIO ADJUSTMENTS,,,,,
