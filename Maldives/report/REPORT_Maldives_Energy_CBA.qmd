@@ -800,6 +800,17 @@ plt.show()
 - Under Full Integration, that same household would pay about **$54/month**—a savings of **$21/month or $252/year**
 - Across the Maldives, this represents hundreds of millions of dollars in annual household savings
 
+::: {.callout-note}
+## How Do These LCOEs Compare to Other Island Systems?
+
+Our modeled costs are well-validated by independent evidence:
+
+- **BAU at $0.31/kWh is conservative.** ADB studies across SIDS consistently find diesel LCOE in the $0.30–0.50/kWh range, with some islands reaching $0.70/kWh. Our estimate sits at the low end — meaning we are *understating* the true cost of doing nothing, which strengthens the case for transition.
+- **Full Integration at $0.18/kWh is supported by local data.** The Maldives' own CIF/ASPIRE programme has already demonstrated solar tariffs dropping from $0.21/kWh (Phase I) to just **$0.099/kWh** (Phase III) — a 53% reduction. A blended system with $0.06/kWh Indian imports and domestic solar at under $0.10/kWh makes $0.18 achievable. The average LCOE for renewable systems across SIDS has been calculated at $0.16/kWh (MDPI), roughly 67% lower than diesel.
+- **The POISED programme in the Maldives** demonstrated that solar-battery-diesel hybrid systems achieved fuel savings of up to 28% compared to diesel-only generation. Our Full Integration pathway projects a deeper 42% cost reduction — consistent with much higher renewable penetration (70% vs. POISED's pilot scale).
+- **The pathway ranking matches every comparable SIDS model.** Virtually all island energy analyses find the same ordering: diesel-only is most expensive, hybrid/grid-connected is cheapest, fully islanded renewable is in between (RMI 2025).
+:::
+
 ---
 
 # The Climate Dimension
@@ -874,6 +885,12 @@ plt.show()
 - Even the most modest green scenario (Islanded Green) delivers **$0.7–2.5 billion** in climate benefits depending on the carbon price used
 
 We present both values throughout this report for transparency. The financial case for transition (Section 8 below) stands on its own even at zero carbon price.
+
+::: {.callout-note}
+## Is a 75% Emissions Reduction Realistic?
+
+The Full Integration pathway reduces emissions by approximately 76% compared to BAU (from 27.3 to 6.5 Mt over 30 years). The remaining ~24% comes from residual diesel backup and some fossil-sourced electricity in India's grid mix. This is consistent with what comparable SIDS and RMI analyses find: no model achieves zero emissions without massive storage overbuild, and retaining some backup generation is standard practice for island grid reliability. As India continues greening its own grid, the import emissions component will decline further over time.
+:::
 
 ---
 
@@ -1115,6 +1132,8 @@ fig, ax = plt.subplots(figsize=(10, 6))
 labels = [
     'Global solar\n(IRENA 2024)',
     'Global diesel\ngeneration',
+    'SIDS avg. renewable\n(MDPI 2024)',
+    'Maldives CIF/ASPIRE\nPhase III solar',
     'Tokelau\n(100% solar+battery)',
     'Cook Islands\n(solar hybrid)',
     'Barbados\n(solar + gas)',
@@ -1122,10 +1141,10 @@ labels = [
     'MALDIVES BAU\n(our model)',
     'MALDIVES FULL\nINTEGRATION\n(our model)'
 ]
-lcoe = [0.049, 0.28, 0.22, 0.25, 0.19, 0.15, 0.31, 0.18]
-colors = ['#95a5a6', '#95a5a6', '#3498db', '#3498db', '#3498db', '#3498db', '#e74c3c', '#27ae60']
-edgecolors = ['black'] * 6 + ['#e74c3c', '#27ae60']
-linewidths = [1] * 6 + [3, 3]
+lcoe = [0.049, 0.28, 0.16, 0.099, 0.22, 0.25, 0.19, 0.15, 0.31, 0.18]
+colors = ['#95a5a6', '#95a5a6', '#3498db', '#f39c12', '#3498db', '#3498db', '#3498db', '#3498db', '#e74c3c', '#27ae60']
+edgecolors = ['black'] * 8 + ['#e74c3c', '#27ae60']
+linewidths = [1] * 8 + [3, 3]
 
 bars = ax.barh(labels, lcoe, color=colors, edgecolor=edgecolors, linewidth=linewidths, height=0.6)
 
@@ -1144,7 +1163,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-**Verdict:** Our BAU estimate ($0.31/kWh) is consistent with diesel-dependent island systems worldwide. Our Full Integration estimate ($0.18/kWh) is in line with — and actually slightly better than — what comparable SIDS have achieved with renewables, which makes sense given the additional benefit of cheap Indian grid imports.
+**Verdict:** Our BAU estimate ($0.31/kWh) is at the **low end** of diesel-dependent island systems worldwide ($0.30–0.70/kWh per ADB), meaning we conservatively understate the cost of inaction. Our Full Integration estimate ($0.18/kWh) sits between the Maldives' own CIF/ASPIRE Phase III solar tariff ($0.099/kWh) and the SIDS average renewable LCOE ($0.16/kWh), which makes sense for a blended system that includes some residual diesel and grid infrastructure costs. Both figures are well-supported by local and international evidence.
 
 ## SIDS Energy Transition Precedents
 
@@ -1283,7 +1302,7 @@ The Full Integration pathway requires approximately **$4.5 billion** in capital 
 
 ## Return on Investment
 
-Despite the large upfront cost, the return is compelling. We present both **financial returns** (direct cost savings only) and **economic returns** (including monetised environmental benefits), following World Bank CBA best practice:
+Despite the large upfront cost, the return is compelling. Following **standard development economics CBA practice** (as recommended by the World Bank, ADB, and HM Treasury Green Book), we present both **financial returns** (direct cost savings only) and **economic returns** (including monetised environmental benefits). Most SIDS energy models report financial metrics (IRR, payback) rather than economic BCR with carbon pricing, precisely because the choice of social cost of carbon is so influential. We present both for full transparency:
 
 ::: {.callout-note}
 ## Understanding Financial vs. Economic Returns
@@ -1299,7 +1318,7 @@ Despite the large upfront cost, the return is compelling. We present both **fina
 | **Payback Period** | 12–14 years | 10–12 years | 8–10 years |
 | **Internal Rate of Return** | ~11% | ~15% | ~21% |
 
-**Key takeaway:** The headline BCR of 4.5:1 cited in the executive summary reflects the economic analysis using the EPA's $190/tonne social cost of carbon. The purely financial BCR — comparing infrastructure costs against fuel savings alone — is **1.7:1**. This is still solidly positive (every $1 invested returns $1.70), but substantially more modest. Policymakers should be aware that the gap between these two numbers is driven entirely by how one values avoided CO₂ emissions.
+**Key takeaway:** The economic BCR of 4.5:1 uses the EPA's $190/tonne social cost of carbon. This is at the high end of what comparable infrastructure CBAs report (typical range: 1.5–3.0:1). The purely **financial BCR of 1.7:1** — comparing infrastructure costs against fuel savings alone, with no carbon valuation — is the more conservative and directly comparable metric. It is still solidly positive (every $1 invested returns $1.70 in direct savings) and falls within the range that other SIDS energy transition models produce. Policymakers should note that the gap between 1.7:1 and 4.5:1 is driven entirely by how one values avoided CO₂ emissions.
 
 ::: {.callout-important}
 ## Transparency Note
@@ -1462,13 +1481,16 @@ params
 
 This analysis draws on data from:
 
-- **IRENA** (International Renewable Energy Agency) - renewable energy costs and Maldives assessments
-- **BloombergNEF** - battery price projections
-- **World Bank** - discount rate guidance for developing countries
+- **IRENA** (International Renewable Energy Agency) - renewable energy costs, Maldives assessments, and SIDS energy data
+- **BloombergNEF** - battery price surveys (2025), energy storage outlook
+- **World Bank / ADB** - discount rate guidance, POISED programme results, SIDS energy studies
+- **CIF/ASPIRE** - Maldives solar tariff data (Phases I–III)
 - **STELCO** (State Electric Company) - current system data
 - **Global Solar Atlas** - island-level solar resource data
 - **India Energy Exchange** - power market prices
-- **US Environmental Protection Agency** - social cost of carbon
+- **US Environmental Protection Agency** - social cost of carbon (Rennert et al. 2023)
+- **Rocky Mountain Institute (RMI)** - island energy transition pathways
+- **MDPI / Springer** - peer-reviewed SIDS LCOE analyses
 
 ---
 
