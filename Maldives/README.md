@@ -79,25 +79,13 @@ CBA_Maldives/
     │   ├── REPORT_Maldives_Energy_CBA.docx  # Rendered: static map
     │   └── references.bib                   # Bibliography
     │
-    ├── outputs/                    # MODEL OUTPUTS (auto-generated)
-    │   ├── cba_results.json              # Main CBA results
-    │   ├── multi_horizon_results.json    # 20/30/50-year comparison
-    │   ├── sensitivity_results.json      # Sensitivity analysis
-    │   ├── monte_carlo_results.json      # Monte Carlo simulation
-    │   ├── scenario_summaries.json       # Scenario summary table
-    │   ├── Maldives_Calibrated.csv       # OnSSET calibrated output
-    │   ├── Maldives_Scenario.csv         # OnSSET scenario output
-    │   ├── Maldives_Summary.csv          # Summary statistics
-    │   └── *.png, *.html                 # Charts and maps
-    │
-    └── _archive/                   # OLD/UNUSED FILES (safe to delete)
-        ├── benin_files/            # Benin project files (not Maldives)
-        ├── onsset_files/           # Original OnSSET scripts
-        ├── old_scripts/            # Superseded utility scripts
-        ├── old_specs/              # Old specification files
-        ├── old_gis_csvs/           # Superseded GIS data versions
-        ├── old_parameters/         # Superseded parameter files
-        └── draft_docs/             # Draft plans, work plans, templates
+    └── outputs/                    # MODEL OUTPUTS (auto-generated)
+        ├── cba_results.json              # Main CBA results
+        ├── multi_horizon_results.json    # 20/30/50-year comparison
+        ├── sensitivity_results.json      # Sensitivity analysis
+        ├── monte_carlo_results.json      # Monte Carlo simulation
+        ├── scenario_summaries.json       # Scenario summary table
+        └── *.png, *.html                 # Charts and maps
 ```
 
 ---
@@ -161,7 +149,7 @@ CBA_Maldives/
 | Base Year | 2026 | — |
 | Discount Rate | 6% | World Bank SIDS guidance |
 | Solar PV CAPEX | $750/kW | IRENA RPGC 2024 |
-| Battery CAPEX | $150/kWh | BNEF Dec 2025 |
+| Battery CAPEX | $120/kWh | BNEF Dec 2025 |
 | Diesel Price | $0.85/L | Platts Dec 2025 |
 | India Import Price | $0.06/kWh | India Energy Exchange |
 | Social Cost of Carbon | $190/tCO₂ | US EPA 2023 |
@@ -198,20 +186,4 @@ quarto          # Report rendering (install separately)
 
 Install with: `pip install numpy pandas matplotlib folium branca`
 
----
 
-## `_archive/` — What's In There
-
-These files are **not used** by the current model or report. They're kept for reference only.
-
-| Folder | Contents |
-|--------|----------|
-| `benin_files/` | Benin calibration data and paper (wrong country) |
-| `onsset_files/` | Original OnSSET electrification scripts (superseded by CBA model) |
-| `old_scripts/` | Data processing scripts used during setup (no longer needed) |
-| `old_specs/` | Old OnSSET specification files |
-| `old_gis_csvs/` | Earlier versions of island GIS data |
-| `old_parameters/` | Superseded parameter CSV files |
-| `draft_docs/` | Work plans, development plans, gap analyses |
-
-You can safely delete `_archive/` once you've confirmed nothing is needed.
