@@ -26,22 +26,22 @@ from model.scenarios.status_quo import StatusQuoScenario
 from model.scenarios.green_transition import NationalGridScenario
 from model.scenarios.one_grid import FullIntegrationScenario
 from model.scenarios.islanded_green import IslandedGreenScenario
-from model.cba import CBACalculator
+from model.config import Config, get_config, SENSITIVITY_PARAMS
 
 
-# Monte Carlo parameter distributions (triangular)
-# Format: (min, mode/base, max)
-PARAMETER_DISTRIBUTIONS = {
-    "discount_rate": (0.03, 0.06, 0.10),
-    "diesel_price": (0.60, 0.85, 1.10),
-    "diesel_escalation": (0.00, 0.02, 0.05),
-    "solar_capex": (700, 1000, 1300),
-    "battery_capex": (200, 400, 600),
-    "cable_capex_per_km": (1_400_000, 2_000_000, 3_000_000),
-    "ppa_price": (0.05, 0.08, 0.12),
-    "scc": (0, 80, 200),
-    "gom_share": (0.25, 0.30, 1.00),
-}
+def _build_distributions():
+    """Build Monte Carlo parameter distributions from SENSITIVITY_PARAMS (populated by CSV).
+    
+    Returns dict of parameter_name -> (low, mode, high) for triangular distribution.
+    """
+    # Ensure config loaded first (triggers CSV read)
+    _ = get_config()
+    
+    # Map SENSITIVITY_PARAMS keys to config attribute names used in sample_config
+    distributions = {}
+    for sens_key, vals in SENSITIVITY_PARAMS.items():
+        distributions[sens_key] = (vals["low"], vals["base"], vals["high"])
+    return distributions
 
 
 def triangular_sample(low: float, mode: float, high: float) -> float:
@@ -49,33 +49,38 @@ def triangular_sample(low: float, mode: float, high: float) -> float:
     return random.triangular(low, high, mode)
 
 
-def sample_config(base_config: Config) -> Config:
+def sample_config(base_config: Config, param_distributions: dict) -> Config:
     """Create a config with randomly sampled parameters."""
     config = deepcopy(base_config)
     
     params = {}
-    for param, (low, mode, high) in PARAMETER_DISTRIBUTIONS.items():
+    for param, (low, mode, high) in param_distributions.items():
         value = triangular_sample(low, mode, high)
         params[param] = value
         
         if param == "discount_rate":
             config.economics.discount_rate = value
         elif param == "diesel_price":
-            config.fuel.price_2024 = value
+            config.fuel.price_2026 = value
         elif param == "diesel_escalation":
             config.fuel.price_escalation = value
         elif param == "solar_capex":
             config.technology.solar_pv_capex = value
+        elif param == "solar_cf":
+            config.technology.solar_pv_capacity_factor = value
         elif param == "battery_capex":
             config.technology.battery_capex = value
         elif param == "cable_capex_per_km":
             config.technology.cable_capex_per_km = value
-        elif param == "ppa_price":
+        elif param == "import_price":
             config.ppa.import_price_2030 = value
-        elif param == "scc":
+        elif param == "social_cost_carbon":
             config.economics.social_cost_carbon = value
-        elif param == "gom_share":
+        elif param == "gom_cost_share":
             config.one_grid.gom_share_pct = value
+        elif param == "demand_growth":
+            for key in config.demand.growth_rates:
+                config.demand.growth_rates[key] = value
     
     return config, params
 
@@ -141,12 +146,18 @@ def main():
     all_params = []
     
     base_config = get_config()
+    param_distributions = _build_distributions()
+    
+    print(f"  Parameters being varied: {len(param_distributions)}")
+    for k, (lo, base, hi) in param_distributions.items():
+        print(f"    {k}: [{lo}, {base}, {hi}]")
+    print()
     
     for i in range(N_ITERATIONS):
         if (i + 1) % 100 == 0:
             print(f"  Completed {i + 1:,} iterations...")
         
-        config, params = sample_config(base_config)
+        config, params = sample_config(base_config, param_distributions)
         npvs = run_iteration(config)
         
         bau_results.append(npvs["bau"])

@@ -103,8 +103,8 @@ class EmissionsCalculator:
         Returns:
             Annualized lifecycle emissions in tonnes CO2
         """
-        # Lifecycle emissions: ~40 gCO2/kWh, spread over 25-year lifetime
-        lifecycle_g_per_kwh = 0.040  # 40 gCO2/kWh
+        # Lifecycle emissions from config (spread over 25-year lifetime)
+        lifecycle_g_per_kwh = self.config.technology.solar_lifecycle_emission_factor
         annual_gen_kwh = self.config.technology.solar_pv_capacity_factor * 8760 * capacity_mw * 1000
         
         emissions_g = annual_gen_kwh * lifecycle_g_per_kwh

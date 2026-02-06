@@ -154,10 +154,11 @@ class NationalGridScenario(BaseScenario):
         
         # Diesel capacity (reserve for backup)
         # Even with high RE, need diesel for reliability
-        min_diesel_capacity = peak_mw * 0.5  # Keep at least 50% diesel backup
+        min_diesel_capacity = peak_mw * self.config.technology.min_diesel_backup
+        reserve_factor = 1 + self.config.technology.reserve_margin
         required_diesel_mw = max(
             min_diesel_capacity,
-            peak_mw * (1 - re_target) * 1.15  # Diesel to cover non-RE peak
+            peak_mw * (1 - re_target) * reserve_factor  # Diesel to cover non-RE peak
         )
         
         # Don't add diesel, only maintain/reduce
@@ -192,9 +193,10 @@ class NationalGridScenario(BaseScenario):
             costs.capex_battery = self.cost_calc.battery_capex(battery_addition, year)
         
         # CAPEX: Battery replacement (check if any batteries need replacing)
-        # Simplified: check if installations from 12 years ago need replacement
-        if year - 12 >= self.config.base_year:
-            past_battery = self.battery_additions.get(year - 12, 0)
+        # Lifetime-based replacement cycle from config
+        battery_life = self.config.technology.battery_lifetime
+        if year - battery_life >= self.config.base_year:
+            past_battery = self.battery_additions.get(year - battery_life, 0)
             if past_battery > 0:
                 costs.capex_battery += self.cost_calc.battery_capex(past_battery, year)
         

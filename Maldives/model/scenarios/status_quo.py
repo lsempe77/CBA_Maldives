@@ -95,8 +95,9 @@ class StatusQuoScenario(BaseScenario):
             solar_gwh = demand_gwh  # Curtail solar if somehow exceeds demand
         
         # Capacity: diesel must meet peak demand with reserve margin
-        reserve_margin = 1.15  # 15% reserve
-        required_diesel_mw = peak_mw * reserve_margin - self.existing_solar_mw * 0.1  # Solar contributes ~10% to peak
+        reserve_margin = 1 + self.config.technology.reserve_margin
+        solar_peak_contrib = self.config.technology.solar_peak_contribution
+        required_diesel_mw = peak_mw * reserve_margin - self.existing_solar_mw * solar_peak_contrib
         
         # Expand diesel capacity if needed
         if required_diesel_mw > self.diesel_capacity_mw:

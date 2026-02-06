@@ -129,9 +129,9 @@ class FullIntegrationScenario(BaseScenario):
             self.solar_additions[year] = solar_addition
             prev_solar = required_solar_mw
             
-            # Battery: 1.5 MWh per MW of solar (slightly less than Green Transition
+            # Battery: ratio from config (less than Green Transition
             # due to cable providing baseload stability)
-            battery_ratio = 1.5
+            battery_ratio = self.config.one_grid.battery_ratio
             required_battery_mwh = required_solar_mw * battery_ratio
             battery_addition = max(0, required_battery_mwh - prev_battery)
             self.battery_additions[year] = battery_addition
@@ -164,8 +164,8 @@ class FullIntegrationScenario(BaseScenario):
             max_solar = demand_gwh * re_target
             solar_gwh = min(solar_gwh, max_solar)
             
-            # Diesel: minimal - emergency backup only (5% reserve)
-            diesel_reserve_ratio = 0.05
+            # Diesel: minimal - emergency backup only (from config)
+            diesel_reserve_ratio = self.config.one_grid.diesel_reserve_ratio
             diesel_gwh = demand_gwh * diesel_reserve_ratio
             
             # Import: everything else
@@ -175,8 +175,9 @@ class FullIntegrationScenario(BaseScenario):
                 diesel_gwh = demand_gwh - solar_gwh
             
             # Diesel capacity: reduce to backup only
-            min_diesel_mw = peak_mw * 0.2  # 20% backup
-            self.diesel_capacity_mw = max(min_diesel_mw, self.diesel_capacity_mw * 0.9)
+            min_diesel_mw = peak_mw * self.config.one_grid.diesel_backup_share
+            retirement_factor = 1 - self.config.one_grid.diesel_retirement_rate
+            self.diesel_capacity_mw = max(min_diesel_mw, self.diesel_capacity_mw * retirement_factor)
             
         else:
             # PRE-CABLE: Status quo-like operation
@@ -210,7 +211,8 @@ class FullIntegrationScenario(BaseScenario):
         
         # Is cable operational?
         cable_online_year = self.cable_online_year
-        cable_construction_start = cable_online_year - 3  # 3-year construction
+        construction_years = self.config.one_grid.cable_construction_years
+        cable_construction_start = cable_online_year - construction_years
         
         # CAPEX: Undersea cable to India (spread over construction period)
         if cable_construction_start <= year < cable_online_year:
@@ -218,16 +220,19 @@ class FullIntegrationScenario(BaseScenario):
             cable_total_cost = self.cost_calc.cable_capex()
             # GoM share
             gom_cable_cost = cable_total_cost * self.gom_cost_share
-            # Spread over 3 years
-            costs.capex_cable = gom_cable_cost / 3
+            # Spread over construction period
+            costs.capex_cable = gom_cable_cost / construction_years
         
         # CAPEX: Inter-island submarine cable grid
-        if year == 2027 or year == 2028:
-            # Inter-island grid built in 2027-2028
+        ii_start = self.config.one_grid.inter_island_build_start
+        ii_end = self.config.one_grid.inter_island_build_end
+        ii_years = ii_end - ii_start + 1
+        if ii_start <= year <= ii_end:
+            # Inter-island grid built over construction period
             inter_island_km = self.config.green_transition.inter_island_km
             inter_island_cost_per_km = self.config.technology.inter_island_capex_per_km
             inter_island_total = inter_island_km * inter_island_cost_per_km / 1e6
-            costs.capex_cable += inter_island_total / 2  # Split over 2 years
+            costs.capex_cable += inter_island_total / ii_years  # Split over construction years
         
         # CAPEX: Solar additions
         solar_addition = self.solar_additions.get(year, 0)
@@ -239,9 +244,10 @@ class FullIntegrationScenario(BaseScenario):
         if battery_addition > 0:
             costs.capex_battery = self.cost_calc.battery_capex(battery_addition, year)
         
-        # CAPEX: Battery replacement (12-year cycle)
-        if year - 12 >= self.config.base_year:
-            past_battery = self.battery_additions.get(year - 12, 0)
+        # CAPEX: Battery replacement (lifetime-based cycle from config)
+        battery_life = self.config.technology.battery_lifetime
+        if year - battery_life >= self.config.base_year:
+            past_battery = self.battery_additions.get(year - battery_life, 0)
             if past_battery > 0:
                 costs.capex_battery += self.cost_calc.battery_capex(past_battery, year)
         

@@ -40,19 +40,21 @@ class IslandedGreenScenario(BaseScenario):
         
         # RE targets (slightly lower achievable than National Grid due to no load balancing)
         self.re_targets = deepcopy(self.config.green_transition.re_targets)
+        re_cap = self.config.green_transition.islanded_re_cap_factor
+        max_re = self.config.green_transition.islanded_max_re_share
         for year in self.re_targets:
-            self.re_targets[year] = min(self.re_targets[year] * 0.90, 0.65)
+            self.re_targets[year] = min(self.re_targets[year] * re_cap, max_re)
         
         # Track capacities
         self.solar_capacity_mw = self.config.current_system.solar_capacity_mw
         self.battery_capacity_mwh = 0.0
         self.diesel_capacity_mw = self.config.current_system.diesel_capacity_mw
         
-        # Island cost premium (35% higher due to diseconomies of scale)
-        self.island_premium = 1.35
+        # Island cost premium (from config - diseconomies of scale)
+        self.island_premium = self.config.green_transition.islanded_cost_premium
         
-        # Higher battery ratio (4 MWh/MW solar vs 2 for grid-connected)
-        self.battery_ratio = 4.0
+        # Higher battery ratio for islanded systems (from config)
+        self.battery_ratio = self.config.green_transition.islanded_battery_ratio
         
         # Track capacity additions
         self.solar_additions: Dict[int, float] = {}
@@ -167,9 +169,10 @@ class IslandedGreenScenario(BaseScenario):
             base_battery_capex = self.cost_calc.battery_capex(battery_addition, year)
             costs.capex_battery = base_battery_capex * self.island_premium
         
-        # Battery replacement (12-year cycle)
-        if year - 12 >= self.config.base_year:
-            past_battery = self.battery_additions.get(year - 12, 0)
+        # Battery replacement (lifetime-based cycle from config)
+        battery_life = self.config.technology.battery_lifetime
+        if year - battery_life >= self.config.base_year:
+            past_battery = self.battery_additions.get(year - battery_life, 0)
             if past_battery > 0:
                 costs.capex_battery += self.cost_calc.battery_capex(past_battery, year) * self.island_premium
         
@@ -179,9 +182,10 @@ class IslandedGreenScenario(BaseScenario):
             diesel_mw = gen_mix.diesel_capacity_mw / diesel_life
             costs.capex_diesel = self.cost_calc.diesel_gen_capex(diesel_mw)
         
-        # OPEX (with premium for islanded operations)
-        costs.opex_solar = self.cost_calc.solar_opex(gen_mix.solar_capacity_mw, year) * 1.2
-        costs.opex_battery = self.cost_calc.battery_opex(gen_mix.battery_capacity_mwh) * 1.2
+        # OPEX (with premium for islanded operations from config)
+        opex_premium = self.config.green_transition.islanded_opex_premium
+        costs.opex_solar = self.cost_calc.solar_opex(gen_mix.solar_capacity_mw, year) * opex_premium
+        costs.opex_battery = self.cost_calc.battery_opex(gen_mix.battery_capacity_mwh) * opex_premium
         costs.opex_diesel = self.cost_calc.diesel_gen_opex(gen_mix.diesel_gwh)
         
         # Fuel costs

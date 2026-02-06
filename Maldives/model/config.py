@@ -117,11 +117,14 @@ class TechnologyCosts:
     solar_pv_cost_decline: float = 0.04  # 4%/year - IRENA learning rates
     
     # Battery storage (Li-ion LFP) - BNEF Dec 2025
-    battery_capex: float = 150.0  # USD/kWh - Pack $70 + system $117-125 + island premium
+    battery_capex: float = 120.0  # USD/kWh - BNEF 2025: global $117; Maldives ~$120-125
     battery_opex: float = 5.0  # USD/kWh/year - Ember LCOS model 2025
     battery_lifetime: int = 15  # years - LFP 6000+ cycles
     battery_efficiency: float = 0.88  # round-trip - Modern LFP 87-92%
     battery_cost_decline: float = 0.06  # 6%/year - BNEF/NREL (slowing)
+    
+    # Solar lifecycle emissions
+    solar_lifecycle_emission_factor: float = 0.040  # kgCO2/kWh - IPCC AR5 median
     
     # Diesel generators
     diesel_gen_capex: float = 800.0  # USD/kW - Industry estimates
@@ -148,6 +151,11 @@ class TechnologyCosts:
     
     # Connection costs
     connection_cost_per_hh: float = 150.0  # USD/household
+    
+    # Operational parameters
+    reserve_margin: float = 0.15  # 15% generation reserve above peak
+    min_diesel_backup: float = 0.20  # 20% of peak kept as diesel backup
+    solar_peak_contribution: float = 0.10  # 10% of solar counts toward peak
 
 
 # =============================================================================
@@ -158,7 +166,7 @@ class TechnologyCosts:
 class FuelConfig:
     """Diesel fuel parameters."""
     
-    price_2026: float = 0.90  # USD/liter - STO retail pricing 2024-25
+    price_2026: float = 0.85  # USD/liter - Platts Dec 2025; STO import data
     price_escalation: float = 0.02  # 2%/year real escalation
     
     # Generator efficiency
@@ -222,8 +230,9 @@ class EconomicsConfig:
     
     # Social cost of carbon - EPA 2023; Rennert et al. 2022 Nature
     social_cost_carbon: float = 190.0  # USD/tCO2 - Central estimate at 2% discount
-    scc_low: float = 80.0  # sensitivity (old estimate)
-    scc_high: float = 300.0  # sensitivity
+    scc_low: float = 0.0  # sensitivity: financial only (no externalities)
+    scc_high: float = 300.0  # sensitivity: Stern Review range
+    scc_annual_growth: float = 0.02  # 2% real annual increase in SCC
     
     # Value of lost load (reliability)
     voll: float = 5.0  # USD/kWh - Island tourism-dependent economy
@@ -300,6 +309,13 @@ class GreenTransitionConfig:
     # Battery storage as % of solar capacity (MWh per MW solar)
     battery_ratio: float = 3.0  # 3 MWh storage per MW solar - modern BESS sizing
     
+    # Islanded Green scenario adjustments
+    islanded_cost_premium: float = 1.30  # 30% island logistics premium
+    islanded_battery_ratio: float = 3.0  # MWh per MW solar for islanded
+    islanded_max_re_share: float = 0.70  # Max RE share achievable per-island
+    islanded_opex_premium: float = 1.20  # 20% higher O&M for dispersed operations
+    islanded_re_cap_factor: float = 0.90  # Islanded RE targets at 90% of grid targets
+    
     # Inter-island grid development
     inter_island_grid: bool = True
     inter_island_km: float = 200.0  # km of submarine cable
@@ -326,6 +342,15 @@ class OneGridConfig:
     # Complementary domestic RE
     domestic_re_target_2050: float = 0.30  # 30% from domestic solar
     
+    # One Grid operational parameters
+    battery_ratio: float = 1.5  # MWh per MW solar (less than green transition)
+    diesel_reserve_ratio: float = 0.05  # 5% emergency backup post-cable
+    diesel_backup_share: float = 0.20  # 20% of peak retained as backup
+    diesel_retirement_rate: float = 0.10  # 10% annual fleet reduction
+    inter_island_build_start: int = 2027  # Start of inter-island construction
+    inter_island_build_end: int = 2028  # End of inter-island construction
+    cable_construction_years: int = 3  # Duration of India cable construction
+    
     def __post_init__(self):
         if self.cable_capex_total is None:
             self.cable_capex_total = self.cable_length_km * 3_000_000  # $3M/km
@@ -335,14 +360,18 @@ class OneGridConfig:
 # SENSITIVITY ANALYSIS RANGES
 # =============================================================================
 
+# Default sensitivity ranges — overridden by parameters.csv Low/High columns
 SENSITIVITY_PARAMS = {
     "discount_rate": {"low": 0.03, "base": 0.06, "high": 0.10},
-    "diesel_price": {"low": 0.70, "base": 0.90, "high": 1.20},
-    "import_price": {"low": 0.05, "base": 0.07, "high": 0.10},
-    "solar_capex": {"low": 600, "base": 750, "high": 1000},
-    "battery_capex": {"low": 100, "base": 150, "high": 250},
-    "cable_capex_per_km": {"low": 2_000_000, "base": 3_000_000, "high": 4_000_000},
-    "social_cost_carbon": {"low": 80, "base": 190, "high": 300},
+    "diesel_price": {"low": 0.60, "base": 0.85, "high": 1.10},
+    "diesel_escalation": {"low": 0.00, "base": 0.02, "high": 0.05},
+    "import_price": {"low": 0.04, "base": 0.06, "high": 0.10},
+    "solar_capex": {"low": 550, "base": 750, "high": 1000},
+    "solar_cf": {"low": 0.15, "base": 0.175, "high": 0.22},
+    "battery_capex": {"low": 80, "base": 120, "high": 200},
+    "cable_capex_per_km": {"low": 2_000_000, "base": 3_000_000, "high": 5_000_000},
+    "gom_cost_share": {"low": 0.25, "base": 0.30, "high": 1.00},
+    "social_cost_carbon": {"low": 0, "base": 190, "high": 300},
     "demand_growth": {"low": 0.035, "base": 0.05, "high": 0.065},
 }
 
@@ -416,11 +445,26 @@ class Config:
 PARAMETERS_CSV = Path(__file__).parent / "parameters.csv"
 
 
+def _parse_numeric(value_str: str):
+    """Parse a string to int or float, or return None if empty/invalid."""
+    if not value_str or not value_str.strip():
+        return None
+    value_str = value_str.strip()
+    try:
+        if '.' in value_str:
+            return float(value_str)
+        else:
+            return int(value_str)
+    except ValueError:
+        return value_str
+
+
 def load_parameters_from_csv(csv_path: Path = PARAMETERS_CSV) -> Dict[str, Dict[str, any]]:
     """
     Load parameters from CSV file.
     
-    Returns dict organized by Category -> Parameter -> Value
+    Returns dict organized by Category -> Parameter -> {value, low, high}
+    The CSV must have columns: Category, Parameter, Value, Low, High, Unit, Source, Notes
     """
     params = {}
     
@@ -437,23 +481,32 @@ def load_parameters_from_csv(csv_path: Path = PARAMETERS_CSV) -> Dict[str, Dict[
             
             category = row['Category'].strip()
             param = row['Parameter'].strip()
-            value_str = row['Value'].strip()
+            value = _parse_numeric(row.get('Value', ''))
+            low = _parse_numeric(row.get('Low', ''))
+            high = _parse_numeric(row.get('High', ''))
             
-            # Parse value
-            try:
-                # Try float first
-                if '.' in value_str:
-                    value = float(value_str)
-                else:
-                    value = int(value_str)
-            except ValueError:
-                value = value_str  # Keep as string
+            if value is None:
+                continue
             
             if category not in params:
                 params[category] = {}
-            params[category][param] = value
+            
+            # Store as dict with value + optional sensitivity bounds
+            entry = {'value': value}
+            if low is not None:
+                entry['low'] = low
+            if high is not None:
+                entry['high'] = high
+            params[category][param] = entry
     
     return params
+
+
+def _v(entry):
+    """Extract value from a parameter entry (dict or raw value)."""
+    if isinstance(entry, dict):
+        return entry['value']
+    return entry
 
 
 def get_config(load_from_csv: bool = True) -> Config:
@@ -472,101 +525,174 @@ def get_config(load_from_csv: bool = True) -> Config:
         if 'Current System' in params:
             cs = params['Current System']
             if 'Total Installed Capacity' in cs:
-                config.current_system.total_capacity_mw = float(cs['Total Installed Capacity'])
+                config.current_system.total_capacity_mw = float(_v(cs['Total Installed Capacity']))
             if 'Diesel Capacity' in cs:
-                config.current_system.diesel_capacity_mw = float(cs['Diesel Capacity'])
+                config.current_system.diesel_capacity_mw = float(_v(cs['Diesel Capacity']))
             if 'Solar PV Capacity' in cs:
-                config.current_system.solar_capacity_mw = float(cs['Solar PV Capacity'])
+                config.current_system.solar_capacity_mw = float(_v(cs['Solar PV Capacity']))
             if 'Battery Storage' in cs:
-                config.current_system.battery_capacity_mwh = float(cs['Battery Storage'])
+                config.current_system.battery_capacity_mwh = float(_v(cs['Battery Storage']))
             if 'Diesel Generation Share' in cs:
-                config.current_system.diesel_share = float(cs['Diesel Generation Share'])
+                config.current_system.diesel_share = float(_v(cs['Diesel Generation Share']))
             if 'RE Generation Share' in cs:
-                config.current_system.re_share = float(cs['RE Generation Share'])
+                config.current_system.re_share = float(_v(cs['RE Generation Share']))
         
         if 'Demand' in params:
             d = params['Demand']
             if 'Base Demand 2026' in d:
-                config.demand.base_demand_gwh = float(d['Base Demand 2026'])
+                config.demand.base_demand_gwh = float(_v(d['Base Demand 2026']))
             if 'Base Peak 2026' in d:
-                config.demand.base_peak_mw = float(d['Base Peak 2026'])
+                config.demand.base_peak_mw = float(_v(d['Base Peak 2026']))
             if 'Load Factor' in d:
-                config.demand.load_factor = float(d['Load Factor'])
+                config.demand.load_factor = float(_v(d['Load Factor']))
             if 'Growth Rate - BAU' in d:
-                config.demand.growth_rates['status_quo'] = float(d['Growth Rate - BAU'])
+                config.demand.growth_rates['status_quo'] = float(_v(d['Growth Rate - BAU']))
             if 'Growth Rate - National Grid' in d:
-                config.demand.growth_rates['green_transition'] = float(d['Growth Rate - National Grid'])
+                config.demand.growth_rates['green_transition'] = float(_v(d['Growth Rate - National Grid']))
             if 'Growth Rate - Full Integration' in d:
-                config.demand.growth_rates['one_grid'] = float(d['Growth Rate - Full Integration'])
+                config.demand.growth_rates['one_grid'] = float(_v(d['Growth Rate - Full Integration']))
         
         if 'Fuel' in params:
             f = params['Fuel']
             if 'Diesel Price 2026' in f:
-                config.fuel.price_2026 = float(f['Diesel Price 2026'])
+                config.fuel.price_2026 = float(_v(f['Diesel Price 2026']))
             if 'Diesel Price Escalation' in f:
-                config.fuel.price_escalation = float(f['Diesel Price Escalation'])
+                config.fuel.price_escalation = float(_v(f['Diesel Price Escalation']))
             if 'Fuel Efficiency' in f:
-                config.fuel.kwh_per_liter = float(f['Fuel Efficiency'])
+                config.fuel.kwh_per_liter = float(_v(f['Fuel Efficiency']))
             if 'CO2 Emission Factor' in f:
-                config.fuel.emission_factor_kg_co2_per_kwh = float(f['CO2 Emission Factor'])
+                config.fuel.emission_factor_kg_co2_per_kwh = float(_v(f['CO2 Emission Factor']))
         
         if 'Solar' in params:
             s = params['Solar']
             if 'CAPEX 2026' in s:
-                config.technology.solar_pv_capex = float(s['CAPEX 2026'])
+                config.technology.solar_pv_capex = float(_v(s['CAPEX 2026']))
             if 'CAPEX Annual Decline' in s:
-                config.technology.solar_pv_cost_decline = float(s['CAPEX Annual Decline'])
+                config.technology.solar_pv_cost_decline = float(_v(s['CAPEX Annual Decline']))
             if 'OPEX (% of CAPEX)' in s:
-                config.technology.solar_pv_opex_pct = float(s['OPEX (% of CAPEX)'])
+                config.technology.solar_pv_opex_pct = float(_v(s['OPEX (% of CAPEX)']))
             if 'Capacity Factor' in s:
-                config.technology.solar_pv_capacity_factor = float(s['Capacity Factor'])
+                config.technology.solar_pv_capacity_factor = float(_v(s['Capacity Factor']))
+            if 'Lifecycle Emission Factor' in s:
+                config.technology.solar_lifecycle_emission_factor = float(_v(s['Lifecycle Emission Factor']))
         
         if 'Battery' in params:
             b = params['Battery']
             if 'CAPEX 2026' in b:
-                config.technology.battery_capex = float(b['CAPEX 2026'])
+                config.technology.battery_capex = float(_v(b['CAPEX 2026']))
             if 'CAPEX Annual Decline' in b:
-                config.technology.battery_cost_decline = float(b['CAPEX Annual Decline'])
+                config.technology.battery_cost_decline = float(_v(b['CAPEX Annual Decline']))
             if 'Round-trip Efficiency' in b:
-                config.technology.battery_efficiency = float(b['Round-trip Efficiency'])
+                config.technology.battery_efficiency = float(_v(b['Round-trip Efficiency']))
+            if 'Lifetime' in b:
+                config.technology.battery_lifetime = int(_v(b['Lifetime']))
         
         if 'Cable' in params:
             c = params['Cable']
             if 'Length to India' in c:
-                config.one_grid.cable_length_km = float(c['Length to India'])
+                config.one_grid.cable_length_km = float(_v(c['Length to India']))
             if 'Capacity' in c:
-                config.one_grid.cable_capacity_mw = float(c['Capacity'])
+                config.one_grid.cable_capacity_mw = float(_v(c['Capacity']))
             if 'GoM Cost Share' in c:
-                config.one_grid.gom_share_pct = float(c['GoM Cost Share'])
+                config.one_grid.gom_share_pct = float(_v(c['GoM Cost Share']))
             if 'Online Year' in c:
-                config.one_grid.cable_online_year = int(c['Online Year'])
+                config.one_grid.cable_online_year = int(_v(c['Online Year']))
             if 'CAPEX per km' in c:
-                config.technology.cable_capex_per_km = float(c['CAPEX per km'])
+                config.technology.cable_capex_per_km = float(_v(c['CAPEX per km']))
         
         if 'Economics' in params:
             e = params['Economics']
             if 'Discount Rate' in e:
-                config.economics.discount_rate = float(e['Discount Rate'])
+                config.economics.discount_rate = float(_v(e['Discount Rate']))
             if 'Social Cost of Carbon' in e:
-                config.economics.social_cost_carbon = float(e['Social Cost of Carbon'])
+                config.economics.social_cost_carbon = float(_v(e['Social Cost of Carbon']))
+            if 'SCC Annual Growth' in e:
+                config.economics.scc_annual_growth = float(_v(e['SCC Annual Growth']))
             if 'Value of Lost Load' in e:
-                config.economics.voll = float(e['Value of Lost Load'])
+                config.economics.voll = float(_v(e['Value of Lost Load']))
         
         if 'PPA' in params:
             p = params['PPA']
             if 'Import Price 2030' in p:
-                config.ppa.import_price_2030 = float(p['Import Price 2030'])
+                config.ppa.import_price_2030 = float(_v(p['Import Price 2030']))
             if 'Transmission Charge' in p:
-                config.ppa.transmission_charge = float(p['Transmission Charge'])
+                config.ppa.transmission_charge = float(_v(p['Transmission Charge']))
             if 'Price Escalation' in p:
-                config.ppa.price_escalation = float(p['Price Escalation'])
+                config.ppa.price_escalation = float(_v(p['Price Escalation']))
         
         if 'Islanded' in params:
             i = params['Islanded']
-            # These could be used by IslandedGreenScenario
-            pass
+            if 'Cost Premium' in i:
+                config.green_transition.islanded_cost_premium = float(_v(i['Cost Premium']))
+            if 'Battery Ratio' in i:
+                config.green_transition.islanded_battery_ratio = float(_v(i['Battery Ratio']))
+            if 'Max RE Share' in i:
+                config.green_transition.islanded_max_re_share = float(_v(i['Max RE Share']))
+            if 'OPEX Premium' in i:
+                config.green_transition.islanded_opex_premium = float(_v(i['OPEX Premium']))
+            if 'RE Cap Factor' in i:
+                config.green_transition.islanded_re_cap_factor = float(_v(i['RE Cap Factor']))
+        
+        if 'One Grid' in params:
+            og = params['One Grid']
+            if 'Battery Ratio' in og:
+                config.one_grid.battery_ratio = float(_v(og['Battery Ratio']))
+            if 'Diesel Reserve Ratio' in og:
+                config.one_grid.diesel_reserve_ratio = float(_v(og['Diesel Reserve Ratio']))
+            if 'Diesel Backup Share' in og:
+                config.one_grid.diesel_backup_share = float(_v(og['Diesel Backup Share']))
+            if 'Diesel Retirement Rate' in og:
+                config.one_grid.diesel_retirement_rate = float(_v(og['Diesel Retirement Rate']))
+            if 'Inter-Island Build Start' in og:
+                config.one_grid.inter_island_build_start = int(_v(og['Inter-Island Build Start']))
+            if 'Inter-Island Build End' in og:
+                config.one_grid.inter_island_build_end = int(_v(og['Inter-Island Build End']))
+            if 'Cable Construction Years' in og:
+                config.one_grid.cable_construction_years = int(_v(og['Cable Construction Years']))
+        
+        if 'Operations' in params:
+            o = params['Operations']
+            if 'Reserve Margin' in o:
+                config.technology.reserve_margin = float(_v(o['Reserve Margin']))
+            if 'Min Diesel Backup' in o:
+                config.technology.min_diesel_backup = float(_v(o['Min Diesel Backup']))
+            if 'Solar Peak Contribution' in o:
+                config.technology.solar_peak_contribution = float(_v(o['Solar Peak Contribution']))
+        
+        # Build sensitivity ranges from CSV Low/High columns
+        _update_sensitivity_params_from_csv(params)
     
     return config
+
+
+def _update_sensitivity_params_from_csv(params: Dict):
+    """Update SENSITIVITY_PARAMS from CSV Low/High columns."""
+    global SENSITIVITY_PARAMS
+    
+    mapping = [
+        ('Economics', 'Discount Rate', 'discount_rate'),
+        ('Fuel', 'Diesel Price 2026', 'diesel_price'),
+        ('Fuel', 'Diesel Price Escalation', 'diesel_escalation'),
+        ('PPA', 'Import Price 2030', 'import_price'),
+        ('Solar', 'CAPEX 2026', 'solar_capex'),
+        ('Solar', 'Capacity Factor', 'solar_cf'),
+        ('Battery', 'CAPEX 2026', 'battery_capex'),
+        ('Cable', 'CAPEX per km', 'cable_capex_per_km'),
+        ('Cable', 'GoM Cost Share', 'gom_cost_share'),
+        ('Economics', 'Social Cost of Carbon', 'social_cost_carbon'),
+        ('Demand', 'Growth Rate - BAU', 'demand_growth'),
+    ]
+    
+    for category, param_name, sens_key in mapping:
+        if category in params and param_name in params[category]:
+            entry = params[category][param_name]
+            if isinstance(entry, dict):
+                base = entry['value']
+                low = entry.get('low', base * 0.7)
+                high = entry.get('high', base * 1.3)
+                SENSITIVITY_PARAMS[sens_key] = {
+                    'low': float(low), 'base': float(base), 'high': float(high)
+                }
 
 
 def print_loaded_parameters():
@@ -577,8 +703,17 @@ def print_loaded_parameters():
     print("="*60)
     for category, values in params.items():
         print(f"\n[{category}]")
-        for param, value in values.items():
-            print(f"  {param}: {value}")
+        for param, entry in values.items():
+            if isinstance(entry, dict):
+                v = entry['value']
+                low = entry.get('low', '')
+                high = entry.get('high', '')
+                if low or high:
+                    print(f"  {param}: {v}  [Low={low}, High={high}]")
+                else:
+                    print(f"  {param}: {v}")
+            else:
+                print(f"  {param}: {entry}")
     print("="*60 + "\n")
 
 

@@ -22,7 +22,7 @@ import json
 # Add model to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from model.config import Config, get_config
+from model.config import Config, get_config, SENSITIVITY_PARAMS
 from model.scenarios.status_quo import StatusQuoScenario
 from model.scenarios.green_transition import NationalGridScenario
 from model.scenarios.one_grid import FullIntegrationScenario
@@ -62,7 +62,7 @@ def modify_config(base_config: Config, param_name: str, value: float) -> Config:
     if param_name == "discount_rate":
         config.economics.discount_rate = value
     elif param_name == "diesel_price":
-        config.fuel.price_2024 = value
+        config.fuel.price_2026 = value
     elif param_name == "diesel_escalation":
         config.fuel.price_escalation = value
     elif param_name == "solar_capex":
@@ -86,54 +86,47 @@ def modify_config(base_config: Config, param_name: str, value: float) -> Config:
     return config
 
 
-# Parameter definitions
-PARAMETERS = {
-    "discount_rate": {
-        "name": "Discount Rate",
-        "base": 0.06, "low": 0.03, "high": 0.10,
-        "unit": "%",
-    },
-    "diesel_price": {
-        "name": "Diesel Price",
-        "base": 0.85, "low": 0.60, "high": 1.10,
-        "unit": "USD/L",
-    },
-    "diesel_escalation": {
-        "name": "Diesel Escalation",
-        "base": 0.02, "low": 0.00, "high": 0.05,
-        "unit": "%/yr",
-    },
-    "solar_capex": {
-        "name": "Solar PV CAPEX",
-        "base": 1000, "low": 700, "high": 1300,
-        "unit": "USD/kW",
-    },
-    "battery_capex": {
-        "name": "Battery CAPEX",
-        "base": 400, "low": 200, "high": 600,
-        "unit": "USD/kWh",
-    },
-    "cable_capex": {
-        "name": "Cable CAPEX",
-        "base": 2_000_000, "low": 1_400_000, "high": 3_000_000,
-        "unit": "USD/km",
-    },
-    "ppa_price": {
-        "name": "Import PPA Price",
-        "base": 0.08, "low": 0.05, "high": 0.12,
-        "unit": "USD/kWh",
-    },
-    "scc": {
-        "name": "Social Cost of Carbon",
-        "base": 80, "low": 0, "high": 200,
-        "unit": "USD/tCO2",
-    },
-    "gom_cost_share": {
-        "name": "GoM Cable Cost Share",
-        "base": 0.30, "low": 0.25, "high": 1.00,
-        "unit": "%",
-    },
+# Parameter definitions — loaded from SENSITIVITY_PARAMS (which reads from parameters.csv)
+# Labels and units for display
+PARAM_LABELS = {
+    "discount_rate": {"name": "Discount Rate", "unit": "%"},
+    "diesel_price": {"name": "Diesel Price", "unit": "USD/L"},
+    "diesel_escalation": {"name": "Diesel Escalation", "unit": "%/yr"},
+    "solar_capex": {"name": "Solar PV CAPEX", "unit": "USD/kW"},
+    "battery_capex": {"name": "Battery CAPEX", "unit": "USD/kWh"},
+    "cable_capex": {"name": "Cable CAPEX", "unit": "USD/km"},
+    "ppa_price": {"name": "Import PPA Price", "unit": "USD/kWh"},
+    "scc": {"name": "Social Cost of Carbon", "unit": "USD/tCO2"},
+    "gom_cost_share": {"name": "GoM Cable Cost Share", "unit": "%"},
+    "demand_growth": {"name": "Demand Growth Rate", "unit": "%/yr"},
+    "solar_cf": {"name": "Solar Capacity Factor", "unit": "ratio"},
 }
+
+
+def _build_parameters():
+    """Build PARAMETERS dict from SENSITIVITY_PARAMS (populated by CSV)."""
+    # Ensure config is loaded first (triggers CSV read → populates SENSITIVITY_PARAMS)
+    _ = get_config()
+    
+    # Map from SENSITIVITY_PARAMS keys to modify_config keys
+    key_map = {
+        "cable_capex_per_km": "cable_capex",
+        "import_price": "ppa_price",
+        "social_cost_carbon": "scc",
+    }
+    
+    params = {}
+    for sens_key, vals in SENSITIVITY_PARAMS.items():
+        config_key = key_map.get(sens_key, sens_key)
+        label = PARAM_LABELS.get(config_key, {"name": sens_key, "unit": ""})
+        params[config_key] = {
+            "name": label["name"],
+            "base": vals["base"],
+            "low": vals["low"],
+            "high": vals["high"],
+            "unit": label["unit"],
+        }
+    return params
 
 
 def run_one_way_sensitivity(base_config: Config) -> Dict:
@@ -142,6 +135,8 @@ def run_one_way_sensitivity(base_config: Config) -> Dict:
     """
     print("Running One-Way Sensitivity Analysis...")
     print("-" * 50)
+    
+    PARAMETERS = _build_parameters()
     
     results = {
         "bau": {},
@@ -384,7 +379,7 @@ def main():
     print("Loading base configuration...")
     base_config = get_config()
     print(f"  Discount rate: {base_config.economics.discount_rate:.1%}")
-    print(f"  Diesel price: ${base_config.fuel.price_2024}/L")
+    print(f"  Diesel price: ${base_config.fuel.price_2026}/L")
     print()
     
     # Run one-way sensitivity

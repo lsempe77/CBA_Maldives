@@ -137,9 +137,9 @@ class CostCalculator:
             Total CAPEX in USD
         """
         # Base cost with learning curve decline
-        years_from_2024 = year - 2024
+        years_from_base = year - self.config.base_year
         cost_per_kw = self.tech.solar_pv_capex * (
-            (1 - self.tech.solar_pv_cost_decline) ** years_from_2024
+            (1 - self.tech.solar_pv_cost_decline) ** years_from_base
         )
         
         # Convert MW to kW
@@ -200,9 +200,9 @@ class CostCalculator:
         Returns:
             Total CAPEX in USD
         """
-        years_from_2024 = year - 2024
+        years_from_base = year - self.config.base_year
         cost_per_kwh = self.tech.battery_capex * (
-            (1 - self.tech.battery_cost_decline) ** years_from_2024
+            (1 - self.tech.battery_cost_decline) ** years_from_base
         )
         
         capacity_kwh = capacity_mwh * 1000

@@ -205,7 +205,7 @@ class CBACalculator:
         SCC increases over time to reflect growing damages.
         """
         base_scc = self.config.economics.social_cost_carbon
-        scc_growth = 0.02  # 2% annual real growth in SCC
+        scc_growth = self.config.economics.scc_annual_growth
         years_from_base = year - self.base_year
         return base_scc * ((1 + scc_growth) ** years_from_base)
     

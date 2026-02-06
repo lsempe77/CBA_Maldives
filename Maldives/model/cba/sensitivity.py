@@ -16,7 +16,7 @@ from typing import Dict, List, Optional, Tuple, Callable, Any
 import numpy as np
 from copy import deepcopy
 
-from ..config import Config, get_config
+from ..config import Config, get_config, SENSITIVITY_PARAMS
 from ..scenarios import ScenarioResults
 from .npv_calculator import CBACalculator, CBAComparison, NPVResult
 
@@ -109,15 +109,17 @@ class SensitivityAnalysis:
     def _define_parameters(self) -> Dict[str, SensitivityParameter]:
         """
         Define parameters for sensitivity analysis with their ranges.
+        Uses SENSITIVITY_PARAMS populated from parameters.csv.
         """
         params = {}
+        sp = SENSITIVITY_PARAMS
         
         # Discount rate
         params["discount_rate"] = SensitivityParameter(
             name="Discount Rate",
             base_value=self.config.economics.discount_rate,
-            low_value=0.03,
-            high_value=0.10,
+            low_value=sp['discount_rate']['low'],
+            high_value=sp['discount_rate']['high'],
             unit="%",
             description="Social discount rate for NPV calculation",
         )
@@ -125,9 +127,9 @@ class SensitivityAnalysis:
         # Diesel price
         params["diesel_price"] = SensitivityParameter(
             name="Diesel Price",
-            base_value=self.config.fuel.diesel_price,
-            low_value=self.config.fuel.diesel_price * 0.7,
-            high_value=self.config.fuel.diesel_price * 1.5,
+            base_value=self.config.fuel.price_2026,
+            low_value=sp['diesel_price']['low'],
+            high_value=sp['diesel_price']['high'],
             unit="USD/L",
             description="Base diesel fuel price",
         )
@@ -135,9 +137,9 @@ class SensitivityAnalysis:
         # Diesel escalation
         params["diesel_escalation"] = SensitivityParameter(
             name="Diesel Price Escalation",
-            base_value=self.config.fuel.diesel_escalation,
-            low_value=0.0,
-            high_value=0.05,
+            base_value=self.config.fuel.price_escalation,
+            low_value=sp['diesel_escalation']['low'],
+            high_value=sp['diesel_escalation']['high'],
             unit="%/year",
             description="Annual diesel price increase",
         )
@@ -146,8 +148,8 @@ class SensitivityAnalysis:
         params["solar_capex"] = SensitivityParameter(
             name="Solar PV CAPEX",
             base_value=self.config.technology.solar_pv_capex,
-            low_value=self.config.technology.solar_pv_capex * 0.7,
-            high_value=self.config.technology.solar_pv_capex * 1.3,
+            low_value=sp['solar_capex']['low'],
+            high_value=sp['solar_capex']['high'],
             unit="USD/kW",
             description="Solar PV installed cost",
         )
@@ -156,8 +158,8 @@ class SensitivityAnalysis:
         params["battery_capex"] = SensitivityParameter(
             name="Battery CAPEX",
             base_value=self.config.technology.battery_capex,
-            low_value=self.config.technology.battery_capex * 0.5,
-            high_value=self.config.technology.battery_capex * 1.5,
+            low_value=sp['battery_capex']['low'],
+            high_value=sp['battery_capex']['high'],
             unit="USD/kWh",
             description="Battery storage installed cost",
         )
@@ -165,9 +167,9 @@ class SensitivityAnalysis:
         # Cable CAPEX
         params["cable_capex"] = SensitivityParameter(
             name="Undersea Cable CAPEX",
-            base_value=self.config.technology.cable_capex,
-            low_value=self.config.technology.cable_capex * 0.7,
-            high_value=self.config.technology.cable_capex * 1.5,
+            base_value=self.config.technology.cable_capex_per_km,
+            low_value=sp['cable_capex_per_km']['low'],
+            high_value=sp['cable_capex_per_km']['high'],
             unit="USD/km",
             description="Undersea cable cost per km",
         )
@@ -175,9 +177,9 @@ class SensitivityAnalysis:
         # PPA price
         params["ppa_price"] = SensitivityParameter(
             name="Import PPA Price",
-            base_value=self.config.ppa.import_price,
-            low_value=self.config.ppa.import_price * 0.6,
-            high_value=self.config.ppa.import_price * 1.5,
+            base_value=self.config.ppa.import_price_2030,
+            low_value=sp['import_price']['low'],
+            high_value=sp['import_price']['high'],
             unit="USD/kWh",
             description="Electricity import price",
         )
@@ -186,8 +188,8 @@ class SensitivityAnalysis:
         params["scc"] = SensitivityParameter(
             name="Social Cost of Carbon",
             base_value=self.config.economics.social_cost_carbon,
-            low_value=0,
-            high_value=200,
+            low_value=sp['social_cost_carbon']['low'],
+            high_value=sp['social_cost_carbon']['high'],
             unit="USD/tCO2",
             description="Monetized cost of emissions",
         )
@@ -196,8 +198,8 @@ class SensitivityAnalysis:
         params["demand_growth"] = SensitivityParameter(
             name="Demand Growth Rate",
             base_value=self.config.demand.growth_rates["status_quo"],
-            low_value=0.02,
-            high_value=0.05,
+            low_value=sp['demand_growth']['low'],
+            high_value=sp['demand_growth']['high'],
             unit="%/year",
             description="Annual demand growth rate",
         )
@@ -206,8 +208,8 @@ class SensitivityAnalysis:
         params["solar_cf"] = SensitivityParameter(
             name="Solar Capacity Factor",
             base_value=self.config.technology.solar_pv_capacity_factor,
-            low_value=0.15,
-            high_value=0.22,
+            low_value=sp['solar_cf']['low'],
+            high_value=sp['solar_cf']['high'],
             unit="%",
             description="Solar PV capacity factor",
         )
@@ -215,9 +217,9 @@ class SensitivityAnalysis:
         # GoM cost share for cable
         params["gom_cost_share"] = SensitivityParameter(
             name="GoM Cable Cost Share",
-            base_value=self.config.one_grid.gom_cost_share,
-            low_value=0.5,
-            high_value=1.0,
+            base_value=self.config.one_grid.gom_share_pct,
+            low_value=sp['gom_cost_share']['low'],
+            high_value=sp['gom_cost_share']['high'],
             unit="%",
             description="Government of Maldives share of cable costs",
         )
@@ -294,17 +296,17 @@ class SensitivityAnalysis:
         if parameter_name == "discount_rate":
             config.economics.discount_rate = value
         elif parameter_name == "diesel_price":
-            config.fuel.diesel_price = value
+            config.fuel.price_2026 = value
         elif parameter_name == "diesel_escalation":
-            config.fuel.diesel_escalation = value
+            config.fuel.price_escalation = value
         elif parameter_name == "solar_capex":
             config.technology.solar_pv_capex = value
         elif parameter_name == "battery_capex":
             config.technology.battery_capex = value
         elif parameter_name == "cable_capex":
-            config.technology.cable_capex = value
+            config.technology.cable_capex_per_km = value
         elif parameter_name == "ppa_price":
-            config.ppa.import_price = value
+            config.ppa.import_price_2030 = value
         elif parameter_name == "scc":
             config.economics.social_cost_carbon = value
         elif parameter_name == "demand_growth":
@@ -313,7 +315,7 @@ class SensitivityAnalysis:
         elif parameter_name == "solar_cf":
             config.technology.solar_pv_capacity_factor = value
         elif parameter_name == "gom_cost_share":
-            config.one_grid.gom_cost_share = value
+            config.one_grid.gom_share_pct = value
         
         return config
     
@@ -491,17 +493,17 @@ class SensitivityAnalysis:
         if parameter_name == "discount_rate":
             config.economics.discount_rate = value
         elif parameter_name == "diesel_price":
-            config.fuel.diesel_price = value
+            config.fuel.price_2026 = value
         elif parameter_name == "diesel_escalation":
-            config.fuel.diesel_escalation = value
+            config.fuel.price_escalation = value
         elif parameter_name == "solar_capex":
             config.technology.solar_pv_capex = value
         elif parameter_name == "battery_capex":
             config.technology.battery_capex = value
         elif parameter_name == "cable_capex":
-            config.technology.cable_capex = value
+            config.technology.cable_capex_per_km = value
         elif parameter_name == "ppa_price":
-            config.ppa.import_price = value
+            config.ppa.import_price_2030 = value
         elif parameter_name == "scc":
             config.economics.social_cost_carbon = value
         elif parameter_name == "demand_growth":
@@ -510,7 +512,7 @@ class SensitivityAnalysis:
         elif parameter_name == "solar_cf":
             config.technology.solar_pv_capacity_factor = value
         elif parameter_name == "gom_cost_share":
-            config.one_grid.gom_cost_share = value
+            config.one_grid.gom_share_pct = value
         
         return config
     
