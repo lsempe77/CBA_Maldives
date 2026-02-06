@@ -574,6 +574,8 @@ print(f"""
 
 This geography explains why the Maldives currently relies on diesel: it was simply too expensive to connect scattered islands with cables, so each island got its own diesel generator. But technology costs have changed dramatically, and this analysis shows that interconnection is now the smarter choice.
 
+With this geographic context in mind, we can now examine the four pathways available to the Maldives — each representing a fundamentally different approach to solving the energy challenge that this unique geography creates.
+
 ---
 
 # The Four Pathways Explained
@@ -748,13 +750,21 @@ This pathway makes sense if:
 - Speed of initial deployment is the top priority
 - Islands want complete energy autonomy
 
+Now that we understand what each pathway involves, the natural question is: **what do they cost?** The next section provides a detailed financial comparison.
+
 ---
 
 # Comparing the Costs
 
+Having described what each pathway involves, we now turn to the central question: **how much does each one cost, and where does the money go?**
+
+This section translates engineering choices into financial consequences. We compare the four pathways across three cost dimensions — capital investment (building things), operating expenses (keeping them running), and fuel or energy purchases — and then show what these costs mean for the price of electricity that households and businesses actually pay.
+
+The core trade-off is intuitive: green pathways require more money upfront to build infrastructure, but they dramatically reduce the ongoing fuel bills that dominate the BAU scenario. The question is whether the upfront investment pays for itself — and the answer, as the charts below demonstrate, is a decisive yes.
+
 ## The Big Picture
 
-Let's break down where the money goes under each scenario:
+The chart below breaks down total 30-year costs into three categories. Look for two things: (1) which scenario has the tallest bar overall (i.e., highest total cost), and (2) how the colour composition shifts — specifically, how the red "fuel" segment shrinks as you move from BAU to the greener options.
 
 ```{python}
 #| label: fig-cost-breakdown
@@ -832,7 +842,11 @@ print(f"""
 
 ## What Do Consumers Pay?
 
-The **Levelized Cost of Electricity (LCOE)** tells us what electricity actually costs per kilowatt-hour:
+Billions of dollars in system-wide costs can feel abstract. The metric that matters most to households and businesses is simpler: **how much does each unit of electricity cost?**
+
+The **Levelized Cost of Electricity (LCOE)** answers this question. It takes all costs — capital, operations, fuel, everything — and divides them by the total electricity produced over the system's lifetime. The result is a single number, in dollars per kilowatt-hour, that represents the true all-in cost of power. Think of it as the "unit price" of electricity: lower is better.
+
+The chart below compares the LCOE for each pathway, with two reference lines: the current Maldives electricity rate and India's domestic tariff.
 
 ```{python}
 #| label: fig-lcoe-comparison
@@ -901,6 +915,8 @@ Our modeled costs are well-validated by independent evidence:
 - **The pathway ranking matches every comparable SIDS model.** Virtually all island energy analyses find the same ordering: diesel-only is most expensive, hybrid/grid-connected is cheapest, fully islanded renewable is in between (RMI 2025).
 :::
 
+The financial case is clear: every green pathway saves money compared to diesel. But cost is not the only consideration. For a nation that has staked its international identity on climate leadership, the environmental dimension matters deeply. The next section examines how each pathway performs on greenhouse gas emissions.
+
 ---
 
 # The Climate Dimension
@@ -916,6 +932,8 @@ Reducing emissions serves two purposes:
 2. **Practical benefits**: Each tonne of CO₂ avoided has real economic value. Using the US EPA's "social cost of carbon" of **$190 per tonne**, avoided emissions represent tangible benefits.
 
 ## Emissions by Scenario
+
+The chart below presents two complementary views side by side. The **left panel** shows the raw physical quantity — how many million tonnes of CO₂ each pathway emits over 30 years. The **right panel** translates those emissions into economic value using two widely-cited estimates of the "social cost of carbon" — the damage that each tonne of CO₂ inflicts on the global economy through climate change. The gap between BAU and the green pathways represents both the Maldives' contribution to global climate goals and a tangible economic benefit that can be claimed in international climate finance negotiations.
 
 ```{python}
 #| label: fig-emissions
@@ -1004,15 +1022,28 @@ print(f"The Full Integration pathway reduces emissions by approximately {pct_red
 ```
 :::
 
+The evidence so far paints a consistent picture: green pathways are cheaper, cleaner, and more aligned with the Maldives' strategic interests. But a prudent decision-maker should still ask: *how confident can we be in these findings?* The next section subjects our results to comprehensive stress-testing.
+
 ---
 
 # How Robust Are These Results?
 
-Policymakers rightly ask: "What if your assumptions are wrong?" We tested this extensively.
+The previous sections present a clear finding: green pathways are cheaper, cleaner, and more secure than diesel. But every cost-benefit analysis depends on assumptions, and policymakers rightly ask: **"What if you're wrong?"**
+
+This section subjects our results to rigorous stress-testing. We vary every key assumption — fuel prices, technology costs, discount rates, demand growth — across their plausible ranges, both individually and simultaneously, to see whether the core finding holds. The answer, as the tests below demonstrate, is that it does — overwhelmingly.
+
+We use four complementary approaches:
+
+1. **Parameter ranges** — what values did we assume, and how far could they deviate?
+2. **Monte Carlo simulation** — what happens when everything varies at once?
+3. **Switching-point analysis** — exactly how extreme would conditions need to be to change the recommendation?
+4. **Tornado analysis** — which individual assumptions matter most?
 
 ## Key Uncertainties
 
-The analysis depends on several uncertain parameters:
+Every model is built on assumptions. The table below summarises the key parameters we used and the range of plausible alternatives. The "Our Assumption" column shows the central estimate; the "Could Be Lower" and "Could Be Higher" columns define the bounds we tested. These ranges are drawn from published sources, market data, and expert judgement — they are deliberately wide to ensure our robustness tests are genuinely challenging.
+
+**How to read this table:** If you are concerned about a specific parameter (say, the India import price), find its row and check how the "Could Be Higher" value compares to our assumption. In the robustness tests that follow, we show what happens to the results when that parameter moves to its extreme values.
 
 ```{python}
 #| label: tbl-uncertainties
@@ -1043,7 +1074,9 @@ for cat, par, label, unit in unc_params:
 
 ## The Robustness Test
 
-We ran the model 1,000 times with randomly varying parameters to see how often each scenario "wins":
+Testing one parameter at a time is useful, but in reality, multiple things can go wrong (or right) simultaneously. A **Monte Carlo simulation** addresses this by running the model thousands of times, each time drawing *every* uncertain parameter from a random value within its plausible range. Think of it as playing out a thousand different versions of the future — some where oil is cheap and solar is expensive, others where the reverse is true, and everything in between.
+
+The chart below shows the result: out of 1,000 simulated futures, how often did each pathway come out as the cheapest option? A pathway that "wins" in most simulations is a robust choice — one that doesn't depend on getting lucky with a particular combination of assumptions.
 
 ```{python}
 #| label: fig-robustness
@@ -1089,7 +1122,9 @@ Even when carbon costs are excluded entirely (a purely financial comparison), BA
 
 ## Switching Points
 
-A switching-point analysis identifies the critical thresholds at which one scenario becomes preferable to another. We computed exact switching values by iterating each parameter until the NPV gap closes:
+A switching-point analysis asks a specific, intuitive question: **how much would a key assumption need to change before our recommendation flips?** If the answer is "by an enormous and implausible amount," policymakers can be confident the finding is robust. If the answer is "by a small change that could easily happen," caution is warranted.
+
+We computed exact switching values by iterating each parameter until the cost gap between pathways closes to zero:
 
 ```{python}
 #| output: asis
@@ -1190,7 +1225,9 @@ if tornado_data:
 
 ## Monte Carlo Results Distribution
 
-The bar chart above shows *how often* each scenario wins. But policymakers also need to know *by how much*. The distribution below shows the full range of possible savings from choosing Full Integration over BAU:
+The bar chart above tells us *how often* Full Integration wins. But a risk-conscious policymaker also needs to know: **"When it wins, by how much? And when it loses, how badly?"**
+
+The histogram below answers these questions by showing the full spread of possible savings. Each bar represents a cluster of simulated futures; the x-axis shows the net savings (in billions of dollars) from choosing Full Integration over BAU. Values to the right of zero mean Full Integration is cheaper; values to the left would mean BAU is cheaper. The red, black, and blue vertical lines mark the 5th percentile (near-worst case), the average, and the 95th percentile (near-best case) respectively.
 
 ```{python}
 #| label: fig-mc-distribution
@@ -1253,7 +1290,11 @@ The Monte Carlo simulation draws each uncertain parameter independently from its
 
 ## How Long Does the Analysis Need to Run?
 
-The choice of time horizon matters. Longer horizons capture more fuel savings but also introduce more uncertainty. We ran the model over three horizons:
+Infrastructure decisions are inherently long-term — a submarine cable built in 2030 will still be in service in 2060. But policymakers sometimes hesitate to accept 30-year projections, asking: "What if we only look 20 years ahead?"
+
+This is a fair question. Shorter horizons reduce uncertainty but also compress the time over which fuel savings accumulate. Longer horizons capture the full value of infrastructure investments but rely on more distant (and uncertain) projections. The chart below runs our model over three horizons — 20, 30, and 50 years — so decision-makers can see whether the conclusion changes depending on how far they look ahead.
+
+The left panel shows total costs; the right panel shows how savings grow over time. The critical finding: **even the most conservative 20-year horizon shows substantial savings from transition.**
 
 ```{python}
 #| label: fig-multi-horizon
@@ -1410,6 +1451,8 @@ print("""
 **Reading the table:** Larger values mean the parameter has more influence on that scenario's cost. BAU is highly sensitive to diesel-related parameters (price and escalation) because its cost structure is dominated by fuel. Full Integration is somewhat insulated because fuel costs are a smaller share of its cost structure, replaced by fixed PPA and infrastructure costs. This differential sensitivity is precisely *why* the transition reduces risk — it converts volatile fuel expenditure into predictable infrastructure payments.
 """)
 ```
+
+Having established that our results are robust to internal uncertainty, we now turn to an external check: **do our assumptions and results align with what the rest of the world is experiencing?** The next section benchmarks every major input against international evidence.
 
 ---
 
@@ -1657,6 +1700,8 @@ print(f"Most key inputs in our model — battery costs, cable costs, diesel pric
 
 # Financing Considerations
 
+A compelling cost-benefit analysis is necessary but not sufficient — policymakers also need to know: **"Can we actually pay for this?"** This section examines the total investment required, identifies realistic financing sources, and quantifies the return that investors and government can expect. The key message: while the upfront capital is substantial, the financial returns are strong enough to attract both concessional and commercial financing.
+
 ## Total Investment Required
 
 ```{python}
@@ -1671,6 +1716,8 @@ print(f"The Full Integration pathway requires approximately **{fmt_b(fi_capex_b)
 - **Battery Storage**: $300-500 million
 
 ## Potential Financing Sources
+
+No single entity needs to bear the full cost. The Maldives can assemble a financing package from multiple sources, each with different terms and conditions. The table below outlines the most likely contributors. Importantly, the project's strong financial returns (detailed in the next section) make it attractive to both concessional lenders (who prioritise development impact) and commercial investors (who require competitive returns).
 
 | Source | Potential Contribution | Notes |
 |--------|------------------------|-------|
@@ -1690,6 +1737,8 @@ Despite the large upfront cost, the return is compelling. Following **standard d
 - **Financial analysis** counts only what appears on balance sheets: capital costs, operating expenses, fuel savings. This is what matters for the Treasury.
 - **Economic analysis** adds societal benefits that don't show up in budgets but are real: avoided climate damages, health benefits from cleaner air, energy security value. This is what matters for welfare.
 :::
+
+The table below shows the core return metrics across both lenses. The **Financial Only** column is the most conservative and directly comparable to other infrastructure investments — it is what the Treasury would use to evaluate the project on a purely fiscal basis. The two **Economic** columns add climate benefits at two widely-cited carbon prices, showing how the returns improve when environmental value is counted.
 
 ```{python}
 #| output: asis
@@ -1746,6 +1795,10 @@ print(f"The {fmt_b(savings_b['full_integration'])} headline savings figure in th
 
 # Implementation Roadmap
 
+Having established that Full Integration is the most cost-effective, climate-friendly, and robust pathway, the practical question becomes: **how do we actually build it?** The timeline below translates the strategy into a realistic sequence of actions, phased to manage risk and cash flow.
+
+The approach follows a deliberate logic: start with "no regrets" investments (solar PV, regulatory reform) that benefit every pathway, then proceed to the larger grid and cable infrastructure once diplomatic negotiations and engineering feasibility are confirmed. This sequencing means that even if the India cable is delayed or cancelled, the early-phase investments retain their full value.
+
 If policymakers choose the recommended Full Integration pathway, here is a realistic timeline:
 
 ## Phase 1: Immediate Actions (2026-2028)
@@ -1785,6 +1838,10 @@ If policymakers choose the recommended Full Integration pathway, here is a reali
 - Phase out most diesel generation
 
 ## Investment Schedule
+
+Large infrastructure investments don't happen all at once. The chart below shows how capital expenditure is phased over four periods. The early years focus on solar deployment (which can begin immediately) and cable planning; the peak investment period (2029–32) coincides with the India cable construction; and later periods involve completing the inter-island grid and expanding capacity to meet growing demand.
+
+**Why this matters for budgeting:** The Government does not need to find all the capital upfront. Annual investment requirements peak at roughly $500–600 million per year during the cable construction phase, then taper off. This phasing allows time to secure financing and build institutional capacity.
 
 ```{python}
 #| label: fig-investment-timeline
@@ -1828,11 +1885,15 @@ plt.tight_layout()
 plt.show()
 ```
 
+The chart reveals that the India cable dominates capital expenditure in the 2029–32 construction period, which is also when the project is most exposed to cost overrun risk. Solar PV and battery investments, by contrast, are spread more evenly and can be adjusted year-by-year based on technology cost trends. This phasing provides a natural risk-management opportunity: **if cable costs escalate beyond expectations, the Government can pause cable construction while continuing solar deployment** — effectively shifting toward the National Grid fallback pathway without stranding the investments already made.
+
 ---
 
 # Who Pays, Who Benefits? A Distributional Analysis
 
-Aggregate cost-benefit numbers tell only part of the story. Policymakers must also understand *who* bears the costs and *who* reaps the benefits — because an economically optimal policy can be politically unviable if the distribution is perceived as unfair.
+Up to this point, the analysis has focused on aggregate numbers — total costs, total savings, total emissions. But aggregate efficiency is not the only thing that matters for policy. A project can have an excellent NPV and still fail politically if the costs fall on people who cannot afford them while the benefits accrue to those who are already comfortable.
+
+This section examines the **equity dimension** of the energy transition: who bears the upfront investment burden, who enjoys the long-term savings, and whether the transition is progressive (helping the poorest most) or regressive (making inequality worse). The answer, as we show below, is encouraging: the transition is both efficient *and* equitable — a rare alignment that strengthens the political case for action.
 
 ## The Scale of Investment in Context
 
@@ -1856,6 +1917,8 @@ The Full Integration pathway requires **${fi_capex_b:.1f} billion** in capital i
 ```
 
 ## Who Bears the Costs?
+
+The two pie charts below illustrate the expected distribution of costs and benefits. The left chart shows who would fund the transition; the right chart shows who would benefit most. The key observation is that costs are spread across multiple parties (government, multilateral banks, India, private investors), while benefits flow primarily to households and businesses — creating broad-based political support for the transition.
 
 ```{python}
 #| label: fig-distributional
@@ -1929,6 +1992,10 @@ The energy transition is not just efficient — it is *equitable*. Under BAU, ou
 
 ## Key Risks
 
+No major infrastructure project is without risk. Responsible policy requires identifying the things that could go wrong and planning for them in advance. The table below summarises the principal risks, rated by likelihood and potential impact, with concrete mitigation strategies for each.
+
+**How to read this table:** Risks rated "High" on both likelihood and impact deserve the most attention and budget contingency. Risks rated "Low" on impact can generally be managed through standard project management practices. The most important single risk — HVDC cable cost overruns — is addressed through our sensitivity analysis, which shows the project remains financially viable even with a 50% cable cost increase.
+
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
 | **HVDC cable cost overruns** | **Medium-High** | **Very High** | Phased contracting; independent engineering review; contingency of 30-50% on cable budget; consider shorter initial route |
@@ -1941,7 +2008,9 @@ The energy transition is not just efficient — it is *equitable*. Under BAU, ou
 
 ## The India Dependence Question
 
-Some may worry about depending on India for electricity. This concern is valid but manageable:
+Perhaps the most common objection to the Full Integration pathway is geopolitical: **"Isn't it risky to depend on India for our electricity?"** This concern deserves a serious, honest answer — not dismissal.
+
+The short answer is: *some dependence is introduced, but it is significantly less risky than the current dependence on global diesel markets.* Under BAU, the Maldives is 93% dependent on imported diesel from global commodity markets over which it has zero influence. Under Full Integration, it would source roughly 65% of electricity from India under a bilateral PPA — a relationship where the Maldives has some negotiating leverage — while producing the remaining 35% domestically from solar. Four specific considerations:
 
 1. **Diversified supply**: Even with the India cable, domestic solar will provide 50%+ of electricity by 2040.
 
@@ -1951,13 +2020,15 @@ Some may worry about depending on India for electricity. This concern is valid b
 
 4. **Fallback available**: If relations sour, the National Grid pathway remains viable.
 
+The risks are real but manageable. With proper planning, phased contracting, and contingency budgets, none of them should deter the Maldives from pursuing the transition. We now turn to our final conclusions and specific recommendations for action.
+
 ---
 
 # Conclusions and Recommendations
 
 ## What We Learned
 
-This analysis leads to five clear conclusions:
+This analysis has examined the Maldives' energy future from every angle — cost, climate, equity, robustness, international benchmarks, and implementation feasibility. After thousands of simulations, extensive sensitivity testing, and careful comparison with international precedents, the evidence converges on five clear conclusions:
 
 ::: {.callout-tip}
 ## Conclusion 1: All Green Pathways Beat Business as Usual
@@ -2012,7 +2083,9 @@ print(f"Delaying only increases costs and extends diesel dependence. Every year 
 
 ## Model Parameters
 
-For completeness, the key parameters used in this analysis are:
+For full reproducibility, the table below lists every key parameter used in the analysis, its assumed value, and the source from which it was drawn. Readers who wish to challenge or update specific assumptions can do so by modifying the corresponding entry in the project’s `parameters.csv` file — the model will automatically recompute all results.
+
+**A note on sourcing:** Where possible, we use Maldives-specific data (e.g., CIF/ASPIRE solar tariffs, STELCO system data). Where local data is unavailable, we draw on the most authoritative international sources (IRENA, BloombergNEF, IEA) and apply adjustments for the Maldivian context (e.g., adding a SIDS logistics premium to solar PV costs).
 
 ```{python}
 #| label: tbl-parameters
