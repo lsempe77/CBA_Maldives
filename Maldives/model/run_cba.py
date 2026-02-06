@@ -109,22 +109,39 @@ def run_scenarios(config: Config) -> dict:
 def run_cba(config: Config, scenario_data: dict) -> dict:
     """
     Run CBA calculations for 4 scenarios.
+    Returns both per-scenario NPV results and the full CBAComparison object.
     """
     print("Running CBA calculations...")
     print("-" * 50)
     
     calculator = CBACalculator(config)
     
-    # Calculate NPV for each scenario
+    # Use compare_all_scenarios to get full incremental analysis with IRR/payback
+    comparison = calculator.compare_all_scenarios(
+        status_quo_results=scenario_data["bau"]["results"],
+        green_results=scenario_data["national_grid"]["results"],
+        one_grid_results=scenario_data["full_integration"]["results"],
+        islanded_green_results=scenario_data["islanded_green"]["results"],
+    )
+    
+    # Build results dict for backwards compatibility
     results = {}
-    for name, data in scenario_data.items():
-        npv = calculator.calculate_npv(data["results"])
+    for name, npv_obj in [
+        ("bau", comparison.bau),
+        ("full_integration", comparison.full_integration),
+        ("national_grid", comparison.national_grid),
+        ("islanded_green", comparison.islanded_green),
+    ]:
         results[name] = {
-            "npv_result": npv,
-            "summary": data["summary"],
+            "npv_result": npv_obj,
+            "summary": scenario_data[name]["summary"],
         }
     
+    # Attach the full comparison object for save_results
+    results["_comparison"] = comparison
+    
     print(f"  ✓ NPV calculations complete")
+    print(f"  ✓ Incremental analysis complete (IRR, payback, BCR)")
     print(f"  ✓ All 4 scenarios analyzed")
     print()
     
@@ -176,6 +193,8 @@ def print_cba_summary(cba_results: dict, config: Config):
     print("-" * 80)
     
     for name, data in cba_results.items():
+        if name.startswith("_"):
+            continue
         npv = data["npv_result"]
         label = name.replace("_", " ").title()
         print(f"{label:<20} ${npv.pv_total_costs/1e6:>13,.0f} ${npv.pv_capex/1e6:>13,.0f} ${npv.pv_fuel/1e6:>13,.0f} ${npv.lcoe_usd_per_kwh:>10.4f}")
@@ -183,7 +202,10 @@ def print_cba_summary(cba_results: dict, config: Config):
     print()
     
     # Find least cost
-    least_cost = min(cba_results.items(), key=lambda x: x[1]["npv_result"].pv_total_costs)
+    least_cost = min(
+        ((k, v) for k, v in cba_results.items() if not k.startswith("_")),
+        key=lambda x: x[1]["npv_result"].pv_total_costs,
+    )
     bau = cba_results["bau"]["npv_result"]
     
     # Incremental Analysis vs BAU
@@ -191,7 +213,7 @@ def print_cba_summary(cba_results: dict, config: Config):
     print()
     
     for name, data in cba_results.items():
-        if name == "bau":
+        if name == "bau" or name.startswith("_"):
             continue
         npv = data["npv_result"]
         label = name.replace("_", " ").title()
@@ -271,9 +293,9 @@ def save_results(scenario_data: dict, cba_results: dict, output_dir: str, config
         "incremental_vs_bau": {},
     }
     
-    bau_npv = cba_results["bau"]["npv_result"] if "bau" in cba_results else None
-    
     for name, data in cba_results.items():
+        if name.startswith("_"):
+            continue
         npv = data["npv_result"]
         cba_output["npv_results"][name] = {
             "pv_total_costs": npv.pv_total_costs,
@@ -284,22 +306,41 @@ def save_results(scenario_data: dict, cba_results: dict, output_dir: str, config
             "pv_emission_costs": npv.pv_emission_costs,
             "lcoe": npv.lcoe_usd_per_kwh,
         }
-        
-        # Incremental analysis vs BAU for non-BAU scenarios
-        if name != "bau" and bau_npv is not None:
-            savings = bau_npv.pv_total_costs - npv.pv_total_costs
-            add_capex = npv.pv_capex - bau_npv.pv_capex
-            fuel_savings = bau_npv.pv_fuel - npv.pv_fuel
-            bcr = fuel_savings / max(1, add_capex) if add_capex > 0 else None
-            cba_output["incremental_vs_bau"][name] = {
-                "npv_savings": savings,
-                "additional_capex": add_capex,
-                "fuel_savings": fuel_savings,
-                "bcr": bcr,
+    
+    # Serialize full incremental analysis from CBAComparison (includes IRR, payback, BCR)
+    comparison = cba_results.get("_comparison")
+    if comparison:
+        for label, incr in [
+            ("full_integration", comparison.fi_vs_bau),
+            ("national_grid", comparison.ng_vs_bau),
+            ("islanded_green", comparison.ig_vs_bau),
+        ]:
+            cba_output["incremental_vs_bau"][label] = {
+                "npv_savings": incr.npv,
+                "additional_capex": incr.incremental_pv_capex,
+                "incremental_opex": incr.incremental_pv_opex,
+                "incremental_ppa": incr.incremental_pv_ppa,
+                "fuel_savings": incr.pv_fuel_savings,
+                "emission_savings": incr.pv_emission_savings,
+                "total_benefits": incr.pv_total_benefits,
+                "bcr": incr.bcr,
+                "irr": incr.irr,
+                "payback_years": incr.payback_years,
             }
+        
+        # Also save FI vs NG incremental
+        cba_output["incremental_fi_vs_ng"] = {
+            "npv_savings": comparison.fi_vs_ng.npv,
+            "additional_capex": comparison.fi_vs_ng.incremental_pv_capex,
+            "fuel_savings": comparison.fi_vs_ng.pv_fuel_savings,
+            "bcr": comparison.fi_vs_ng.bcr,
+            "irr": comparison.fi_vs_ng.irr,
+            "payback_years": comparison.fi_vs_ng.payback_years,
+        }
     
     # Add recommendation
-    npv_costs = {name: data["npv_result"].pv_total_costs for name, data in cba_results.items()}
+    npv_costs = {name: data["npv_result"].pv_total_costs 
+                 for name, data in cba_results.items() if not name.startswith("_")}
     least_cost = min(npv_costs, key=npv_costs.get)
     cba_output["recommendation"] = {
         "least_cost": least_cost,

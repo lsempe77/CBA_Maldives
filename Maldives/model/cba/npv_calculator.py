@@ -336,14 +336,45 @@ class CBACalculator:
             
             cash_flows.append(savings - incremental_cost)
         
-        # Use numpy to calculate IRR
+        # Use numpy_financial or scipy to calculate IRR
         try:
-            irr = np.irr(cash_flows)
-            if np.isnan(irr) or np.isinf(irr):
+            import numpy_financial as npf
+            irr = npf.irr(cash_flows)
+        except ImportError:
+            # Fallback: bisection method
+            irr = self._irr_bisection(cash_flows)
+        
+        try:
+            if irr is None or np.isnan(irr) or np.isinf(irr):
                 return None
             return float(irr)
         except:
             return None
+    
+    @staticmethod
+    def _irr_bisection(cash_flows, lo=-0.5, hi=2.0, tol=1e-6, max_iter=200):
+        """Compute IRR by bisection when numpy_financial is unavailable."""
+        def npv_at_rate(r):
+            return sum(cf / (1 + r) ** t for t, cf in enumerate(cash_flows))
+        
+        npv_lo = npv_at_rate(lo)
+        npv_hi = npv_at_rate(hi)
+        
+        if npv_lo * npv_hi > 0:
+            return None  # no sign change → no IRR in range
+        
+        for _ in range(max_iter):
+            mid = (lo + hi) / 2
+            npv_mid = npv_at_rate(mid)
+            if abs(npv_mid) < tol:
+                return mid
+            if npv_lo * npv_mid < 0:
+                hi = mid
+                npv_hi = npv_mid
+            else:
+                lo = mid
+                npv_lo = npv_mid
+        return (lo + hi) / 2
     
     def compare_all_scenarios(
         self,

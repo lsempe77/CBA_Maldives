@@ -319,14 +319,16 @@ def print_tornado_ranking(results: Dict):
     print()
 
 
-def calculate_switching_values(results: Dict):
-    """Calculate and print switching values."""
+def calculate_switching_values(results: Dict) -> Dict:
+    """Calculate and print switching values. Returns dict for JSON serialisation."""
     print("=" * 80)
     print("  SWITCHING VALUES")
     print("=" * 80)
     print()
     print("  Parameter values at which scenario ranking changes:")
     print("-" * 60)
+    
+    switching = {}
     
     # Diesel price: at what price does BAU = Full Integration?
     bau_diesel = results["bau"]["diesel_price"]
@@ -337,12 +339,12 @@ def calculate_switching_values(results: Dict):
     fi_slope = (fi_diesel["high_npv"] - fi_diesel["low_npv"]) / (fi_diesel["high_value"] - fi_diesel["low_value"])
     
     if bau_slope != fi_slope:
-        # BAU and FI intersect when: bau_base + bau_slope*(p-base) = fi_base + fi_slope*(p-base)
-        # Solving: p = base + (fi_base - bau_base) / (bau_slope - fi_slope)
         switching_diesel = bau_diesel["base_value"] + (fi_diesel["base_npv"] - bau_diesel["base_npv"]) / (bau_slope - fi_slope)
         print(f"  Diesel price: ${switching_diesel:.2f}/L (BAU = Full Integration)")
+        switching["diesel_price_bau_eq_fi"] = round(switching_diesel, 4)
         if switching_diesel < bau_diesel["low_value"]:
             print(f"    → Below tested range - Full Integration always preferred")
+            switching["diesel_price_bau_eq_fi_note"] = "below_range"
     
     # PPA price: at what price does Full Integration = National Grid?
     ng_ppa = results["national_grid"]["ppa_price"]
@@ -351,23 +353,28 @@ def calculate_switching_values(results: Dict):
     fi_ppa_slope = (fi_ppa["high_npv"] - fi_ppa["low_npv"]) / (fi_ppa["high_value"] - fi_ppa["low_value"])
     
     if fi_ppa_slope != 0:
-        # FI = NG when: fi_base + fi_slope*(p-base) = ng_base
-        # Solving: p = base + (ng_base - fi_base) / fi_slope
         switching_ppa = fi_ppa["base_value"] + (ng_ppa["base_npv"] - fi_ppa["base_npv"]) / fi_ppa_slope
         print(f"  Import PPA price: ${switching_ppa:.3f}/kWh (Full Integration = National Grid)")
+        switching["ppa_price_fi_eq_ng"] = round(switching_ppa, 4)
         if switching_ppa > fi_ppa["high_value"]:
             print(f"    → Above tested range - Full Integration preferred in all cases")
+            switching["ppa_price_fi_eq_ng_note"] = "above_range"
     
     print()
+    return switching
 
 
-def save_results(results: Dict, output_path: str = "outputs"):
+def save_results(results: Dict, switching: Dict = None, output_path: str = "outputs"):
     """Save results to JSON file."""
     output_dir = Path(output_path)
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    output = dict(results)
+    if switching:
+        output["switching_values"] = switching
+    
     with open(output_dir / "sensitivity_results.json", "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump(output, f, indent=2)
     
     print(f"Results saved to {output_dir / 'sensitivity_results.json'}")
 
@@ -388,10 +395,10 @@ def main():
     # Print results
     print_sensitivity_results(results)
     print_tornado_ranking(results)
-    calculate_switching_values(results)
+    switching = calculate_switching_values(results)
     
     # Save results
-    save_results(results)
+    save_results(results, switching=switching)
     
     print("=" * 70)
     print("  SENSITIVITY ANALYSIS COMPLETE")

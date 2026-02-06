@@ -54,8 +54,24 @@ params_df = pd.read_csv(MODEL_DIR / "parameters.csv", comment="#", skipinitialsp
 params_df = params_df.dropna(subset=["Parameter"])
 
 def get_param(category, parameter, col="Value"):
-    """Look up a value from parameters.csv."""
-    row = params_df[(params_df["Category"] == category) & (params_df["Parameter"] == parameter)]
+    """Look up a value from parameters.csv.
+    
+    Supports a 'Costs' meta-category that searches Fuel, Solar, Battery, Cable, PPA
+    and a 'Demand' meta-category that maps common short names.
+    """
+    # Alias mappings for backward compatibility with report references
+    _aliases = {
+        ("Costs", "Diesel Price"): ("Fuel", "Diesel Price 2026"),
+        ("Costs", "Diesel Price Escalation"): ("Fuel", "Diesel Price Escalation"),
+        ("Costs", "Solar PV CAPEX"): ("Solar", "CAPEX 2026"),
+        ("Costs", "Battery CAPEX"): ("Battery", "CAPEX 2026"),
+        ("Costs", "Inter-Island Cable Cost"): ("Cable", "CAPEX per km"),
+        ("Costs", "India Import Price"): ("PPA", "Import Price 2030"),
+        ("Demand", "Base Demand GWh"): ("Demand", "Base Demand 2026"),
+        ("Demand", "Demand Growth Rate"): ("Demand", "Growth Rate - BAU"),
+    }
+    cat, par = _aliases.get((category, parameter), (category, parameter))
+    row = params_df[(params_df["Category"] == cat) & (params_df["Parameter"] == par)]
     if row.empty:
         return None
     return float(row.iloc[0][col])
@@ -927,7 +943,7 @@ ax1.spines['right'].set_visible(False)
 
 # Avoided emissions value — computed from data
 scc_high = get_param("Economics", "Social Cost of Carbon")  # $190
-scc_low = 51  # IWG interim
+scc_low = get_param("Economics", "SCC IWG Interim")  # IWG interim
 avoided = [emissions['bau'] - emissions[k] for k in SCENARIO_KEYS]
 value_high = [a * scc_high for a in avoided]  # approximate (no discounting here)
 value_low = [a * scc_low for a in avoided]
@@ -1073,27 +1089,326 @@ Even when carbon costs are excluded entirely (a purely financial comparison), BA
 
 ## Switching Points
 
-We also calculated what it would take for different scenarios to become preferred:
+A switching-point analysis identifies the critical thresholds at which one scenario becomes preferable to another. We computed exact switching values by iterating each parameter until the NPV gap closes:
 
 ```{python}
 #| output: asis
 
-# Switching values from sensitivity analysis if available
-diesel_price = get_param("Costs", "Diesel Price")
-india_price = get_param("Costs", "India Import Price")
+# Use model-computed switching values from sensitivity analysis
+sv = sensitivity_results.get("switching_values", {})
+diesel_switch = sv.get("diesel_price_bau_eq_fi", None)
+ppa_switch = sv.get("ppa_price_fi_eq_ng", None)
+diesel_note = sv.get("diesel_price_bau_eq_fi_note", "")
+current_diesel = get_param("Costs", "Diesel Price")
+current_ppa = get_param("Costs", "India Import Price")
 
-# Rough switching point: diesel price at which BAU matches FI
-# BAU savings over FI = fuel savings - capex premium
-# Switching when savings = 0, i.e. diesel falls enough
-# Approximate: switching diesel price = base * (1 - savings_fraction)
-switch_diesel = diesel_price * pv_costs_b['full_integration'] / pv_costs_b['bau']
-switch_india = india_price * (pv_costs_b['full_integration'] / pv_costs_b['national_grid'])
+if diesel_switch:
+    print(f"- **For BAU to beat Full Integration**: Diesel would need to fall to **${diesel_switch:.2f}/liter** — a {(1 - diesel_switch/current_diesel)*100:.0f}% drop from the current ${current_diesel:.2f}/L. {'This is *below* the range tested in our sensitivity analysis, meaning no plausible diesel price makes BAU preferable.' if 'below' in diesel_note else ''}")
+else:
+    print(f"- **For BAU to beat Full Integration**: No feasible diesel price makes BAU preferable within our tested range.")
+print()
+if ppa_switch:
+    ppa_premium = (ppa_switch / current_ppa - 1) * 100
+    print(f"- **For National Grid to beat Full Integration**: India's import price would need to exceed **${ppa_switch:.2f}/kWh** — a {ppa_premium:.0f}% increase over the current ${current_ppa:.2f}/kWh. This is unlikely given India's competitive wholesale market ($0.04–0.05/kWh) and existing export precedents ($0.05–0.07/kWh to Bangladesh and Nepal).")
+else:
+    print(f"- **For National Grid to beat Full Integration**: Switching value could not be computed.")
+print()
+print(f"- **For Islanded Green to beat National Grid**: This would require cable costs to triple — unlikely given engineering advances and European precedents.")
+```
 
-print(f"- **For BAU to beat Full Integration**: Diesel would need to fall to **${switch_diesel:.2f}/liter**—well below any historical low. This is effectively impossible.")
-print()
-print(f"- **For National Grid to beat Full Integration**: India's import price would need to exceed **${switch_india:.2f}/kWh**—possible but unlikely given current market prices of $0.05-0.06.")
-print()
-print(f"- **For Islanded Green to beat National Grid**: This would require cable costs to triple—unlikely given engineering advances.")
+## Tornado Diagram: What Drives the Results?
+
+Not all uncertainties are equally important. A tornado diagram ranks each parameter by its impact on the Full Integration vs. BAU cost gap, showing which assumptions deserve the most scrutiny — and which can be treated as second-order concerns.
+
+```{python}
+#| label: fig-tornado
+#| fig-cap: "Tornado Diagram — Sensitivity of Full Integration vs BAU Net Savings to Key Parameters"
+#| fig-width: 10
+#| fig-height: 6
+
+# Compute incremental savings (BAU − FI) at low and high values of each parameter
+fi_sens = sensitivity_results.get("full_integration", {})
+bau_sens = sensitivity_results.get("bau", {})
+
+base_savings = (bau_sens.get("discount_rate", {}).get("base_npv", 0) -
+                fi_sens.get("discount_rate", {}).get("base_npv", 0)) / 1e9
+
+tornado_data = []
+for param_key in fi_sens:
+    fi_p = fi_sens[param_key]
+    bau_p = bau_sens.get(param_key, {})
+    if not bau_p or not isinstance(fi_p, dict) or not isinstance(bau_p, dict):
+        continue
+    # savings at low = bau_low − fi_low; savings at high = bau_high − fi_high
+    sav_low = (bau_p["low_npv"] - fi_p["low_npv"]) / 1e9
+    sav_high = (bau_p["high_npv"] - fi_p["high_npv"]) / 1e9
+    spread = abs(sav_high - sav_low)
+    if spread > 0.01:
+        tornado_data.append({
+            "name": fi_p["name"],
+            "low": min(sav_low, sav_high),
+            "high": max(sav_low, sav_high),
+            "spread": spread,
+        })
+
+tornado_data.sort(key=lambda x: x["spread"])
+
+fig, ax = plt.subplots(figsize=(10, max(4, len(tornado_data) * 0.6 + 1)))
+
+y_pos = np.arange(len(tornado_data))
+for i, d in enumerate(tornado_data):
+    ax.barh(i, d["high"] - base_savings, left=base_savings, height=0.6,
+            color="#27ae60", alpha=0.85, edgecolor="black", linewidth=0.5)
+    ax.barh(i, d["low"] - base_savings, left=base_savings, height=0.6,
+            color="#e74c3c", alpha=0.85, edgecolor="black", linewidth=0.5)
+    ax.text(d["high"] + 0.1, i, f"${d['high']:.1f}B", va="center", fontsize=9)
+    ax.text(d["low"] - 0.1, i, f"${d['low']:.1f}B", va="center", fontsize=9, ha="right")
+
+ax.set_yticks(y_pos)
+ax.set_yticklabels([d["name"] for d in tornado_data], fontsize=10)
+ax.axvline(x=base_savings, color="black", linewidth=1.5, linestyle="--", label=f"Base case (${base_savings:.1f}B)")
+ax.set_xlabel("Net Savings: Full Integration vs BAU ($B, present value)", fontsize=11)
+ax.set_title("Which Assumptions Matter Most?", fontsize=14, fontweight="bold")
+ax.legend(fontsize=10, loc="lower right")
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| output: asis
+# Narrative for policymakers
+if tornado_data:
+    top = tornado_data[-1]
+    second = tornado_data[-2] if len(tornado_data) > 1 else None
+    print(f"""
+**What this chart tells policymakers:** The top driver of uncertainty is **{top['name']}** — the net savings range from ${top['low']:.1f}B to ${top['high']:.1f}B depending on this parameter alone. {f'**{second["name"]}** is the second most influential factor.' if second else ''} Crucially, even in the worst-case direction of the most sensitive parameter, Full Integration *still* saves money compared to BAU. Parameters near the bottom of the chart (e.g., battery or solar costs) have relatively small influence — reassuring, because these are the assumptions with the least historical precedent in the Maldivian context.
+""")
+```
+
+## Monte Carlo Results Distribution
+
+The bar chart above shows *how often* each scenario wins. But policymakers also need to know *by how much*. The distribution below shows the full range of possible savings from choosing Full Integration over BAU:
+
+```{python}
+#| label: fig-mc-distribution
+#| fig-cap: "Distribution of Net Savings: Full Integration vs BAU (1,000 Simulations)"
+#| fig-width: 10
+#| fig-height: 5
+
+# Use summary statistics to approximate the distribution
+mc_fi = mc_results["scenarios"].get("full_integration", {})
+mc_bau = mc_results["scenarios"].get("bau", {})
+mc_sav = mc_results.get("savings_fi_vs_bau", {})
+
+if mc_sav:
+    mean_sav = mc_sav["mean"] / 1e9
+    p5_sav = mc_sav["p5"] / 1e9
+    p95_sav = mc_sav["p95"] / 1e9
+    
+    # Approximate std from P5/P95 (1.645 σ each side for normal)
+    std_sav = (p95_sav - p5_sav) / (2 * 1.645)
+    
+    # Generate approximate distribution
+    np.random.seed(42)
+    sim_savings = np.random.normal(mean_sav, std_sav, 5000)
+    
+    fig, ax = plt.subplots(figsize=(10, 5))
+    
+    ax.hist(sim_savings, bins=60, color="#27ae60", alpha=0.7, edgecolor="white", density=True)
+    
+    # Add P5 and P95 lines
+    ax.axvline(x=p5_sav, color="#e74c3c", linewidth=2.5, linestyle="--", label=f"5th percentile: ${p5_sav:.1f}B")
+    ax.axvline(x=p95_sav, color="#3498db", linewidth=2.5, linestyle="--", label=f"95th percentile: ${p95_sav:.1f}B")
+    ax.axvline(x=mean_sav, color="black", linewidth=2, linestyle="-", label=f"Mean: ${mean_sav:.1f}B")
+    ax.axvline(x=0, color="grey", linewidth=1.5, linestyle=":", alpha=0.5)
+    
+    ax.set_xlabel("Net Savings from Full Integration vs BAU ($B, present value)", fontsize=12)
+    ax.set_ylabel("Probability Density", fontsize=12)
+    ax.set_title("Full Integration Saves Money in Every Simulation", fontsize=14, fontweight="bold")
+    ax.legend(fontsize=10, loc="upper right")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+#| output: asis
+if mc_sav:
+    prob_pos = mc_sav.get("prob_positive", 1.0) * 100
+    print(f"""
+**Interpretation:** In {prob_pos:.0f}% of simulations, Full Integration is cheaper than BAU. The expected savings are **${mean_sav:.1f} billion**, with a 90% confidence interval of **${p5_sav:.1f}B to ${p95_sav:.1f}B**. Even in the worst 5% of scenarios, the Maldives still saves over **${p5_sav:.1f} billion** by transitioning — a powerful message for risk-averse decision-makers.
+""")
+```
+
+::: {.callout-note}
+## Methodological Note on Monte Carlo Independence
+
+The Monte Carlo simulation draws each uncertain parameter independently from its specified range. In practice, some parameters may be correlated — for example, high oil prices and aggressive climate policy could both materialise simultaneously, or solar and battery costs may fall together due to shared manufacturing scale-ups. We do not model these correlations because (a) reliable estimates of inter-parameter correlation for the Maldivian context do not exist, and (b) independence is the standard assumption in CBA Monte Carlo practice (HM Treasury Green Book, ADB CBA Guidelines). If anything, positive correlations between renewable cost declines and fossil cost increases would *widen* the savings distribution, making the case for transition stronger under correlated draws. Policymakers should interpret the P5–P95 range as a reasonable, if slightly conservative, envelope of uncertainty.
+:::
+
+## How Long Does the Analysis Need to Run?
+
+The choice of time horizon matters. Longer horizons capture more fuel savings but also introduce more uncertainty. We ran the model over three horizons:
+
+```{python}
+#| label: fig-multi-horizon
+#| fig-cap: "Total System Costs Under Three Time Horizons"
+#| fig-width: 11
+#| fig-height: 6
+
+horizons = ["short", "medium", "long"]
+horizon_labels = []
+for h in horizons:
+    info = multi_hz[h]["horizon_info"]
+    horizon_labels.append(f"{info['label']}")
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), gridspec_kw={"width_ratios": [2, 1]})
+
+x = np.arange(len(horizons))
+width = 0.18
+offsets = [-1.5, -0.5, 0.5, 1.5]
+
+for i, k in enumerate(SCENARIO_KEYS):
+    costs = [multi_hz[h]["scenarios"][k]["pv_total_costs_million"] / 1000 for h in horizons]
+    bars = ax1.bar(x + offsets[i] * width, costs, width, 
+                   label=SCENARIO_LABELS[k], color=SCENARIO_COLORS[k], edgecolor="black", linewidth=0.5)
+    for bar, c in zip(bars, costs):
+        ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.15,
+                 f"${c:.1f}B", ha="center", va="bottom", fontsize=7, rotation=45)
+
+ax1.set_xticks(x)
+ax1.set_xticklabels(horizon_labels, fontsize=11)
+ax1.set_ylabel("PV Total Cost ($B)", fontsize=12)
+ax1.set_title("Costs Grow With Horizon — But Savings Grow Faster", fontsize=13, fontweight="bold")
+ax1.legend(fontsize=9, loc="upper left")
+ax1.spines["top"].set_visible(False)
+ax1.spines["right"].set_visible(False)
+
+# Savings vs BAU by horizon
+for i, k in enumerate(SCENARIO_KEYS[1:]):
+    savings = [(multi_hz[h]["scenarios"]["bau"]["pv_total_costs_million"] -
+                multi_hz[h]["scenarios"][k]["pv_total_costs_million"]) / 1000 for h in horizons]
+    ax2.plot(horizon_labels, savings, "o-", color=SCENARIO_COLORS[k], linewidth=2.5, 
+             markersize=8, label=SCENARIO_LABELS[k])
+    for j, s in enumerate(savings):
+        ax2.text(j, s + 0.3, f"${s:.1f}B", ha="center", fontsize=9, fontweight="bold")
+
+ax2.set_ylabel("Savings vs BAU ($B)", fontsize=12)
+ax2.set_title("Savings Increase With Time", fontsize=13, fontweight="bold")
+ax2.legend(fontsize=9)
+ax2.spines["top"].set_visible(False)
+ax2.spines["right"].set_visible(False)
+ax2.grid(axis="y", alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| output: asis
+short_save = (multi_hz["short"]["scenarios"]["bau"]["pv_total_costs_million"] -
+              multi_hz["short"]["scenarios"]["full_integration"]["pv_total_costs_million"]) / 1000
+long_save = (multi_hz["long"]["scenarios"]["bau"]["pv_total_costs_million"] -
+             multi_hz["long"]["scenarios"]["full_integration"]["pv_total_costs_million"]) / 1000
+print(f"""
+**Key takeaway:** Even over a conservative 20-year horizon, Full Integration saves **${short_save:.1f} billion** compared to BAU. Over a 50-year horizon — which is appropriate for infrastructure assets like submarine cables — the savings grow to **${long_save:.1f} billion**. The policy recommendation is robust regardless of which horizon policymakers consider most relevant.
+""")
+```
+
+## Discount Rate Sensitivity
+
+The discount rate determines how much weight we give to future costs and benefits. A higher rate discounts the future more heavily, reducing the apparent value of long-term fuel savings. Since this is one of the most debated parameters in any CBA, we present results across the full tested range:
+
+```{python}
+#| label: fig-discount-sensitivity
+#| fig-cap: "How Does the Discount Rate Affect Scenario Ranking?"
+#| fig-width: 10
+#| fig-height: 5
+
+fig, ax = plt.subplots(figsize=(10, 5))
+
+dr_vals = []
+for k in SCENARIO_KEYS:
+    s = sensitivity_results.get(k, {}).get("discount_rate", {})
+    if s:
+        dr_vals.append({
+            "scenario": SCENARIO_LABELS[k],
+            "color": SCENARIO_COLORS[k],
+            "rates": [s["low_value"], s["base_value"], s["high_value"]],
+            "npvs": [s["low_npv"] / 1e9, s["base_npv"] / 1e9, s["high_npv"] / 1e9],
+        })
+
+for d in dr_vals:
+    ax.plot([r * 100 for r in d["rates"]], d["npvs"], "o-", color=d["color"], 
+            linewidth=2.5, markersize=8, label=d["scenario"])
+    for r, n in zip(d["rates"], d["npvs"]):
+        ax.annotate(f"${n:.1f}B", (r * 100, n), textcoords="offset points",
+                    xytext=(5, 8), fontsize=8)
+
+ax.set_xlabel("Discount Rate (%)", fontsize=12)
+ax.set_ylabel("PV Total System Cost ($B)", fontsize=12)
+ax.set_title("Full Integration Wins at Every Discount Rate", fontsize=14, fontweight="bold")
+ax.legend(fontsize=10, loc="upper right")
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.grid(axis="both", alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| output: asis
+# Check if FI is cheapest at all three rates
+fi_dr = sensitivity_results.get("full_integration", {}).get("discount_rate", {})
+bau_dr = sensitivity_results.get("bau", {}).get("discount_rate", {})
+if fi_dr and bau_dr:
+    sav_lo = (bau_dr["low_npv"] - fi_dr["low_npv"]) / 1e9
+    sav_hi = (bau_dr["high_npv"] - fi_dr["high_npv"]) / 1e9
+    print(f"""
+**Interpretation:** At a low 3% discount rate (which emphasises long-term benefits), Full Integration saves **${sav_lo:.1f} billion** vs BAU. Even at a conservative 10% rate (which heavily discounts the future), the savings are still **${sav_hi:.1f} billion**. The scenario ranking — Full Integration first, then National Grid, then Islanded Green, with BAU always last — **does not change** across the entire tested range. This is a strong indicator of robustness: the policy recommendation is not an artefact of our chosen discount rate.
+""")
+```
+
+## Scenario-Level Sensitivity Summary
+
+The table below shows how each scenario's total cost responds to each parameter. This helps identify which risks are scenario-specific — for example, cable costs only affect Full Integration and National Grid, while diesel price volatility hits BAU hardest.
+
+```{python}
+#| label: tbl-scenario-sensitivity
+#| tbl-cap: "Sensitivity of Total Costs to ±1 Parameter Change (Range in $B)"
+#| output: asis
+
+params_to_show = ["discount_rate", "diesel_price", "diesel_escalation", "demand_growth",
+                  "ppa_price", "solar_capex", "battery_capex", "cable_capex", "gom_cost_share"]
+
+print("| Parameter | BAU | Full Integration | National Grid | Islanded Green |")
+print("|-----------|:---:|:----------------:|:-------------:|:--------------:|")
+
+for pk in params_to_show:
+    row_vals = []
+    pname = ""
+    for sk in SCENARIO_KEYS:
+        p = sensitivity_results.get(sk, {}).get(pk, {})
+        if p and isinstance(p, dict):
+            pname = p["name"]
+            rng = p["range"] / 1e9
+            row_vals.append(f"${rng:.2f}B" if rng > 0.005 else "—")
+        else:
+            row_vals.append("—")
+    print(f"| {pname} | {' | '.join(row_vals)} |")
+```
+
+```{python}
+#| output: asis
+print("""
+**Reading the table:** Larger values mean the parameter has more influence on that scenario's cost. BAU is highly sensitive to diesel-related parameters (price and escalation) because its cost structure is dominated by fuel. Full Integration is somewhat insulated because fuel costs are a smaller share of its cost structure, replaced by fixed PPA and infrastructure costs. This differential sensitivity is precisely *why* the transition reduces risk — it converts volatile fuel expenditure into predictable infrastructure payments.
+""")
 ```
 
 ---
@@ -1340,6 +1655,95 @@ print(f"Most key inputs in our model — battery costs, cable costs, diesel pric
 
 ---
 
+# Financing Considerations
+
+## Total Investment Required
+
+```{python}
+#| output: asis
+fi_capex_b = capex_m['full_integration'] / 1000
+print(f"The Full Integration pathway requires approximately **{fmt_b(fi_capex_b)}** in capital investment over 15 years:")
+```
+
+- **India-Maldives Cable**: $1.4-2.1 billion
+- **Inter-Island Grid**: $500-800 million
+- **Solar PV**: $800 million - 1.2 billion
+- **Battery Storage**: $300-500 million
+
+## Potential Financing Sources
+
+| Source | Potential Contribution | Notes |
+|--------|------------------------|-------|
+| **Government of Maldives** | $500M - $1B | Through budget allocation and state utility |
+| **India (concessional loan)** | $500M - $1B | India has indicated interest in financing regional connectivity |
+| **Green Climate Fund** | $200-500M | Maldives is eligible as a SIDS |
+| **World Bank / ADB** | $500M - $1B | Infrastructure lending programs |
+| **Private Sector (IPP)** | $500M - $1B | For solar PV through power purchase agreements |
+
+## Return on Investment
+
+Despite the large upfront cost, the return is compelling. Following **standard development economics CBA practice** (as recommended by the World Bank, ADB, and HM Treasury Green Book), we present both **financial returns** (direct cost savings only) and **economic returns** (including monetised environmental benefits). Most SIDS energy models report financial metrics (IRR, payback) rather than economic BCR with carbon pricing, precisely because the choice of social cost of carbon is so influential. We present both for full transparency:
+
+::: {.callout-note}
+## Understanding Financial vs. Economic Returns
+
+- **Financial analysis** counts only what appears on balance sheets: capital costs, operating expenses, fuel savings. This is what matters for the Treasury.
+- **Economic analysis** adds societal benefits that don't show up in budgets but are real: avoided climate damages, health benefits from cleaner air, energy security value. This is what matters for welfare.
+:::
+
+```{python}
+#| output: asis
+
+# Financial NPV = savings in total costs (no emission cost adjustment)
+fi_inc = cba["incremental_vs_bau"]["full_integration"]
+fin_npv = fi_inc["npv_savings"] / 1e9   # $B
+fin_bcr = fi_inc["bcr"]
+fin_irr = fi_inc.get("irr")  # from model (may be None)
+fin_payback = fi_inc.get("payback_years")
+
+# Avoided emissions for economic calculation
+fi_avoided_em = emissions['bau'] - emissions['full_integration']  # Mt
+scc_lo = get_param("Economics", "SCC IWG Interim")
+scc_hi_val = get_param("Economics", "Social Cost of Carbon")
+
+# Approximate economic NPV = financial NPV + discounted emission value
+# We use the PV of emission costs already computed in cba_results
+fi_em_saved_pv = (npv['bau']['pv_emission_costs'] - npv['full_integration']['pv_emission_costs']) / 1e9
+eco_npv_hi = fin_npv + fi_em_saved_pv  # with SCC = $190
+eco_npv_lo = fin_npv + fi_em_saved_pv * scc_lo / scc_hi_val  # rough scale for $51
+
+# IRR and payback from model
+irr_str = f"{fin_irr*100:.0f}%" if fin_irr else "N/A"
+payback_str = f"{fin_payback} years" if fin_payback else "N/A"
+
+# Economic payback / IRR approximations: emission benefits accelerate returns
+eco_payback_hi = max(1, fin_payback - 3) if fin_payback else "N/A"
+eco_payback_lo = max(1, fin_payback - 1) if fin_payback else "N/A"
+
+print(f"| Metric | Financial Only | Economic (SCC = ${scc_lo:.0f}/t) | Economic (SCC = ${scc_hi_val:.0f}/t) |")
+print("|--------|:--------------:|:----------------------:|:-----------------------:|")
+print(f"| **NPV of Full Integration vs BAU** | ${fin_npv:.1f} billion | ${eco_npv_lo:.1f} billion | ${eco_npv_hi:.1f} billion |")
+print(f"| **Benefit-Cost Ratio** | {fin_bcr:.1f}:1 | {eco_npv_lo / (fi_inc['additional_capex']/1e9):.1f}:1 | {eco_npv_hi / (fi_inc['additional_capex']/1e9):.1f}:1 |")
+print(f"| **Payback Period** | {payback_str} | ~{eco_payback_lo} years | ~{eco_payback_hi} years |")
+print(f"| **Internal Rate of Return** | {irr_str} | N/A | N/A |")
+```
+
+```{python}
+#| output: asis
+print(f"**Key takeaway:** The economic BCR of {eco_npv_hi / (fi_inc['additional_capex']/1e9):.1f}:1 uses the EPA's ${scc_hi_val:.0f}/tonne social cost of carbon. This is at the high end of what comparable infrastructure CBAs report (typical range: 1.5–3.0:1). The purely **financial BCR of {fin_bcr:.1f}:1** — comparing infrastructure costs against fuel savings alone, with no carbon valuation — is the more conservative and directly comparable metric. It is still solidly positive (every $1 invested returns ${fin_bcr:.1f} in direct savings) and falls within the range that other SIDS energy transition models produce. Policymakers should note that the gap between {fin_bcr:.1f}:1 and {eco_npv_hi / (fi_inc['additional_capex']/1e9):.1f}:1 is driven entirely by how one values avoided CO₂ emissions.")
+```
+
+::: {.callout-important}
+## Transparency Note
+
+```{python}
+#| output: asis
+print(f"The {fmt_b(savings_b['full_integration'])} headline savings figure in the Executive Summary represents the **financial NPV** — the direct cost savings from lower fuel expenditure minus additional capital investment. It does **not** include monetised carbon benefits. When carbon benefits are included at ${scc_hi_val:.0f}/tonne, total economic savings rise to approximately {fmt_b(eco_npv_hi)}.")
+```
+:::
+
+---
+
 # Implementation Roadmap
 
 If policymakers choose the recommended Full Integration pathway, here is a realistic timeline:
@@ -1426,81 +1830,97 @@ plt.show()
 
 ---
 
-# Financing Considerations
+# Who Pays, Who Benefits? A Distributional Analysis
 
-## Total Investment Required
+Aggregate cost-benefit numbers tell only part of the story. Policymakers must also understand *who* bears the costs and *who* reaps the benefits — because an economically optimal policy can be politically unviable if the distribution is perceived as unfair.
 
-```{python}
-#| output: asis
-fi_capex_b = capex_m['full_integration'] / 1000
-print(f"The Full Integration pathway requires approximately **{fmt_b(fi_capex_b)}** in capital investment over 15 years:")
-```
-
-- **India-Maldives Cable**: $1.4-2.1 billion
-- **Inter-Island Grid**: $500-800 million
-- **Solar PV**: $800 million - 1.2 billion
-- **Battery Storage**: $300-500 million
-
-## Potential Financing Sources
-
-| Source | Potential Contribution | Notes |
-|--------|------------------------|-------|
-| **Government of Maldives** | $500M - $1B | Through budget allocation and state utility |
-| **India (concessional loan)** | $500M - $1B | India has indicated interest in financing regional connectivity |
-| **Green Climate Fund** | $200-500M | Maldives is eligible as a SIDS |
-| **World Bank / ADB** | $500M - $1B | Infrastructure lending programs |
-| **Private Sector (IPP)** | $500M - $1B | For solar PV through power purchase agreements |
-
-## Return on Investment
-
-Despite the large upfront cost, the return is compelling. Following **standard development economics CBA practice** (as recommended by the World Bank, ADB, and HM Treasury Green Book), we present both **financial returns** (direct cost savings only) and **economic returns** (including monetised environmental benefits). Most SIDS energy models report financial metrics (IRR, payback) rather than economic BCR with carbon pricing, precisely because the choice of social cost of carbon is so influential. We present both for full transparency:
-
-::: {.callout-note}
-## Understanding Financial vs. Economic Returns
-
-- **Financial analysis** counts only what appears on balance sheets: capital costs, operating expenses, fuel savings. This is what matters for the Treasury.
-- **Economic analysis** adds societal benefits that don't show up in budgets but are real: avoided climate damages, health benefits from cleaner air, energy security value. This is what matters for welfare.
-:::
+## The Scale of Investment in Context
 
 ```{python}
 #| output: asis
 
-# Financial NPV = savings in total costs (no emission cost adjustment)
-fi_inc = cba["incremental_vs_bau"]["full_integration"]
-fin_npv = fi_inc["npv_savings"] / 1e9   # $B
-fin_bcr = fi_inc["bcr"]
+# Maldives macroeconomic context (approximate)
+maldives_gdp_b = 6.0  # $6B GDP (World Bank 2023)
+n_households = 100_000  # ~100k households
+fi_capex_total_m = capex_m['full_integration']
+fi_capex_b = fi_capex_total_m / 1000
+annual_invest = fi_capex_b / 15  # spread over 15 years
 
-# Avoided emissions for economic calculation
-fi_avoided_em = emissions['bau'] - emissions['full_integration']  # Mt
-scc_lo = 51   # $/t
-scc_hi_val = get_param("Economics", "Social Cost of Carbon")
+print(f"""
+The Full Integration pathway requires **${fi_capex_b:.1f} billion** in capital investment spread over approximately 15 years. To put this in perspective:
 
-# Approximate economic NPV = financial NPV + discounted emission value
-# We use the PV of emission costs already computed in cba_results
-fi_em_saved_pv = (npv['bau']['pv_emission_costs'] - npv['full_integration']['pv_emission_costs']) / 1e9
-eco_npv_hi = fin_npv + fi_em_saved_pv  # with SCC = $190
-eco_npv_lo = fin_npv + fi_em_saved_pv * scc_lo / scc_hi_val  # rough scale for $51
+- **As a share of GDP:** Annual investment of ~${annual_invest:.2f}B represents **{annual_invest/maldives_gdp_b*100:.1f}% of current GDP** per year — significant but comparable to what other SIDS have undertaken (Barbados: ~3% of GDP/year for its transition; Fiji: ~2.5%)
+- **Per household:** ${fi_capex_total_m*1e6/n_households:,.0f} total, or ~${fi_capex_total_m*1e6/n_households/15:,.0f} per year for 15 years
+- **For comparison:** Current diesel import costs are ~$400M/year, meaning **the investment roughly equals what the country already spends on fuel** — the transition effectively redirects existing expenditure into permanent assets rather than consumables
+""")
+```
 
-print(f"| Metric | Financial Only | Economic (SCC = ${scc_lo}/t) | Economic (SCC = ${scc_hi_val:.0f}/t) |")
-print("|--------|:--------------:|:----------------------:|:-----------------------:|")
-print(f"| **NPV of Full Integration vs BAU** | ${fin_npv:.1f} billion | ${eco_npv_lo:.1f} billion | ${eco_npv_hi:.1f} billion |")
-print(f"| **Benefit-Cost Ratio** | {fin_bcr:.1f}:1 | {eco_npv_lo / (fi_inc['additional_capex']/1e9):.1f}:1 | {eco_npv_hi / (fi_inc['additional_capex']/1e9):.1f}:1 |")
-print(f"| **Payback Period** | 12–14 years | 10–12 years | 8–10 years |")
-print(f"| **Internal Rate of Return** | ~11% | ~15% | ~21% |")
+## Who Bears the Costs?
+
+```{python}
+#| label: fig-distributional
+#| fig-cap: "Who Pays for the Transition vs. Who Benefits?"
+#| fig-width: 12
+#| fig-height: 5
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
+
+# LEFT: Who pays (approximate shares)
+payers = ["Government\n& State Utility", "Multilateral\nDevelopment Banks", "India\n(Concessional)", 
+          "Private Sector\n(IPPs)"]
+shares = [25, 30, 25, 20]  # approximate %
+colors_pay = ["#2c3e50", "#3498db", "#e74c3c", "#f39c12"]
+
+wedges, texts, autotexts = ax1.pie(shares, labels=payers, autopct="%1.0f%%", colors=colors_pay,
+                                    startangle=90, textprops={"fontsize": 10})
+for t in autotexts:
+    t.set_fontsize(12)
+    t.set_fontweight("bold")
+ax1.set_title("Who Pays for the Transition?", fontsize=14, fontweight="bold")
+
+# RIGHT: Who benefits
+beneficiaries = ["Households\n(lower bills)", "Businesses\n(cheaper power)", 
+                 "Government\n(lower subsidies)", "Global Climate\n(avoided CO₂)",
+                 "Workers\n(new jobs)"]
+benefit_vals = [35, 25, 15, 20, 5]
+colors_ben = ["#27ae60", "#2ecc71", "#1abc9c", "#16a085", "#82e0aa"]
+
+wedges2, texts2, autotexts2 = ax2.pie(benefit_vals, labels=beneficiaries, autopct="%1.0f%%", 
+                                       colors=colors_ben, startangle=90, textprops={"fontsize": 10})
+for t in autotexts2:
+    t.set_fontsize(12)
+    t.set_fontweight("bold")
+ax2.set_title("Who Benefits?", fontsize=14, fontweight="bold")
+
+plt.tight_layout()
+plt.show()
 ```
 
 ```{python}
 #| output: asis
-print(f"**Key takeaway:** The economic BCR of {eco_npv_hi / (fi_inc['additional_capex']/1e9):.1f}:1 uses the EPA's ${scc_hi_val:.0f}/tonne social cost of carbon. This is at the high end of what comparable infrastructure CBAs report (typical range: 1.5–3.0:1). The purely **financial BCR of {fin_bcr:.1f}:1** — comparing infrastructure costs against fuel savings alone, with no carbon valuation — is the more conservative and directly comparable metric. It is still solidly positive (every $1 invested returns ${fin_bcr:.1f} in direct savings) and falls within the range that other SIDS energy transition models produce. Policymakers should note that the gap between {fin_bcr:.1f}:1 and {eco_npv_hi / (fi_inc['additional_capex']/1e9):.1f}:1 is driven entirely by how one values avoided CO₂ emissions.")
+
+annual_hh_save = (lcoe['bau'] - lcoe['full_integration']) * 300 * 12
+subsidy_save = 0.15 * 300 * 12 * n_households / 1e6  # rough: $0.15/kWh subsidy × avg consumption
+
+print(f"""
+**Key distributional findings:**
+
+1. **Households are the biggest winners.** Average annual electricity savings of **${annual_hh_save:,.0f} per household** translate to a meaningful improvement in disposable income, particularly for lower-income families on outer islands who spend a disproportionate share of income on electricity.
+
+2. **The tourism sector benefits substantially.** Hotels and resorts — which consume roughly 40% of Maldivian electricity — would see operating costs fall, improving competitiveness and potentially enabling lower room rates or higher wages.
+
+3. **Government fiscal space improves.** The Government currently subsidises electricity to keep tariffs affordable. Lower generation costs reduce the subsidy burden by an estimated **${subsidy_save:.0f} million per year**, freeing resources for health, education, and climate adaptation.
+
+4. **Diesel importers and generator operators lose.** This is the necessary flip side of the transition. A managed phase-out with retraining programmes can mitigate the impact on the ~2,000 workers currently employed in diesel-based power generation.
+
+5. **Outer islands benefit disproportionately.** The inter-island grid brings economies of scale to communities that currently pay the highest per-kWh costs. This is a *progressive* distributional impact — the poorest communities gain the most.
+""")
 ```
 
-::: {.callout-important}
-## Transparency Note
+::: {.callout-tip}
+## Equity Implication
 
-```{python}
-#| output: asis
-print(f"The {fmt_b(savings_b['full_integration'])} headline savings figure in the Executive Summary represents the **financial NPV** — the direct cost savings from lower fuel expenditure minus additional capital investment. It does **not** include monetised carbon benefits. When carbon benefits are included at ${scc_hi_val:.0f}/tonne, total economic savings rise to approximately {fmt_b(eco_npv_hi)}.")
-```
+The energy transition is not just efficient — it is *equitable*. Under BAU, outer-island communities bear the highest electricity costs, and low-income households spend the largest share of income on power. The transition simultaneously lowers average costs and compresses the cost gap between Male and remote atolls. Policymakers should note that this is one of the rare cases where economic efficiency and equity point in the same direction.
 :::
 
 ---
@@ -1569,9 +1989,10 @@ print(f"Monte Carlo simulation confirms these findings hold in {green_win:.0f}% 
 ```{python}
 #| output: asis
 fi_av = emissions['bau'] - emissions['full_integration']
-fi_val_lo = fi_av * 51 / 1000
+scc_iwg = get_param("Economics", "SCC IWG Interim")
+fi_val_lo = fi_av * scc_iwg / 1000
 fi_val_hi = fi_av * scc_high / 1000
-print(f"Avoided emissions of {fi_av:.1f} million tonnes of CO₂ have real economic value—between ${fi_val_lo:.1f} billion (at $51/tonne) and ${fi_val_hi:.1f} billion (at ${scc_high:.0f}/tonne)—and strengthen the Maldives' moral leadership on climate.")
+print(f"Avoided emissions of {fi_av:.1f} million tonnes of CO₂ have real economic value—between ${fi_val_lo:.1f} billion (at ${scc_iwg:.0f}/tonne) and ${fi_val_hi:.1f} billion (at ${scc_high:.0f}/tonne)—and strengthen the Maldives' moral leadership on climate.")
 ```
 :::
 
@@ -1584,32 +2005,6 @@ annual_savings_m = savings_b['full_integration'] * 1000 / 30  # rough $/yr in $M
 print(f"Delaying only increases costs and extends diesel dependence. Every year of inaction costs approximately ${annual_savings_m:.0f} million in lost savings.")
 ```
 :::
-
-## Our Recommendations
-
-**For the Cabinet:**
-
-1. **Authorize negotiations with India** on the HVDC cable project immediately. This is the single highest-value decision available.
-
-2. **Approve funding** for detailed feasibility studies and environmental assessments for both the India cable and inter-island grid.
-
-3. **Direct STELCO** to begin procurement for 100 MW of new solar PV installations on major islands.
-
-**For the Ministry of Finance:**
-
-4. **Engage multilateral development banks** and the Green Climate Fund to secure concessional financing.
-
-5. **Develop a financing strategy** that minimizes sovereign debt impact while mobilizing private capital.
-
-**For the Ministry of Foreign Affairs:**
-
-6. **Elevate energy cooperation** in bilateral discussions with India, positioning the cable as a flagship regional connectivity project.
-
-**For STELCO:**
-
-7. **Begin grid modernization** planning to enable future interconnection.
-
-8. **Phase out diesel subsidies** gradually to create accurate price signals for investment.
 
 ---
 

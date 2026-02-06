@@ -84,6 +84,7 @@ RE Targets,2076,0.80,,,%,Model assumption,50-year horizon target
 # ECONOMICS,,,,,,
 Economics,Discount Rate,0.06,0.03,0.10,%,ADB standard for SIDS,6% real social discount rate
 Economics,Social Cost of Carbon,190,0,300,USD/tCO2,US EPA Report on SCC 2023; Rennert et al. 2022 Nature,Low=$0 (financial only); High=$300 (Stern Review range)
+Economics,SCC IWG Interim,51,,,USD/tCO2,US Interagency Working Group 2021,IWG interim value at 3% discount rate
 Economics,SCC Annual Growth,0.02,,,%/year,EPA 2023,2% real annual increase in SCC
 Economics,Value of Lost Load,5,,,USD/kWh,Island system standard,Tourism-dependent economy reliability value
 ,,,,,,
