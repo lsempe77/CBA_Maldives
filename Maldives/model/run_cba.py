@@ -256,26 +256,55 @@ def save_results(scenario_data: dict, cba_results: dict, output_dir: str, config
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
-    # Save scenario summaries as JSON
+    # Save scenario summaries as JSON (all 4 scenarios)
     summaries = {k: v["summary"] for k, v in scenario_data.items()}
     
     with open(output_path / "scenario_summaries.json", "w") as f:
         json.dump(summaries, f, indent=2)
     
-    # Save CBA results
+    # Save CBA results (all 4 scenarios)
     cba_output = {
         "discount_rate": config.economics.discount_rate,
+        "base_year": config.base_year,
+        "end_year": config.end_year,
         "npv_results": {},
+        "incremental_vs_bau": {},
     }
+    
+    bau_npv = cba_results["bau"]["npv_result"] if "bau" in cba_results else None
     
     for name, data in cba_results.items():
         npv = data["npv_result"]
         cba_output["npv_results"][name] = {
             "pv_total_costs": npv.pv_total_costs,
             "pv_capex": npv.pv_capex,
+            "pv_opex": npv.pv_opex,
             "pv_fuel": npv.pv_fuel,
+            "pv_ppa": npv.pv_ppa,
+            "pv_emission_costs": npv.pv_emission_costs,
             "lcoe": npv.lcoe_usd_per_kwh,
         }
+        
+        # Incremental analysis vs BAU for non-BAU scenarios
+        if name != "bau" and bau_npv is not None:
+            savings = bau_npv.pv_total_costs - npv.pv_total_costs
+            add_capex = npv.pv_capex - bau_npv.pv_capex
+            fuel_savings = bau_npv.pv_fuel - npv.pv_fuel
+            bcr = fuel_savings / max(1, add_capex) if add_capex > 0 else None
+            cba_output["incremental_vs_bau"][name] = {
+                "npv_savings": savings,
+                "additional_capex": add_capex,
+                "fuel_savings": fuel_savings,
+                "bcr": bcr,
+            }
+    
+    # Add recommendation
+    npv_costs = {name: data["npv_result"].pv_total_costs for name, data in cba_results.items()}
+    least_cost = min(npv_costs, key=npv_costs.get)
+    cba_output["recommendation"] = {
+        "least_cost": least_cost,
+        "least_cost_label": least_cost.replace("_", " ").title(),
+    }
     
     with open(output_path / "cba_results.json", "w") as f:
         json.dump(cba_output, f, indent=2)

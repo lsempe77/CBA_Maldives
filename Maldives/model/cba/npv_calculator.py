@@ -84,15 +84,23 @@ class IncrementalResult:
 class CBAComparison:
     """
     Complete CBA comparison of all scenarios.
+    
+    Attribute naming uses *logical* scenario names:
+      - bau              (file: status_quo.py)
+      - full_integration (file: one_grid.py)
+      - national_grid    (file: green_transition.py)
+      - islanded_green   (file: islanded_green.py)
     """
-    status_quo: NPVResult
-    green_transition: NPVResult
-    one_grid: NPVResult
+    bau: NPVResult
+    full_integration: NPVResult
+    national_grid: NPVResult
+    islanded_green: NPVResult
     
     # Incremental analyses
-    green_vs_status_quo: IncrementalResult
-    one_grid_vs_status_quo: IncrementalResult
-    one_grid_vs_green: IncrementalResult
+    fi_vs_bau: IncrementalResult
+    ng_vs_bau: IncrementalResult
+    fi_vs_ng: IncrementalResult
+    ig_vs_bau: IncrementalResult
     
     # Least cost scenario
     least_cost_scenario: str = ""
@@ -342,14 +350,16 @@ class CBACalculator:
         status_quo_results: ScenarioResults,
         green_results: ScenarioResults,
         one_grid_results: ScenarioResults,
+        islanded_green_results: ScenarioResults = None,
     ) -> CBAComparison:
         """
-        Perform complete CBA comparison of all three scenarios.
+        Perform complete CBA comparison of all four scenarios.
         """
         # Calculate NPVs
         sq_npv = self.calculate_npv(status_quo_results)
         gt_npv = self.calculate_npv(green_results)
         og_npv = self.calculate_npv(one_grid_results)
+        ig_npv = self.calculate_npv(islanded_green_results) if islanded_green_results else None
         
         # Incremental analyses
         green_vs_sq = self.calculate_incremental(
@@ -361,30 +371,47 @@ class CBACalculator:
         og_vs_green = self.calculate_incremental(
             green_results, one_grid_results, gt_npv, og_npv
         )
+        ig_vs_sq = (
+            self.calculate_incremental(
+                status_quo_results, islanded_green_results, sq_npv, ig_npv
+            )
+            if islanded_green_results
+            else IncrementalResult(base_scenario="", alternative_scenario="")
+        )
         
         # Find least cost scenario
         costs = {
             "Status Quo": sq_npv.pv_total_costs,
-            "Green Transition": gt_npv.pv_total_costs,
-            "One Grid": og_npv.pv_total_costs,
+            "Full Integration": og_npv.pv_total_costs,
+            "National Grid": gt_npv.pv_total_costs,
         }
+        if ig_npv:
+            costs["Islanded Green"] = ig_npv.pv_total_costs
         least_cost_scenario = min(costs, key=costs.get)
         
         # Find recommended scenario (considering emissions)
         total_costs_with_emissions = {
             "Status Quo": sq_npv.pv_total_costs + sq_npv.pv_emission_costs,
-            "Green Transition": gt_npv.pv_total_costs + gt_npv.pv_emission_costs,
-            "One Grid": og_npv.pv_total_costs + og_npv.pv_emission_costs,
+            "Full Integration": og_npv.pv_total_costs + og_npv.pv_emission_costs,
+            "National Grid": gt_npv.pv_total_costs + gt_npv.pv_emission_costs,
         }
+        if ig_npv:
+            total_costs_with_emissions["Islanded Green"] = ig_npv.pv_total_costs + ig_npv.pv_emission_costs
         recommended = min(total_costs_with_emissions, key=total_costs_with_emissions.get)
         
+        # Use a dummy NPVResult for islanded_green if not provided
+        if ig_npv is None:
+            ig_npv = NPVResult(scenario_name="Islanded Green")
+        
         return CBAComparison(
-            status_quo=sq_npv,
-            green_transition=gt_npv,
-            one_grid=og_npv,
-            green_vs_status_quo=green_vs_sq,
-            one_grid_vs_status_quo=og_vs_sq,
-            one_grid_vs_green=og_vs_green,
+            bau=sq_npv,
+            full_integration=og_npv,
+            national_grid=gt_npv,
+            islanded_green=ig_npv,
+            fi_vs_bau=og_vs_sq,
+            ng_vs_bau=green_vs_sq,
+            fi_vs_ng=og_vs_green,
+            ig_vs_bau=ig_vs_sq,
             least_cost_scenario=least_cost_scenario,
             least_cost_npv=costs[least_cost_scenario],
             recommended_scenario=recommended,
@@ -403,6 +430,7 @@ if __name__ == "__main__":
     from ..scenarios.status_quo import StatusQuoScenario
     from ..scenarios.green_transition import GreenTransitionScenario
     from ..scenarios.one_grid import OneGridScenario
+    from ..scenarios.islanded_green import IslandedGreenScenario
     
     config = get_config()
     
@@ -411,26 +439,28 @@ if __name__ == "__main__":
     sq = StatusQuoScenario(config)
     gt = GreenTransitionScenario(config)
     og = OneGridScenario(config)
+    ig = IslandedGreenScenario(config)
     
     sq_results = sq.run()
     gt_results = gt.run()
     og_results = og.run()
+    ig_results = ig.run()
     
     # Calculate CBA
     print("Calculating CBA...")
     calculator = CBACalculator(config)
-    comparison = calculator.compare_all_scenarios(sq_results, gt_results, og_results)
+    comparison = calculator.compare_all_scenarios(sq_results, gt_results, og_results, ig_results)
     
     # Print results
     print("\n--- NPV SUMMARY (Million USD) ---")
     print(f"{'Scenario':<20} {'PV Costs':>15} {'PV CAPEX':>15} {'PV Fuel':>15} {'PV Emissions':>15} {'LCOE ($/kWh)':>15}")
     print("-" * 100)
     
-    for npv in [comparison.status_quo, comparison.green_transition, comparison.one_grid]:
+    for npv in [comparison.bau, comparison.full_integration, comparison.national_grid, comparison.islanded_green]:
         print(f"{npv.scenario_name:<20} ${npv.pv_total_costs/1e6:>13,.0f} ${npv.pv_capex/1e6:>13,.0f} ${npv.pv_fuel/1e6:>13,.0f} ${npv.pv_emission_costs/1e6:>13,.0f} ${npv.lcoe_usd_per_kwh:>13.4f}")
     
     print("\n--- INCREMENTAL ANALYSIS ---")
-    for incr in [comparison.green_vs_status_quo, comparison.one_grid_vs_status_quo]:
+    for incr in [comparison.fi_vs_bau, comparison.ng_vs_bau, comparison.ig_vs_bau]:
         print(f"\n{incr.alternative_scenario} vs {incr.base_scenario}:")
         print(f"  Incremental CAPEX: ${incr.incremental_pv_capex/1e6:,.0f}M")
         print(f"  Fuel Savings: ${incr.pv_fuel_savings/1e6:,.0f}M")

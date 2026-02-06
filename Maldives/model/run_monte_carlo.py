@@ -26,7 +26,8 @@ from model.scenarios.status_quo import StatusQuoScenario
 from model.scenarios.green_transition import NationalGridScenario
 from model.scenarios.one_grid import FullIntegrationScenario
 from model.scenarios.islanded_green import IslandedGreenScenario
-from model.config import Config, get_config, SENSITIVITY_PARAMS
+from model.cba import CBACalculator
+from model.config import SENSITIVITY_PARAMS
 
 
 def _build_distributions():

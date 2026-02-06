@@ -129,16 +129,25 @@ CBA_Maldives/
 | `report/REPORT_Maldives_Energy_CBA.pdf` | PDF | Static matplotlib map (for printing). |
 | `report/REPORT_Maldives_Energy_CBA.docx` | Word | Static matplotlib map (for editing/comments). |
 
+> **Dynamic report:** The `.qmd` report reads all figures and narrative values
+> from the JSON files in `outputs/`. Change a parameter in `parameters.csv`,
+> re-run the model, and the report updates automatically when rendered.
+
 ---
 
 ## The Four Scenarios
 
 | # | Scenario | India Cable | Inter-Island Grid | RE Target | Result |
 |---|----------|-------------|--------------------|-----------:|--------|
-| S1 | BAU (Diesel) | ✗ | ✗ | 7% | Most expensive ($5.3B) |
-| S2 | Full Integration | ✓ | ✓ | 70% | **Least cost ($3.1B)** |
-| S3 | National Grid | ✗ | ✓ | 70% | Second best ($3.5B) |
-| S4 | Islanded Green | ✗ | ✗ | 65% | Third best ($4.1B) |
+| S1 | BAU (Diesel) | ✗ | ✗ | 7% | Most expensive ($10.5B) |
+| S2 | Full Integration | ✓ | ✓ | 30% | **Least cost ($4.9B)** |
+| S3 | National Grid | ✗ | ✓ | 70% | Second best ($5.5B) |
+| S4 | Islanded Green | ✗ | ✗ | 65% | Third best ($5.7B) |
+
+> **Note:** Results are PV total costs in billions USD at 6% discount rate.
+> RE targets reflect final-year shares as modeled. Full Integration's 30% RE share
+> refers to domestic solar; the remaining supply comes from India grid imports
+> (which are largely non-diesel but not classified as renewable in our model).
 
 ---
 
