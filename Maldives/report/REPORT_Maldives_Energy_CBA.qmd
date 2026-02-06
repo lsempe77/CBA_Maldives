@@ -613,7 +613,7 @@ Build an undersea cable to India, connect Maldivian islands together, and add so
 
 2. **Inter-Island Grid**: Submarine cables connecting major population centers from Addu in the south to Haa Alif in the north. Estimated cost: **$500-800 million**
 
-3. **Solar PV Expansion**: Rooftop and ground-mounted solar across all islands, reaching 70% renewable by 2050. Estimated cost: **$800 million - $1.2 billion**
+3. **Solar PV Expansion**: Rooftop and ground-mounted solar across all islands, reaching ~30% domestic renewable generation (with an additional ~65% from clean Indian imports). Estimated cost: **$800 million - $1.2 billion**
 
 4. **Battery Storage**: Utility-scale batteries to manage solar intermittency. Estimated cost: **$150-350 million**
 
@@ -881,7 +881,7 @@ Our modeled costs are well-validated by independent evidence:
 
 - **BAU at ${bau_lcoe:.2f}/kWh is conservative.** ADB studies across SIDS consistently find diesel LCOE in the $0.30–0.50/kWh range, with some islands reaching $0.70/kWh. Our estimate sits at the low end — meaning we are *understating* the true cost of doing nothing, which strengthens the case for transition.
 - **Full Integration at ${fi_lcoe:.2f}/kWh is supported by local data.** The Maldives' own CIF/ASPIRE programme has already demonstrated solar tariffs dropping from $0.21/kWh (Phase I) to just **$0.099/kWh** (Phase III) — a 53% reduction. A blended system with $`{python} f"{get_param('Costs', 'India Import Price'):.2f}"`/kWh Indian imports and domestic solar at under $0.10/kWh makes ${fi_lcoe:.2f} achievable. The average LCOE for renewable systems across SIDS has been calculated at $0.16/kWh (MDPI), roughly 67% lower than diesel.
-- **The POISED programme in the Maldives** demonstrated that solar-battery-diesel hybrid systems achieved fuel savings of up to 28% compared to diesel-only generation. Our Full Integration pathway projects a deeper 42% cost reduction — consistent with much higher renewable penetration (70% vs. POISED's pilot scale).
+- **The POISED programme in the Maldives** demonstrated that solar-battery-diesel hybrid systems achieved fuel savings of up to 28% compared to diesel-only generation. Our Full Integration pathway projects a deeper ${(bau_lcoe - fi_lcoe) / bau_lcoe * 100:.0f}% cost reduction — consistent with much higher non-fossil penetration (~95% vs. POISED's pilot scale).
 - **The pathway ranking matches every comparable SIDS model.** Virtually all island energy analyses find the same ordering: diesel-only is most expensive, hybrid/grid-connected is cheapest, fully islanded renewable is in between (RMI 2025).
 :::
 
@@ -1318,7 +1318,7 @@ The Maldives would not be the first small island nation to undertake a major ene
 | **Ta'ū** (Am. Samoa) | 600 | 1.4 MW solar + 6 MWh Tesla batteries | 100% solar daytime; diesel backup at night |
 | **Cook Islands** | 15,000 | Solar + battery across 15 islands | Targeting 100% renewable by 2030 |
 | **Barbados** | 280,000 | Solar + offshore wind + grid modernization | 65% renewable target by 2030; LCOE ~$0.19/kWh |
-| **Maldives** | **515,000** | **Full Integration (proposed)** | **70% renewable target; LCOE $`{python} f"{lcoe['full_integration']:.2f}"`/kWh** |
+| **Maldives** | **515,000** | **Full Integration (proposed)** | **~95% non-fossil (30% domestic RE + India imports); LCOE $`{python} f"{lcoe['full_integration']:.2f}"`/kWh** |
 
 **Key lessons from these cases:**
 
@@ -1377,7 +1377,7 @@ If policymakers choose the recommended Full Integration pathway, here is a reali
 
 - Complete inter-island grid to all inhabited islands
 - Expand solar to 600+ MW
-- Reach 70% renewable energy share
+- Reach ~95% non-fossil energy (30% domestic RE + India imports)
 - Phase out most diesel generation
 
 ## Investment Schedule
@@ -1647,7 +1647,7 @@ params = pd.DataFrame({
         f"${get_param('Costs', 'Solar PV CAPEX'):.0f}/kW",
         f"${get_param('Costs', 'Battery CAPEX'):.0f}/kWh",
         f"${get_param('Costs', 'Inter-Island Cable Cost') / 1e6:.0f} million/km",
-        f"${get_param('Costs', 'India Import Price'):.2f}/kWh + $0.01 transmission",
+        f"${get_param('Costs', 'India Import Price'):.2f}/kWh + ${get_param('PPA', 'Transmission Charge'):.2f} transmission",
         f"${get_param('Economics', 'Social Cost of Carbon'):.0f}/tonne CO₂",
         f"{get_param('Demand', 'Base Demand GWh'):.0f} GWh/year" if get_param('Demand', 'Base Demand GWh') else "1,100 GWh/year",
         f"{get_param('Demand', 'Demand Growth Rate') * 100:.0f}%/year" if get_param('Demand', 'Demand Growth Rate') else "5%/year",
