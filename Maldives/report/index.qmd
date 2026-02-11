@@ -1,0 +1,55 @@
+---
+title: "Energy Transition Pathways for the Maldives"
+subtitle: "A Cost-Benefit Analysis of Seven Electricity Scenarios, 2026–2056"
+---
+
+```{python}
+#| label: setup
+import sys
+sys.path.insert(0, ".")
+from _common import *
+```
+
+## About This Report {.unnumbered}
+
+The Republic of Maldives faces a defining energy challenge. With **`{python} f"{baseline['diesel_share']*100:.0f}"`% of electricity generated from imported diesel**^[Government of Maldives, *Road Map for the Energy Sector 2024–2033* [-@gom_roadmap2024]; confirmed by @reglobal2023 and @irena_roadmap_maldives2015.], the country is exposed to volatile global fuel prices, high per-unit generation costs, and a carbon footprint incompatible with its climate leadership ambitions. This report presents a  **cost-benefit analysis (CBA)** of seven alternative electricity transition pathways over `{python} f"{cba['end_year'] - cba['base_year']}"` years (`{python} f"{cba['base_year']}"` – `{python} f"{cba['end_year']}"`  ).
+
+The analysis is closely aligned with the Government of Maldives' **Road Map for the Energy Sector 2024–2033** [-@gom_roadmap2024], which sets a target of 33 per cent renewable energy by 2028, identifies 490 MW of solar deployment potential, and estimates $1.3 billion in required investment across 15 flagship interventions. The seven scenarios evaluated in this report provide the rigorous economic evidence base needed to prioritise among those interventions and to assess the long-term costs and benefits of pursuing them at different scales and speeds.
+
+### What this report offers policymakers {.unnumbered}
+
+::: {.callout-note appearance="simple"}
+**One number to remember:** Every alternative pathway we analyse saves the Maldives between **`{python} f"${savings_min_b:,.1f} billion and ${savings_max_b:,.1f} billion"`** in present-value terms compared to continuing with diesel.
+:::
+
+- **Seven scenarios** ranging from an India submarine cable to islanded solar+battery systems, evaluated on a common framework
+- **Transparent, reproducible analysis** — every parameter sourced, every equation documented, all code open
+- **Policy-relevant outputs** — financing structures, distributional equity, multi-criteria ranking, implementation roadmaps
+- **Robust uncertainty analysis** — `{python} f"{n_mc_params}"`-parameter Monte Carlo simulation, tornado diagrams, switching-value analysis
+
+### How to read this report {.unnumbered}
+
+| If you have... | Read... |
+|---|---|
+| **5 minutes** | [Executive Summary](executive-summary.qmd) — key findings on one page |
+| **30 minutes** | Parts I–II — full context, scenarios, and results |
+| **2 hours** | The complete report including policy chapters |
+| **Technical review** | Appendices A–C for full methodology, parameters, and supplementary analyses |
+
+### Key results at a glance {.unnumbered}
+
+```{python}
+#| label: fig-headline
+#| fig-cap: "Net present value of savings versus BAU (diesel) for each transition scenario, 2026–2056, 6% discount rate."
+
+savings = {s: get_incremental(s)["npv_savings"] / 1e9 for s in ALT_SCENARIOS}
+
+fig = bar_scenario_comparison(
+    values=savings,
+    title="NPV Savings vs. Diesel Status Quo ($B, 2026–2056)",
+    yaxis_title="NPV Savings ($ Billions)",
+    highlight_bau=False,
+)
+fig.update_layout(height=400)
+fig.show()
+```

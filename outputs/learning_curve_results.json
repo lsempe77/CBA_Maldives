@@ -1,0 +1,80 @@
+{
+  "method": "Wright's Law endogenous learning curve",
+  "solar_learning_rate": 0.2,
+  "battery_learning_rate": 0.18,
+  "solar_exog_decline": 0.04,
+  "battery_exog_decline": 0.06,
+  "references": [
+    "Wright, T.P. (1936). Factors Affecting the Cost of Airplanes. J. Aeronautical Sciences 3(4):122-128.",
+    "Rubin, E.S. et al. (2015). A review of learning rates for electricity supply technologies. EEEP 3(2).",
+    "Ziegler, M.S. & Trancik, J.E. (2021). Re-examining rates of lithium-ion battery technology improvement. Energy Policy 151.",
+    "IRENA (2024). Renewable Power Generation Costs in 2023."
+  ],
+  "trajectory": [
+    {
+      "year": 2026,
+      "solar_exog_usd_kw": 1500.0,
+      "solar_endog_usd_kw": 1500.0,
+      "solar_delta_pct": 0.0,
+      "battery_exog_usd_kwh": 350.0,
+      "battery_endog_usd_kwh": 350.0,
+      "battery_delta_pct": 0.0
+    },
+    {
+      "year": 2031,
+      "solar_exog_usd_kw": 1223.0,
+      "solar_endog_usd_kw": 1169.0,
+      "solar_delta_pct": -4.4,
+      "battery_exog_usd_kwh": 257.0,
+      "battery_endog_usd_kwh": 256.0,
+      "battery_delta_pct": -0.5
+    },
+    {
+      "year": 2036,
+      "solar_exog_usd_kw": 997.0,
+      "solar_endog_usd_kw": 1018.0,
+      "solar_delta_pct": 2.1,
+      "battery_exog_usd_kwh": 189.0,
+      "battery_endog_usd_kwh": 221.0,
+      "battery_delta_pct": 17.1
+    },
+    {
+      "year": 2041,
+      "solar_exog_usd_kw": 813.0,
+      "solar_endog_usd_kw": 924.0,
+      "solar_delta_pct": 13.7,
+      "battery_exog_usd_kwh": 138.0,
+      "battery_endog_usd_kwh": 200.0,
+      "battery_delta_pct": 44.9
+    },
+    {
+      "year": 2046,
+      "solar_exog_usd_kw": 663.0,
+      "solar_endog_usd_kw": 858.0,
+      "solar_delta_pct": 29.4,
+      "battery_exog_usd_kwh": 102.0,
+      "battery_endog_usd_kwh": 187.0,
+      "battery_delta_pct": 83.8
+    },
+    {
+      "year": 2051,
+      "solar_exog_usd_kw": 541.0,
+      "solar_endog_usd_kw": 808.0,
+      "solar_delta_pct": 49.5,
+      "battery_exog_usd_kwh": 75.0,
+      "battery_endog_usd_kwh": 176.0,
+      "battery_delta_pct": 136.4
+    },
+    {
+      "year": 2056,
+      "solar_exog_usd_kw": 441.0,
+      "solar_endog_usd_kw": 768.0,
+      "solar_delta_pct": 74.2,
+      "battery_exog_usd_kwh": 55.0,
+      "battery_endog_usd_kwh": 168.0,
+      "battery_delta_pct": 207.1
+    }
+  ],
+  "cumulative_solar_saving_usd": -15367218.413559198,
+  "cumulative_battery_saving_usd": -29359997.56085272
+}

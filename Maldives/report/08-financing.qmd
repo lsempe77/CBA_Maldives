@@ -1,0 +1,161 @@
+---
+---
+
+```{python}
+#| label: setup
+import sys
+sys.path.insert(0, ".")
+from _common import *
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+```
+
+# Financing {#sec-financing}
+
+::: {.chapter-opening}
+The Maldives cannot finance its energy transition alone. With a GDP of approximately six billion dollars^[@worldbank2023.] and sovereign debt already elevated, the capital requirements of a multi-billion-dollar infrastructure programme far exceed the government's fiscal capacity. This chapter analyses investment requirements, concessional financing structures, fiscal sustainability, and the grant element of blended finance packages available to Small Island Developing States, providing the fiscal evidence that complements the economic analysis of preceding chapters.
+:::
+
+## Total Investment Requirements
+
+The scale of investment required varies dramatically across transition pathways. Some scenarios demand concentrated, front-loaded capital deployment — requiring the government to secure large financing packages within a narrow window — while others permit incremental, modular investment that can be phased over decades and adjusted as conditions evolve. Understanding these differences is essential for matching each pathway to the Maldives' borrowing capacity and the availability of concessional finance from multilateral development banks.
+
+```{python}
+#| label: fig-capex-comparison
+#| fig-cap: "Total nominal CAPEX by scenario. Full Integration has the highest upfront investment requirement; Islanded Green can be deployed incrementally."
+
+capex_data = {}
+for sid in ALT_SCENARIOS:
+    fin = financing.get(sid, {})
+    capex_data[sid] = fin.get("total_capex_nominal_m", summaries[sid]["total_capex_million"])
+
+fig = bar_scenario_comparison(
+    values=capex_data,
+    title="Total Nominal CAPEX by Scenario ($M)",
+    yaxis_title="CAPEX ($ Millions)",
+    highlight_bau=False,
+)
+fig.show()
+```
+
+@fig-capex-comparison reveals the wide range of capital requirements across scenarios. The Full Integration scenario (S2) commands the highest upfront investment, driven primarily by the submarine cable from India and associated converter stations, grid reinforcement, and landing infrastructure. At the other end of the spectrum, the Islanded Green scenario (S4) requires significantly less total capital because it deploys distributed solar-battery systems at the island level without large interconnection infrastructure. The National Grid (S3), Near-Shore Solar (S5), Maximum RE (S6), and LNG Transition (S7) scenarios fall between these extremes, each reflecting a different balance between centralised and distributed infrastructure investments.
+
+The differences in capital intensity have profound implications for financial risk. Large, lumpy investments such as submarine cables create commitment risk: once construction begins, the project must be completed to deliver any value, and cost overruns on mega-projects are well documented globally. Modular investments such as island-level solar-battery installations, by contrast, begin delivering value from the first unit deployed and can be scaled up or paused in response to changing fiscal conditions, demand growth, or technology costs. This distinction between committed and modular investment structures is a key consideration that goes beyond the simple comparison of total CAPEX figures.
+
+## Financing Structure: Blended Concessional Finance
+
+The Maldives' classification as a Small Island Developing State entitles it to the most concessional financing terms available from multilateral development banks. The Asian Development Bank's SIDS lending window offers terms that dramatically reduce the effective cost of capital: an interest rate of `{python} f"{financing[ALT_SCENARIOS[0]].get('adb_rate_pct', 1):.0f}"` percent, a `{python} f"{40}"`-year maturity, and a `{python} f"{10}"`-year grace period during which only interest is payable^[@adb_lending2026.]. These terms are far below the commercial interest rates available to the Maldives government in domestic or international capital markets, creating a substantial implicit subsidy — the grant element — that makes otherwise unviable investments economically feasible.
+
+```{python}
+#| label: tbl-financing
+#| tbl-cap: "Financing structure for each scenario: ADB concessional vs. commercial tranches."
+
+fin_rows = []
+for sid in ALT_SCENARIOS:
+    fin = financing.get(sid, {})
+    if fin:
+        fin_rows.append({
+            "Scenario": SCENARIO_SHORT[sid],
+            "Total CAPEX ($M)": f"${fin.get('total_capex_nominal_m', 0):,.0f}",
+            "ADB Share": f"{fin.get('adb_eligible_share_pct', 0):.0f}%",
+            "ADB Rate": f"{fin.get('adb_rate_pct', 0):.0f}%",
+            "Commercial Rate": f"{fin.get('commercial_rate_pct', 0):.1f}%",
+            "Grant Element": f"{fin.get('grant_element_pct', 0):.1f}%",
+            "WACC": f"{fin.get('wacc_pct', 0):.1f}%",
+        })
+
+if fin_rows:
+    from IPython.display import Markdown
+    Markdown(pd.DataFrame(fin_rows).to_markdown(index=False))
+```
+
+The financing structure table above details the financing structure for each scenario, showing how the total CAPEX is split between concessional ADB lending and commercial financing, along with the resulting blended cost of capital (WACC) and the grant element. The grant element — defined as the difference in present value between what the borrower would pay under concessional terms versus commercial terms, expressed as a percentage of the face value of the loan — is approximately **`{python} f"{financing[ALT_SCENARIOS[0]].get('grant_element_pct', 82.8):.1f}"`%**. This is among the most concessional terms available to any developing country, reflecting the international community's recognition that SIDS face unique structural vulnerabilities — small domestic markets, high import dependence, extreme climate exposure, and limited fiscal capacity — that justify exceptional support.
+
+The practical significance of the grant element is substantial. For every dollar borrowed at ADB SIDS terms (`{python} f"{financing[ALT_SCENARIOS[0]].get('adb_rate_pct', 1):.0f}"`% interest, 40-year maturity, 10-year grace), the borrower pays back substantially less in present-value terms than it would under commercial terms (approximately `{python} f"{financing[ALT_SCENARIOS[0]].get('commercial_rate_pct', 11.5):.1f}"`%). This difference transforms the financial viability of capital-intensive transition pathways that would be unaffordable at commercial rates. The blended WACC — combining the ADB concessional tranche with any commercial co-financing — determines the effective cost of capital against which project returns must be evaluated from a financial (as opposed to economic) perspective.
+
+It is important to note that this financing analysis is supplementary to the main economic CBA, which uses the social discount rate to evaluate projects from a societal welfare perspective. The financing analysis addresses a different question: not whether the transition is worth doing (the economic CBA answers that), but whether and how the Maldives can afford to pay for it given its fiscal constraints and access to concessional capital. Both perspectives are necessary for informed policy decisions.
+
+## Fiscal Sustainability: Debt Service Burden
+
+Even highly concessional debt must be serviced, and for a small economy the annual debt service burden can become a binding constraint on fiscal policy. The International Monetary Fund applies a threshold of approximately two percent of GDP as the level at which debt service begins to crowd out essential public expenditure and raises concerns about long-term fiscal sustainability^[@imf_dst2023.]. This threshold provides a practical benchmark for evaluating whether each transition pathway is fiscally manageable.
+
+```{python}
+#| label: fig-debt-service
+#| fig-cap: "Peak annual debt service as a percentage of GDP for each scenario."
+
+fig = go.Figure()
+for sid in ALT_SCENARIOS:
+    fin = financing.get(sid, {})
+    peak_pct = fin.get("peak_debt_service_pct_gdp", 0)
+    fig.add_trace(go.Bar(
+        x=[SCENARIO_SHORT[sid]],
+        y=[peak_pct],
+        marker_color=SCENARIO_COLORS[sid],
+        text=[f"{peak_pct:.2f}%"],
+        textposition="outside",
+        showlegend=False,
+    ))
+
+fig.add_hline(y=2.0, line_dash="dash", line_color="red",
+              annotation_text="IMF Debt Sustainability Threshold (2%)")
+fig.update_layout(
+    title="Peak Annual Debt Service as % of GDP",
+    yaxis_title="% of GDP",
+    height=420,
+)
+fig.show()
+```
+
+@fig-debt-service shows the peak annual debt service as a percentage of GDP for each scenario. The red dashed line marks the IMF's two-percent sustainability threshold. Scenarios that fall below this line can be financed without triggering fiscal sustainability concerns, provided that other sovereign debt obligations are managed prudently. Scenarios that approach or exceed the threshold would require additional grant financing, debt restructuring, or phased implementation to remain fiscally sustainable.
+
+The relationship between total CAPEX and debt service burden is not strictly linear because the blended financing terms, grace periods, and amortisation schedules differ across scenarios. Scenarios with longer construction periods benefit from later onset of principal repayments, while scenarios with front-loaded deployment begin servicing debt sooner. The ten-year grace period on ADB concessional loans provides critical breathing room during the construction and early operational phases, when the investment has not yet begun generating the fuel savings and tariff revenues needed to service the debt.
+
+Policymakers should note that these debt service projections assume that the transition investments are additional to existing sovereign debt. If the Maldives' overall debt trajectory is already approaching prudential limits, even modest transition-related debt service could push the total burden above sustainable levels. Coordination between energy transition planning and overall fiscal management is therefore essential, and the phasing of investments should be calibrated not only to technical readiness but also to the available fiscal envelope in each period.
+
+## Household Bill Impact
+
+The ultimate test of financial viability is whether households can afford the electricity tariffs needed to recover transition costs. The following table projects average annual household electricity bills under each scenario, reflecting the levelised cost of electricity net of any government subsidy. These projections translate the macro-level financing analysis into the micro-level affordability question that matters most to citizens and policymakers.
+
+```{python}
+#| label: tbl-household-bills
+#| tbl-cap: "Average annual household electricity bill under each scenario."
+
+bill_rows = []
+for sid in ALT_SCENARIOS:
+    fin = financing.get(sid, {})
+    if fin:
+        bill_rows.append({
+            "Scenario": SCENARIO_SHORT[sid],
+            "Annual Bill (USD)": f"${fin.get('avg_hh_annual_bill_usd', 0):,.0f}",
+            "Annual Bill (MVR)": f"MVR {fin.get('avg_hh_annual_bill_mvr', 0):,.0f}",
+            "Tariff Revenue ($M/yr)": f"${fin.get('annual_tariff_revenue_m', 0):,.0f}",
+        })
+
+if bill_rows:
+    from IPython.display import Markdown
+    Markdown(pd.DataFrame(bill_rows).to_markdown(index=False))
+```
+
+The household bills table above presents the average annual household electricity bill under each scenario in both US dollars and Maldivian rufiyaa. Scenarios that deliver lower levelised costs of electricity translate directly into lower household bills, providing a tangible welfare improvement for consumers. The tariff revenue column shows the total annual revenue that the utility would collect at the implied tariff rate, which must cover operating costs, debt service, and any capital recovery. Where projected tariff revenue exceeds current levels, the difference represents the additional fiscal burden that households or the government must absorb; where it falls below current levels, the difference represents a direct welfare gain.
+
+These bill projections should be interpreted in conjunction with the distributional analysis in @sec-distributional. Average bills mask significant variation across income groups: low-income households consume less electricity and would pay less in absolute terms, but the share of their income devoted to electricity may still be higher than for wealthier households. The design of tariff structures — lifeline blocks, increasing block tariffs, or time-of-use pricing — can substantially alter the distributional incidence of any given average tariff level.
+
+## Subsidy Avoidance
+
+```{python}
+#| label: subsidy
+# Get subsidy rate from parameters.csv
+subsidy_row = parameters[parameters["Parameter"].str.contains("Subsidy Avoidance Rate", na=False, case=False)]
+subsidy_per_kwh = float(subsidy_row["Value"].iloc[0]) if len(subsidy_row) > 0 else 0.15
+demand_2030 = cba["sectoral_demand"]["bau"]["2030"]["total_gwh"]
+annual_subsidy_m = subsidy_per_kwh * demand_2030 * 1000 / 1e6
+```
+
+The Maldives government currently subsidises electricity at approximately **$`{python} f"{subsidy_per_kwh:.2f}"`/kWh**^[@gom_roadmap2024 reports over $200M in annual electricity subsidies; the per-kWh rate is derived from the subsidy bill and total generation.], bridging the gap between the high cost of diesel generation and the tariffs that households and businesses are charged. At projected 2030 demand of `{python} f"{demand_2030:,.0f}"` GWh, this represents an annual fiscal outlay of approximately **$`{python} f"{annual_subsidy_m:,.0f}"`M**. This subsidy is a recurring drain on the national budget that grows with demand and is vulnerable to diesel price volatility — when global oil prices spike, the subsidy bill increases sharply, creating fiscal stress precisely when the economy can least afford it.
+
+Transition to lower-cost generation technologies would progressively reduce and eventually eliminate this subsidy requirement. As the levelised cost of renewable electricity falls below the current subsidised tariff rate, the government ceases to be a net payer and may even become a net beneficiary through lower procurement costs or carbon credit revenues. The cumulative present value of subsidy savings over the thirty-year analysis horizon represents a substantial fiscal benefit that is additional to the direct economic benefits captured in the CBA — effectively, the government recovers fiscal space that can be redeployed to health, education, climate adaptation, or other development priorities.
+
+::: {.callout-tip}
+## The double dividend
+Energy transition delivers a **double fiscal dividend**. First, reduced fuel imports improve the trade balance, reducing the economy's vulnerability to global commodity price shocks and preserving foreign exchange reserves. Second, reduced electricity subsidies free domestic fiscal space, releasing government revenues that are currently absorbed by diesel generation subsidies. For a small, import-dependent economy like the Maldives — where fuel imports constitute a significant fraction of total imports and electricity subsidies claim a material share of the government budget — both effects are macroeconomically significant. Together, they mean that the transition pays for itself not only in economic welfare terms (as the CBA demonstrates) but also in fiscal terms, reducing the structural deficit and improving sovereign creditworthiness over time.
+:::

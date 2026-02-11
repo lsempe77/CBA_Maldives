@@ -29,6 +29,14 @@ class AnnualEmissions:
     def total_emissions_ktco2(self) -> float:
         return self.total_emissions_tco2 / 1000
     
+    @property
+    def diesel_ktco2(self) -> float:
+        return self.diesel_emissions_tco2 / 1000
+    
+    @property
+    def import_ktco2(self) -> float:
+        return self.import_emissions_tco2 / 1000
+    
     def to_dict(self) -> Dict:
         return {
             "year": self.year,
@@ -104,32 +112,44 @@ class EmissionsCalculator:
             Annualized lifecycle emissions in tonnes CO2
         """
         # Lifecycle emissions from config (spread over 25-year lifetime)
-        lifecycle_g_per_kwh = self.config.technology.solar_lifecycle_emission_factor
+        # Config value is in kgCO₂/kWh (CR-05 fix: was incorrectly treated as grams)
+        lifecycle_kg_per_kwh = self.config.technology.solar_lifecycle_emission_factor
         annual_gen_kwh = self.config.technology.solar_pv_capacity_factor * 8760 * capacity_mw * 1000
         
-        emissions_g = annual_gen_kwh * lifecycle_g_per_kwh
-        emissions_tonnes = emissions_g / 1_000_000
+        emissions_kg = annual_gen_kwh * lifecycle_kg_per_kwh
+        emissions_tonnes = emissions_kg / 1_000  # kg → tonnes
         
         return emissions_tonnes
     
     def monetize_emissions(self, emissions_tco2: float, year: int = None) -> float:
         """
-        Monetize emissions using social cost of carbon.
+        Monetize emissions using social cost of carbon with annual growth.
+        
+        SCC grows over time to reflect increasing climate damages.
+        Mirrors npv_calculator._get_scc() logic (M-BUG-2 fix).
         
         Args:
             emissions_tco2: Emissions in tonnes CO2
-            year: Year (SCC could vary, but we use constant for simplicity)
+            year: Year for SCC calculation (if None, uses base SCC)
             
         Returns:
             Emission cost in USD
         """
-        scc = self.econ.social_cost_carbon
+        base_scc = self.econ.social_cost_carbon
+        if year is not None:
+            scc_growth = self.econ.scc_annual_growth
+            base_year = self.config.base_year
+            years_from_base = year - base_year
+            scc = base_scc * ((1 + scc_growth) ** years_from_base)
+        else:
+            scc = base_scc
         return emissions_tco2 * scc
     
     def emission_reduction_benefit(
         self,
         baseline_emissions_tco2: float,
         scenario_emissions_tco2: float,
+        year: int = None,
     ) -> float:
         """
         Calculate the benefit (avoided cost) from emission reductions.
@@ -137,15 +157,16 @@ class EmissionsCalculator:
         Args:
             baseline_emissions_tco2: Emissions under baseline (Status Quo)
             scenario_emissions_tco2: Emissions under alternative scenario
+            year: Year for SCC growth calculation
             
         Returns:
             Benefit in USD
         """
+        # C-MO-05 fix: Allow negative emission reduction benefit (i.e., penalty)
+        # when scenario emissions exceed baseline (e.g., LNG ramp-up, construction).
+        # Previous code clamped to zero, masking years where alternative is dirtier.
         reduction = baseline_emissions_tco2 - scenario_emissions_tco2
-        if reduction < 0:
-            return 0.0  # No benefit if emissions increase
-        
-        return self.monetize_emissions(reduction)
+        return self.monetize_emissions(reduction, year=year)
     
     def calculate_annual_emissions(
         self,
@@ -205,9 +226,9 @@ class EmissionsTrajectory:
         return pd.DataFrame(data).sort_values("year")
     
     def get_total_emission_cost(self) -> float:
-        """Get total monetized emission cost over analysis period."""
+        """Get total monetized emission cost over analysis period (with SCC growth)."""
         return sum(
-            self.calculator.monetize_emissions(e.total_emissions_tco2)
+            self.calculator.monetize_emissions(e.total_emissions_tco2, year=e.year)
             for e in self.annual_data.values()
         )
 

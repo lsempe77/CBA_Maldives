@@ -1,0 +1,126 @@
+---
+title: "Appendix B — Complete Parameter Table"
+---
+
+```{python}
+#| label: setup
+import sys
+sys.path.insert(0, ".")
+from _common import *
+from IPython.display import Markdown, HTML
+```
+
+This appendix presents every parameter used in the Maldives Energy CBA model. All values are drawn from the central parameter registry (`parameters.csv`), which serves as the single source of truth for the entire analysis. The Low and High columns define the ranges used in sensitivity analysis and Monte Carlo simulation — these bounds are derived from the empirical literature and represent the plausible range of each parameter given current evidence, not arbitrary percentage variations around the base case.
+
+The parameter table is organised by category, reflecting the model's functional structure: demand parameters govern electricity consumption projections; technology parameters specify the cost and performance of solar, battery, diesel, cable, and LNG systems; economics parameters control discounting and price escalation; and so forth. Every parameter carries a source citation, ensuring that the provenance of each value can be independently verified. The source quality analysis below provides a summary assessment of the overall evidence base.
+
+## Parameter Table
+
+```{python}
+#| label: tbl-all-params
+#| tbl-cap: "Complete model parameters"
+
+# Clean the parameters DataFrame
+df = parameters.copy()
+
+# Drop comment/empty rows
+df = df.dropna(subset=["Parameter"])
+df = df[df["Parameter"].str.strip() != ""]
+df = df[~df["Category"].str.startswith("#", na=False)]
+
+# Select display columns
+display_cols = ["Category", "Parameter", "Value", "Low", "High", "Unit", "Source"]
+df = df[display_cols].copy()
+
+# Clean up for display
+df["Value"] = df["Value"].apply(lambda x: f"{x:g}" if isinstance(x, float) else str(x))
+df["Low"] = df["Low"].apply(lambda x: f"{x:g}" if isinstance(x, float) and pd.notna(x) else "—")
+df["High"] = df["High"].apply(lambda x: f"{x:g}" if isinstance(x, float) and pd.notna(x) else "—")
+df["Unit"] = df["Unit"].fillna("—")
+
+# Truncate long source strings for display
+df["Source"] = df["Source"].fillna("—").apply(lambda x: x[:80] + "…" if len(str(x)) > 80 else x)
+
+# Group by category and render
+categories = df["Category"].unique()
+
+md_parts = []
+for cat in categories:
+    cat_df = df[df["Category"] == cat].drop(columns=["Category"])
+    md_parts.append(f"\n### {cat}\n")
+    md_parts.append(cat_df.to_markdown(index=False))
+    md_parts.append("")
+
+Markdown("\n".join(md_parts))
+```
+
+## Parameter Source Summary
+
+The credibility of any cost-benefit analysis depends fundamentally on the quality of its input data. Parameters derived from peer-reviewed academic research or institutional publications by organisations with established methodological standards (IRENA, IEA, ADB, World Bank, IPCC) carry greater evidential weight than assumed or estimated values. The following chart classifies every parameter by the quality of its source citation, providing a transparent assessment of the overall evidence base.
+
+```{python}
+#| label: source-quality
+#| fig-cap: "Parameter source classification"
+
+df_full = parameters.dropna(subset=["Parameter"]).copy()
+df_full = df_full[df_full["Parameter"].str.strip() != ""]
+df_full = df_full[~df_full["Category"].str.startswith("#", na=False)]
+
+# Classify source quality
+def classify_source(s):
+    if pd.isna(s) or str(s).strip() in ("", "—"):
+        return "Missing"
+    s_lower = str(s).lower()
+    if any(kw in s_lower for kw in ["irena", "iea", "adb", "world bank", "imf", "ipcc", "bnef", "epa"]):
+        return "Institutional"
+    if any(kw in s_lower for kw in ["doi:", "journal", "et al", "202", "201"]):
+        return "Academic"
+    if any(kw in s_lower for kw in ["derived", "computed", "calculated"]):
+        return "Derived"
+    if any(kw in s_lower for kw in ["assumed", "estimate", "proxy"]):
+        return "Estimated"
+    return "Other"
+
+df_full["Quality"] = df_full["Source"].apply(classify_source)
+quality_counts = df_full["Quality"].value_counts()
+
+fig = go.Figure(go.Pie(
+    labels=quality_counts.index.tolist(),
+    values=quality_counts.values.tolist(),
+    marker_colors=["#198754", "#0d6efd", "#6c757d", "#ffc107", "#dc3545"],
+    textinfo="label+percent",
+    hole=0.4,
+))
+fig.update_layout(
+    title="Parameter Source Quality Distribution",
+    height=400,
+    showlegend=True,
+)
+fig.show()
+```
+
+The pie chart above shows the distribution of parameter sources across five quality categories. Institutional sources (IRENA, IEA, ADB, World Bank, IMF, IPCC, BNEF) and academic sources (peer-reviewed journal articles with DOIs) together constitute the majority of the evidence base, reflecting a deliberate effort to ground every parameter in verifiable, recent, citable research. Derived parameters are computed from other parameters using transparent formulae (for example, blended WACC derived from ADB and commercial interest rates). A small number of estimated parameters remain where Maldives-specific data are unavailable; these are identified in the sensitivity analysis as candidate parameters for future empirical research.
+
+## Sensitivity Ranges
+
+```{python}
+#| label: sensitivity-ranges
+#| fig-cap: "Parameters with defined sensitivity ranges (Low–High)"
+
+df_ranges = parameters.dropna(subset=["Parameter"]).copy()
+df_ranges = df_ranges[df_ranges["Parameter"].str.strip() != ""]
+df_ranges = df_ranges[~df_ranges["Category"].str.startswith("#", na=False)]
+
+# Keep only rows with both Low and High values
+df_ranges = df_ranges.dropna(subset=["Low", "High"])
+df_ranges = df_ranges[df_ranges["Low"] != df_ranges["High"]]  # non-trivial ranges
+
+n_with_range = len(df_ranges)
+n_total = len(parameters.dropna(subset=["Parameter"]))
+```
+
+**`{python} n_with_range`** parameters have explicit sensitivity ranges (Low–High bounds) out of **`{python} n_total`** total parameters. These ranges feed directly into the one-way sensitivity analysis (tornado diagrams) and Monte Carlo simulation (triangular distributions).
+
+::: {.callout-note}
+Parameters without Low/High ranges are structural choices (e.g., base year, number of landings) rather than uncertain quantities. They are held constant across all sensitivity runs.
+:::

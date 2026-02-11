@@ -82,11 +82,20 @@ class StatusQuoScenario(BaseScenario):
         Solar stays flat, diesel meets all demand growth.
         """
         # Get demand for year
-        demand_gwh = self.demand.get_demand(year)
+        net_demand_gwh = self.demand.get_demand(year)
         peak_mw = self.demand.get_peak(year)
         
-        # Solar generation (flat, existing capacity)
-        solar_gwh = self.cost_calc.solar_generation(self.existing_solar_mw)
+        # C2+R5: Gross up for distribution losses (segmented Malé 8% / outer 12%)
+        demand_gwh = self.cost_calc.gross_up_for_losses(
+            net_demand_gwh, include_distribution=True, include_hvdc=False,
+            year=year,
+            scenario_growth_rate=self.config.demand.growth_rates['status_quo'],  # MR-04 fix; BD-02: fail-fast on missing key
+        )
+        
+        # Solar generation with temp derating + degradation (C7, C8)
+        solar_gwh = self.cost_calc.solar_generation(
+            self.existing_solar_mw, year=year
+        )
         
         # Diesel meets the rest
         diesel_gwh = demand_gwh - solar_gwh
@@ -111,7 +120,7 @@ class StatusQuoScenario(BaseScenario):
             import_gwh=0.0,
             diesel_capacity_mw=round(self.diesel_capacity_mw, 1),
             solar_capacity_mw=self.existing_solar_mw,
-            battery_capacity_mwh=0.0,
+            battery_capacity_mwh=self.config.current_system.battery_capacity_mwh,  # L19: from config
         )
     
     def calculate_annual_costs(self, year: int, gen_mix: GenerationMix) -> AnnualCosts:
@@ -138,8 +147,11 @@ class StatusQuoScenario(BaseScenario):
         # OPEX: Solar (minimal)
         costs.opex_solar = self.cost_calc.solar_opex(self.existing_solar_mw, year)
         
-        # Fuel: Diesel
-        costs.fuel_diesel = self.cost_calc.diesel_fuel_cost(gen_mix.diesel_gwh, year)
+        # Fuel: Diesel (C9: two-part fuel curve)
+        costs.fuel_diesel = self.cost_calc.diesel_fuel_cost(
+            gen_mix.diesel_gwh, year,
+            diesel_capacity_mw=gen_mix.diesel_capacity_mw
+        )
         
         return costs
 
@@ -163,7 +175,8 @@ if __name__ == "__main__":
     print("\n--- GENERATION MIX ---")
     print(f"{'Year':<6} {'Demand':<10} {'Diesel':<10} {'Solar':<10} {'Diesel %':<10}")
     print("-" * 50)
-    for year in [2024, 2030, 2040, 2050]:
+    key_years = [config.base_year, 2030, 2040, config.end_year]
+    for year in key_years:
         gen = results.generation_mix[year]
         print(f"{year:<6} {gen.total_demand_gwh:<10.0f} {gen.diesel_gwh:<10.0f} {gen.solar_gwh:<10.0f} {gen.diesel_share:<10.1%}")
     
@@ -171,20 +184,20 @@ if __name__ == "__main__":
     print("\n--- ANNUAL COSTS (Million USD) ---")
     print(f"{'Year':<6} {'CAPEX':<10} {'OPEX':<10} {'Fuel':<12} {'Total':<10}")
     print("-" * 50)
-    for year in [2024, 2030, 2040, 2050]:
+    for year in key_years:
         cost = results.annual_costs[year]
         print(f"{year:<6} {cost.total_capex/1e6:<10.1f} {cost.total_opex/1e6:<10.1f} {cost.fuel_diesel/1e6:<12.1f} {cost.total/1e6:<10.1f}")
     
     # Print emissions
     print("\n--- EMISSIONS (ktCO2) ---")
-    for year in [2024, 2030, 2040, 2050]:
+    for year in key_years:
         em = results.annual_emissions[year]
         print(f"{year}: {em.total_emissions_ktco2:.0f} ktCO2")
     
     # Summary
     print("\n--- SUMMARY ---")
     summary = scenario.get_summary()
-    print(f"Total costs (2024-2050): ${summary['total_costs_million']:,.0f}M")
+    print(f"Total costs ({config.base_year}-{config.end_year}): ${summary['total_costs_million']:,.0f}M")
     print(f"  - CAPEX: ${summary['total_capex_million']:,.0f}M")
     print(f"  - OPEX: ${summary['total_opex_million']:,.0f}M")
     print(f"  - Fuel: ${summary['total_fuel_million']:,.0f}M")

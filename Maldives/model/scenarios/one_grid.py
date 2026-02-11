@@ -4,11 +4,20 @@ Full Integration Scenario
 
 Scenario 2: India interconnector + inter-island Maldives grid + RE
 
+Endogenous RE Deployment (LCOE-driven):
+  Pre-cable: deploy solar at ramp rate (same as NG — solar < diesel)
+  Post-cable: PPA import ($0.07/kWh) < domestic solar ($0.166/kWh)
+  → Minimize domestic RE post-cable. Cable fills the gap.
+
+Two-Segment Model:
+  - OUTER ISLANDS: ramp-based solar pre-cable; cable import replaces diesel post-cable
+  - GREATER MALÉ: receives clean import via cable → decarbonizes via cable
+
 Assumptions:
-- Undersea cable to India operational by 2030
-- Inter-island submarine cables connecting major atolls
-- Complementary domestic solar PV
-- Most comprehensive infrastructure investment
+- Undersea cable to India operational by 2032
+- Inter-island cables for 3 near-hub islands (~14 km)
+- Complementary domestic solar PV (capped at domestic_re_target_2050)
+- Cable provides clean import that decarbonizes Malé
 - Maximum system integration
 """
 
@@ -42,18 +51,15 @@ class FullIntegrationScenario(BaseScenario):
         self.cable_capacity_mw = self.config.one_grid.cable_capacity_mw
         self.gom_cost_share = self.config.one_grid.gom_share_pct
         
-        # RE targets for domestic solar - create trajectory from 2050 target
-        final_target = self.config.one_grid.domestic_re_target_2050
-        self.domestic_re_targets = {
-            2024: 0.06,  # Current RE share
-            2030: 0.10,
-            2040: 0.20,
-            2050: final_target,
-        }
+        # Endogenous RE deployment:
+        # Pre-cable: ramp-based solar deployment (solar < diesel)
+        # Post-cable: freeze solar additions (PPA < solar LCOE → cable preferred)
+        self.ramp_mw_yr = self.config.green_transition.deployment_ramp_mw_per_year
+        self.domestic_re_cap = self.config.one_grid.domestic_re_target_2050
         
-        # Track capacities
+        # Track capacities (L19: init from config, not hardcoded 0)
         self.solar_capacity_mw = self.config.current_system.solar_capacity_mw
-        self.battery_capacity_mwh = 0.0
+        self.battery_capacity_mwh = self.config.current_system.battery_capacity_mwh
         self.diesel_capacity_mw = self.config.current_system.diesel_capacity_mw
         
         # Track cable status
@@ -73,66 +79,63 @@ class FullIntegrationScenario(BaseScenario):
             growth_rate=self.config.demand.growth_rates["one_grid"],
         )
     
-    def _interpolate_domestic_re_target(self, year: int) -> float:
-        """
-        Interpolate domestic RE target for years not explicitly specified.
-        """
-        targets = self.domestic_re_targets
-        years = sorted(targets.keys())
-        
-        if year in targets:
-            return targets[year]
-        
-        # Handle years beyond target range - use last available target
-        if year > max(years):
-            return targets[max(years)]
-        if year < min(years):
-            return targets[min(years)]
-        
-        # Find surrounding years
-        lower_year = max(y for y in years if y <= year)
-        upper_year = min(y for y in years if y >= year)
-        
-        if lower_year == upper_year:
-            return targets[lower_year]
-        
-        # Linear interpolation
-        lower_target = targets[lower_year]
-        upper_target = targets[upper_year]
-        
-        fraction = (year - lower_year) / (upper_year - lower_year)
-        return lower_target + fraction * (upper_target - lower_target)
-    
     def _calculate_deployment_schedule(self) -> None:
         """
-        Pre-calculate solar and battery additions for each year.
+        Endogenous deployment for FI scenario:
+        - Pre-cable: deploy solar at ramp rate (solar LCOE < diesel LCOE)
+        - Post-cable: stop solar additions (PPA < solar LCOE → cable preferred)
+        
+        Uses effective CF (raw CF × temp derating) for sizing.
+        Sizes solar against gross demand (incl. distribution + HVDC losses).
         """
-        prev_solar = self.config.current_system.solar_capacity_mw
+        # LW-01: Use base class precomputed effective CF (temp-derated)
+        effective_cf = self._effective_solar_cf
+        
+        # MR-09: Distribution loss computed per year using weighted_distribution_loss()
+        hvdc_loss = self.config.technology.hvdc_cable_loss_pct
+        
+        self._existing_solar_mw = self.config.current_system.solar_capacity_mw
+        prev_solar_mw = self._existing_solar_mw
         prev_battery = 0.0
         
+        # Store RE share per year for generation mix computation
+        self._domestic_re_by_year: Dict[int, float] = {}
+        
         for year in self.config.time_horizon:
-            # Get domestic RE target
-            re_target = self._interpolate_domestic_re_target(year)
+            net_demand_gwh = self.demand.get_demand(year)
+            # MR-09: Year-varying weighted distribution loss
+            dist_loss = self.config.weighted_distribution_loss(
+                year, self.config.demand.growth_rates['one_grid']  # BD-02: fail-fast on missing key
+            )
+            # Pre-cable: distribution losses only. Post-cable: + HVDC.
+            if year >= self.cable_online_year:
+                loss_factor = 1.0 / ((1.0 - dist_loss) * (1.0 - hvdc_loss))
+            else:
+                loss_factor = 1.0 / (1.0 - dist_loss)
+            demand_gwh = net_demand_gwh * loss_factor
             
-            # Get demand for year
-            demand_gwh = self.demand.get_demand(year)
+            if year < self.cable_online_year:
+                # PRE-CABLE: deploy solar at ramp rate (solar < diesel)
+                mw_for_100pct = (demand_gwh * 1000) / (8760 * effective_cf)
+                gap_mw = max(0, mw_for_100pct - prev_solar_mw)
+                solar_addition = min(self.ramp_mw_yr, gap_mw)
+            else:
+                # POST-CABLE: no new solar (PPA is cheaper than domestic solar)
+                solar_addition = 0.0
             
-            # Required solar generation for domestic RE
-            required_solar_gwh = demand_gwh * re_target
+            new_solar_mw = prev_solar_mw + solar_addition
             
-            # Required solar capacity
-            capacity_factor = self.config.technology.solar_pv_capacity_factor
-            required_solar_mw = (required_solar_gwh * 1000) / (8760 * capacity_factor)
+            # Compute domestic RE share (using effective CF)
+            solar_gen_gwh = new_solar_mw * 8760 * effective_cf / 1000
+            domestic_re = min(self.domestic_re_cap, solar_gen_gwh / demand_gwh) if demand_gwh > 0 else 0.0
+            self._domestic_re_by_year[year] = domestic_re
             
-            # Solar addition
-            solar_addition = max(0, required_solar_mw - prev_solar)
             self.solar_additions[year] = solar_addition
-            prev_solar = required_solar_mw
+            prev_solar_mw = new_solar_mw
             
-            # Battery: ratio from config (less than Green Transition
-            # due to cable providing baseload stability)
+            # Battery: ratio from config (less than NG due to cable stability)
             battery_ratio = self.config.one_grid.battery_ratio
-            required_battery_mwh = required_solar_mw * battery_ratio
+            required_battery_mwh = new_solar_mw * battery_ratio
             battery_addition = max(0, required_battery_mwh - prev_battery)
             self.battery_additions[year] = battery_addition
             prev_battery = required_battery_mwh
@@ -142,25 +145,59 @@ class FullIntegrationScenario(BaseScenario):
         Calculate generation mix for One Grid scenario.
         """
         # Get demand
-        demand_gwh = self.demand.get_demand(year)
+        net_demand_gwh = self.demand.get_demand(year)
         peak_mw = self.demand.get_peak(year)
+        
+        # Is cable operational?
+        cable_operational = year >= self.cable_online_year
+        
+        # L8: Apply price elasticity for induced demand (post-cable only)
+        # Price reduction = (diesel LCOE - PPA price) / diesel LCOE
+        # Elasticity amplifies demand when electricity becomes cheaper via cable
+        if cable_operational:
+            bau_price = self.config.current_system.outer_island_electricity_cost
+            fi_price = self.config.ppa.get_price(year)
+            if fi_price is not None and bau_price > 0 and fi_price < bau_price:
+                price_reduction_pct = (bau_price - fi_price) / bau_price
+                net_demand_gwh = self.demand.apply_induced_demand(
+                    year, price_reduction_pct
+                )
+                # Also adjust peak proportionally
+                peak_mw = net_demand_gwh / self.demand.get_demand(year) * peak_mw
+        
+        # C2+R5: Gross up for T&D losses (segmented Malé 8% / outer 12%)
+        # Distribution losses always; HVDC cable losses only when cable is operational
+        demand_gwh = self.cost_calc.gross_up_for_losses(
+            net_demand_gwh,
+            include_distribution=True,
+            include_hvdc=cable_operational,
+            year=year,
+            scenario_growth_rate=self.config.demand.growth_rates['one_grid'],  # MR-04 fix; BD-02: fail-fast on missing key
+        )
         
         # Update capacities
         self.solar_capacity_mw += self.solar_additions.get(year, 0)
         self.battery_capacity_mwh += self.battery_additions.get(year, 0)
         
-        # Is cable operational?
-        cable_operational = year >= self.cable_online_year
+        # Solar generation with vintage-based degradation (C7, C8)
+        solar_gwh = self.cost_calc.solar_generation_vintaged(
+            solar_additions=self.solar_additions,
+            year=year,
+            existing_mw=self._existing_solar_mw,
+        )
+        
+        # R6: Waste-to-energy baseload (Thilafushi 12 + Addu 1.5 + Vandhoo 0.5 = 14 MW)
+        wte_gwh = 0.0
+        if year >= self.config.wte.online_year:
+            wte_gwh = min(self.config.wte.annual_generation_gwh, max(0, demand_gwh - solar_gwh))
         
         # Calculate generation sources
         if cable_operational:
             # CABLE OPERATIONAL: Import baseload, solar for daytime, diesel backup only
             
-            # Get domestic RE target
-            re_target = self._interpolate_domestic_re_target(year)
+            # Get domestic RE share (computed endogenously)
+            re_target = self._domestic_re_by_year.get(year, 0.0)
             
-            # Solar generation
-            solar_gwh = self.cost_calc.solar_generation(self.solar_capacity_mw)
             max_solar = demand_gwh * re_target
             solar_gwh = min(solar_gwh, max_solar)
             
@@ -168,11 +205,11 @@ class FullIntegrationScenario(BaseScenario):
             diesel_reserve_ratio = self.config.one_grid.diesel_reserve_ratio
             diesel_gwh = demand_gwh * diesel_reserve_ratio
             
-            # Import: everything else
-            import_gwh = demand_gwh - solar_gwh - diesel_gwh
+            # Import: everything else (after solar + WTE + diesel reserve)
+            import_gwh = demand_gwh - solar_gwh - wte_gwh - diesel_gwh
             if import_gwh < 0:
                 import_gwh = 0
-                diesel_gwh = demand_gwh - solar_gwh
+                diesel_gwh = max(0, demand_gwh - solar_gwh - wte_gwh)
             
             # Diesel capacity: reduce to backup only
             min_diesel_mw = peak_mw * self.config.one_grid.diesel_backup_share
@@ -181,12 +218,10 @@ class FullIntegrationScenario(BaseScenario):
             
         else:
             # PRE-CABLE: Status quo-like operation
+            # solar_gwh already computed above with vintaged degradation
             
-            # Solar generation (existing + additions)
-            solar_gwh = self.cost_calc.solar_generation(self.solar_capacity_mw)
-            
-            # Diesel meets the rest
-            diesel_gwh = demand_gwh - solar_gwh
+            # Diesel meets the rest after solar + WTE
+            diesel_gwh = demand_gwh - solar_gwh - wte_gwh
             if diesel_gwh < 0:
                 diesel_gwh = 0
             
@@ -198,6 +233,7 @@ class FullIntegrationScenario(BaseScenario):
             diesel_gwh=round(diesel_gwh, 1),
             solar_gwh=round(solar_gwh, 1),
             import_gwh=round(import_gwh, 1),
+            wte_gwh=round(wte_gwh, 1),
             diesel_capacity_mw=round(self.diesel_capacity_mw, 1),
             solar_capacity_mw=round(self.solar_capacity_mw, 1),
             battery_capacity_mwh=round(self.battery_capacity_mwh, 1),
@@ -231,7 +267,7 @@ class FullIntegrationScenario(BaseScenario):
             # Inter-island grid built over construction period
             inter_island_km = self.config.green_transition.inter_island_km
             inter_island_cost_per_km = self.config.technology.inter_island_capex_per_km
-            inter_island_total = inter_island_km * inter_island_cost_per_km / 1e6
+            inter_island_total = inter_island_km * inter_island_cost_per_km  # USD total
             costs.capex_cable += inter_island_total / ii_years  # Split over construction years
         
         # CAPEX: Solar additions
@@ -273,11 +309,67 @@ class FullIntegrationScenario(BaseScenario):
         if year >= cable_online_year:
             costs.opex_cable = self.cost_calc.cable_opex()
         
-        # Fuel: Diesel
-        costs.fuel_diesel = self.cost_calc.diesel_fuel_cost(gen_mix.diesel_gwh, year)
+        # Fuel: Diesel (C9: two-part fuel curve)
+        costs.fuel_diesel = self.cost_calc.diesel_fuel_cost(
+            gen_mix.diesel_gwh, year,
+            diesel_capacity_mw=gen_mix.diesel_capacity_mw
+        )
         
         # PPA: Electricity import
         costs.ppa_imports = self.cost_calc.ppa_cost(gen_mix.import_gwh, year)
+        
+        # L11: Connection costs (phased rollout)
+        conn_cfg = self.config.connection
+        conn_start = self.config.base_year + 1
+        conn_end = conn_start + conn_cfg.rollout_years - 1
+        if conn_start <= year <= conn_end:
+            annual_hh = conn_cfg.number_of_households / conn_cfg.rollout_years
+            costs.capex_connection = self.cost_calc.connection_capex(int(annual_hh))
+        
+        # R6: WTE CAPEX (one-time at online year) + annual OPEX
+        if year == self.config.wte.online_year:
+            costs.capex_wte = self.config.wte.total_capex * (1 + self.config.technology.climate_adaptation_premium)
+        if (year >= self.config.wte.online_year
+                and year < self.config.wte.online_year + self.config.wte.plant_lifetime):
+            costs.opex_wte = self.config.wte.annual_opex
+        
+        # L2: Supply security costs (cable-dependent scenarios only)
+        if year >= cable_online_year:
+            # (a) Idle fleet annual cost — keeping diesel reserve on standby
+            idle_fleet_cost = self.config.supply_security.idle_fleet_annual_cost_m * 1e6
+            
+            # (b) Expected outage cost — Poisson(λ) events/yr × uniform duration
+            # Expected fraction of year in outage = λ × E[duration_months] / 12
+            outage_cfg = self.config.cable_outage
+            expected_duration_months = (
+                outage_cfg.min_outage_months + outage_cfg.max_outage_months
+            ) / 2.0
+            expected_outage_fraction = (
+                outage_cfg.outage_rate_per_yr * expected_duration_months / 12.0
+            )
+            
+            # During outage: lost import GWh must be replaced by diesel at premium
+            import_gwh_at_risk = gen_mix.import_gwh * expected_outage_fraction
+            if import_gwh_at_risk > 0:
+                # Base diesel fuel cost for replacement generation
+                base_fuel_cost = self.cost_calc.diesel_fuel_cost(
+                    import_gwh_at_risk, year,
+                    diesel_capacity_mw=gen_mix.diesel_capacity_mw,
+                )
+                # Premium = fuel_premium_pct × base cost (emergency procurement surcharge)
+                fuel_premium = self.config.supply_security.diesel_fuel_premium_outage
+                outage_fuel_premium_cost = base_fuel_cost * fuel_premium
+            else:
+                outage_fuel_premium_cost = 0.0
+            
+            # VOLL-based cost of unserved energy during outage
+            # Unserved energy = import at risk beyond backup diesel capacity
+            backup_gwh = (gen_mix.diesel_capacity_mw * expected_outage_fraction
+                         * 8760 / 1000 * self.config.dispatch.emergency_diesel_cf)  # CR-07: from config
+            unserved_gwh = max(0, import_gwh_at_risk - backup_gwh)
+            voll_cost = unserved_gwh * 1e3 * self.config.economics.voll  # GWh→MWh × $/MWh
+            
+            costs.supply_security = idle_fleet_cost + outage_fuel_premium_cost + voll_cost
         
         return costs
 
@@ -301,7 +393,8 @@ if __name__ == "__main__":
     print("\n--- GENERATION MIX ---")
     print(f"{'Year':<6} {'Demand':<10} {'Diesel':<10} {'Solar':<10} {'Import':<10} {'Solar MW':<10}")
     print("-" * 80)
-    for year in [2024, 2028, 2030, 2040, 2050]:
+    key_years = [config.base_year, 2028, 2030, 2040, config.end_year]
+    for year in key_years:
         gen = results.generation_mix[year]
         print(f"{year:<6} {gen.total_demand_gwh:<10.0f} {gen.diesel_gwh:<10.0f} {gen.solar_gwh:<10.0f} {gen.import_gwh:<10.0f} {gen.solar_capacity_mw:<10.0f}")
     
@@ -309,20 +402,21 @@ if __name__ == "__main__":
     print("\n--- ANNUAL COSTS (Million USD) ---")
     print(f"{'Year':<6} {'CAPEX':<12} {'Cable':<10} {'Solar':<10} {'OPEX':<10} {'Fuel':<10} {'PPA':<10} {'Total':<10}")
     print("-" * 100)
-    for year in [2024, 2028, 2029, 2030, 2040, 2050]:
+    cost_years = [config.base_year, 2028, 2029, 2030, 2040, config.end_year]
+    for year in cost_years:
         cost = results.annual_costs[year]
         print(f"{year:<6} {cost.total_capex/1e6:<12.1f} {cost.capex_cable/1e6:<10.1f} {cost.capex_solar/1e6:<10.1f} {cost.total_opex/1e6:<10.1f} {cost.fuel_diesel/1e6:<10.1f} {cost.ppa_imports/1e6:<10.1f} {cost.total/1e6:<10.1f}")
     
     # Print emissions
     print("\n--- EMISSIONS (ktCO2) ---")
-    for year in [2024, 2028, 2030, 2040, 2050]:
+    for year in key_years:
         em = results.annual_emissions[year]
         print(f"{year}: {em.total_emissions_ktco2:.0f} ktCO2 (diesel: {em.diesel_ktco2:.0f}, import: {em.import_ktco2:.0f})")
     
     # Summary
     print("\n--- SUMMARY ---")
     summary = scenario.get_summary()
-    print(f"Total costs (2024-2050): ${summary['total_costs_million']:,.0f}M")
+    print(f"Total costs ({config.base_year}-{config.end_year}): ${summary['total_costs_million']:,.0f}M")
     print(f"  - CAPEX: ${summary['total_capex_million']:,.0f}M")
     print(f"  - OPEX: ${summary['total_opex_million']:,.0f}M")
     print(f"  - Fuel: ${summary['total_fuel_million']:,.0f}M")

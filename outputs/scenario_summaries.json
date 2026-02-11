@@ -1,0 +1,156 @@
+{
+  "bau": {
+    "name": "BAU (Diesel)",
+    "total_costs_million": 44948.991051676225,
+    "total_capex_million": 1194.42,
+    "total_opex_million": 2332.59465625,
+    "total_fuel_million": 41421.97639542622,
+    "total_connection_million": 0.0,
+    "total_emissions_mtco2": 65.82970902000001,
+    "total_diesel_gwh": 91249.3,
+    "final_re_share": 0.014969904074658709,
+    "final_diesel_share": 0.9850300959253413,
+    "sectoral_demand_2050": {
+      "year": 2056,
+      "total_gwh": 5186.3,
+      "residential_gwh": 2696.88,
+      "commercial_gwh": 1244.71,
+      "public_gwh": 1244.71,
+      "residential_share": 0.52,
+      "commercial_share": 0.24,
+      "public_share": 0.24
+    }
+  },
+  "full_integration": {
+    "name": "Full Integration",
+    "total_costs_million": 19210.81987826512,
+    "total_capex_million": 4267.203011716412,
+    "total_opex_million": 2902.229360441901,
+    "total_fuel_million": 12041.387506106807,
+    "total_connection_million": 20.0,
+    "total_emissions_mtco2": 49.44432946325821,
+    "total_diesel_gwh": 12142.300000000001,
+    "final_re_share": 0.07612605357813926,
+    "final_diesel_share": 0.04999463144897191,
+    "sectoral_demand_2050": {
+      "year": 2056,
+      "total_gwh": 5186.3,
+      "residential_gwh": 2696.88,
+      "commercial_gwh": 1244.71,
+      "public_gwh": 1244.71,
+      "residential_share": 0.52,
+      "commercial_share": 0.24,
+      "public_share": 0.24
+    }
+  },
+  "national_grid": {
+    "name": "National Grid",
+    "total_costs_million": 22483.69085510918,
+    "total_capex_million": 2601.5427037350837,
+    "total_opex_million": 2089.21895,
+    "total_fuel_million": 17792.9292013741,
+    "total_connection_million": 20.0,
+    "total_emissions_mtco2": 33.164094432,
+    "total_diesel_gwh": 44095.799999999996,
+    "final_re_share": 0.46566349998844275,
+    "final_diesel_share": 0.5343365000115572,
+    "sectoral_demand_2050": {
+      "year": 2056,
+      "total_gwh": 3892.1,
+      "residential_gwh": 2023.89,
+      "commercial_gwh": 934.1,
+      "public_gwh": 934.1,
+      "residential_share": 0.52,
+      "commercial_share": 0.24,
+      "public_share": 0.24
+    }
+  },
+  "islanded_green": {
+    "name": "Islanded Green",
+    "total_costs_million": 24973.55208716135,
+    "total_capex_million": 2980.782799063098,
+    "total_opex_million": 2262.819675,
+    "total_fuel_million": 19729.94961309825,
+    "total_connection_million": 26.0,
+    "total_emissions_mtco2": 33.59930652,
+    "total_diesel_gwh": 44740.00000000001,
+    "final_re_share": 0.44965791420118334,
+    "final_diesel_share": 0.5503420857988165,
+    "sectoral_demand_2050": {
+      "year": 2056,
+      "total_gwh": 3892.1,
+      "residential_gwh": 2023.89,
+      "commercial_gwh": 934.1,
+      "public_gwh": 934.1,
+      "residential_share": 0.52,
+      "commercial_share": 0.24,
+      "public_share": 0.24
+    }
+  },
+  "nearshore_solar": {
+    "name": "Near-Shore Solar",
+    "total_costs_million": 21111.203218030576,
+    "total_capex_million": 2860.290693257232,
+    "total_opex_million": 2102.12695,
+    "total_fuel_million": 16148.785574773343,
+    "total_connection_million": 20.0,
+    "total_emissions_mtco2": 30.649919712000006,
+    "total_diesel_gwh": 40373.600000000006,
+    "final_re_share": 0.49672930679795657,
+    "final_diesel_share": 0.5032706932020432,
+    "sectoral_demand_2050": {
+      "year": 2056,
+      "total_gwh": 3892.1,
+      "residential_gwh": 2023.89,
+      "commercial_gwh": 934.1,
+      "public_gwh": 934.1,
+      "residential_share": 0.52,
+      "commercial_share": 0.24,
+      "public_share": 0.24
+    }
+  },
+  "maximum_re": {
+    "name": "Maximum RE",
+    "total_costs_million": 19228.435439711662,
+    "total_capex_million": 3342.053552354653,
+    "total_opex_million": 2121.171325,
+    "total_fuel_million": 13765.21056235701,
+    "total_connection_million": 20.0,
+    "total_emissions_mtco2": 26.619766511999995,
+    "total_diesel_gwh": 34410.799999999996,
+    "final_re_share": 0.5561436760355029,
+    "final_diesel_share": 0.443856323964497,
+    "sectoral_demand_2050": {
+      "year": 2056,
+      "total_gwh": 3892.1,
+      "residential_gwh": 2023.89,
+      "commercial_gwh": 934.1,
+      "public_gwh": 934.1,
+      "residential_share": 0.52,
+      "commercial_share": 0.24,
+      "public_share": 0.24
+    }
+  },
+  "lng_transition": {
+    "name": "LNG Transition",
+    "total_costs_million": 20254.682441547226,
+    "total_capex_million": 3045.9054706820016,
+    "total_opex_million": 2047.346025,
+    "total_fuel_million": 15161.430945865224,
+    "total_connection_million": 20.0,
+    "total_emissions_mtco2": 33.393182576,
+    "total_diesel_gwh": 30011.8,
+    "final_re_share": 0.3843258339260004,
+    "final_diesel_share": 0.44548908046973923,
+    "sectoral_demand_2050": {
+      "year": 2056,
+      "total_gwh": 5186.3,
+      "residential_gwh": 2696.88,
+      "commercial_gwh": 1244.71,
+      "public_gwh": 1244.71,
+      "residential_share": 0.52,
+      "commercial_share": 0.24,
+      "public_share": 0.24
+    }
+  }
+}

@@ -1,0 +1,104 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Energy Transition Pathways for the Maldives"
+  subtitle: "A Cost-Benefit Analysis of Seven Electricity Scenarios, 2026–2056"
+  author:
+    - name: "Lucas Sempé"
+      affiliation: "International Initiative for Impact Evaluation (3ie)"
+  date: "February 2026"
+  date-format: "MMMM YYYY"
+  
+  # Book structure
+  chapters:
+    - index.qmd
+    - executive-summary.qmd
+    - part: "Part I — Context & Approach"
+      chapters:
+        - 01-introduction.qmd
+        - 02-methodology.qmd
+        - 03-scenarios.qmd
+    - part: "Part II — Results"
+      chapters:
+        - 04-results.qmd
+        - 05-sensitivity.qmd
+        - 06-mca.qmd
+    - part: "Part III — Policy Implications"
+      chapters:
+        - 07-distributional.qmd
+        - 08-financing.qmd
+        - 09-implementation.qmd
+        - 10-conclusions.qmd
+    - part: "Appendices"
+      chapters:
+        - A-methodology-detail.qmd
+        - B-parameters.qmd
+        - C-supplementary.qmd
+  
+  # Navigation
+  sidebar:
+    style: docked
+    search: true
+  
+
+# Bibliography (project-level)
+bibliography: references.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa.csl
+
+# Shared execution options
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: auto
+
+# Format options
+format:
+  html:
+    theme:
+      light: [cosmo, custom.scss]
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+    code-fold: true
+    code-summary: "Show code"
+    code-tools: true
+    fig-width: 10
+    fig-height: 6
+    fig-dpi: 150
+    fig-format: svg
+    crossref:
+      fig-prefix: "Figure"
+      tbl-prefix: "Table"
+    include-in-header:
+      text: |
+        <style>
+        .callout-note { border-left-color: #0d6efd !important; }
+        .callout-important { border-left-color: #dc3545 !important; }
+        .callout-tip { border-left-color: #198754 !important; }
+        </style>
+  
+  pdf:
+    documentclass: report
+    papersize: a4
+    fontsize: 11pt
+    geometry:
+      - top=25mm
+      - bottom=25mm
+      - left=25mm
+      - right=25mm
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    colorlinks: true
+    fig-width: 7
+    fig-height: 4.5
+    fig-dpi: 300
+    fig-format: pdf
+    keep-tex: false
+
+# Python kernel
+jupyter: python3

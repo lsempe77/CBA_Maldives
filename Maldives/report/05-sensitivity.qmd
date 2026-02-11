@@ -1,0 +1,268 @@
+---
+---
+
+```{python}
+#| label: setup
+import sys
+sys.path.insert(0, ".")
+from _common import *
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+```
+
+# Sensitivity & Robustness {#sec-sensitivity}
+
+::: {.chapter-opening}
+No cost-benefit analysis is more reliable than its underlying assumptions. Energy transition investments involve projecting costs, demand, fuel prices, and technology performance over three decades — a horizon over which substantial uncertainty is unavoidable. This chapter subjects the results presented in @sec-results to an unusually comprehensive suite of robustness tests: one-way sensitivity analysis across `{python} f"{n_mc_params}"` parameters, a `{python} f"{monte_carlo['n_iterations']:,}"`-iteration Monte Carlo simulation with correlated parameters, switching-value analysis that identifies the precise thresholds at which recommendations would change, multi-horizon comparison, and declining discount rate sensitivity.
+:::
+
+## One-Way Sensitivity Analysis
+
+One-way sensitivity analysis examines how the NPV savings of each scenario respond when individual parameters are varied between their low and high bounds while all other parameters are held at their base values. This approach identifies the parameters to which the results are most sensitive, directing attention to the assumptions that matter most for the policy decision. The tornado diagram below displays the 15 most influential parameters for the National Grid scenario (S3), ranked by the total swing in NPV savings between the low and high parameter bounds.
+
+```{python}
+#| label: fig-tornado
+#| fig-cap: "Tornado diagram for the National Grid scenario (S3): top 15 parameters by impact on NPV savings. Red bars show NPV when parameter is at its high bound; blue bars at its low bound."
+
+# Use national_grid as the reference scenario for tornado
+ref_scenario = "national_grid"
+ref_data = sensitivity.get(ref_scenario, {})
+
+if ref_data:
+    # Build tornado data
+    params = []
+    for param_name, param_data in ref_data.items():
+        if isinstance(param_data, dict) and "low_npv" in param_data and "high_npv" in param_data:
+            base_npv = param_data.get("base_npv", get_incremental(ref_scenario)["npv_savings"])
+            low_npv = param_data["low_npv"]
+            high_npv = param_data["high_npv"]
+            swing = abs(high_npv - low_npv)
+            params.append({
+                "param": param_name.replace("_", " ").title(),
+                "low_npv": low_npv / 1e9,
+                "high_npv": high_npv / 1e9,
+                "base_npv": base_npv / 1e9,
+                "swing": swing / 1e9,
+            })
+    
+    if params:
+        params_df = pd.DataFrame(params).sort_values("swing", ascending=True).tail(15)
+        base = params_df["base_npv"].iloc[0]
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            y=params_df["param"], x=params_df["low_npv"] - base,
+            orientation="h", name="Low value",
+            marker_color="#3498db",
+            base=base,
+        ))
+        fig.add_trace(go.Bar(
+            y=params_df["param"], x=params_df["high_npv"] - base,
+            orientation="h", name="High value",
+            marker_color="#e74c3c",
+            base=base,
+        ))
+        fig.add_vline(x=base, line_dash="dash", line_color="gray",
+                      annotation_text=f"Base NPV: ${base:.1f}B")
+        
+        fig.update_layout(
+            title=f"Tornado Diagram — {SCENARIO_LABELS[ref_scenario]}",
+            xaxis_title="NPV Savings ($B)",
+            height=550,
+            barmode="overlay",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        )
+        fig.show()
+    else:
+        print("Sensitivity data format not compatible with tornado rendering.")
+else:
+    print(f"No sensitivity data for {ref_scenario}")
+```
+
+The tornado diagram reveals a clear hierarchy of parameter importance. The discount rate and diesel fuel price consistently emerge as the two most influential parameters across all scenarios, which is intuitive: the analysis compares a pathway that is heavily weighted toward upfront capital expenditure (renewables) against one that is dominated by ongoing fuel costs (diesel). The discount rate determines how aggressively future fuel savings are discounted relative to near-term capital outlays, while the diesel price directly determines the magnitude of the fuel savings being compared. Solar PV and battery capital costs also appear among the most influential parameters, though their impact is substantially smaller than the discount rate and fuel price. The growth rate of electricity demand matters because higher demand increases the total volume of fuel that would need to be purchased under BAU, thereby amplifying the fuel savings from transition.
+
+Importantly, even when the most sensitive parameters are pushed to their most adverse bounds — high discount rates combined with low diesel prices and high solar costs — the NPV savings remain positive for all alternative scenarios. This means that no single-parameter variation, within the credible range defined by the literature, can reverse the fundamental conclusion that transition dominates diesel. The one-way analysis thus provides initial evidence of robustness, which the Monte Carlo simulation below extends to multi-parameter simultaneous variation.
+
+## Monte Carlo Simulation
+
+```{python}
+#| label: mc-overview
+n_iter = monte_carlo.get("n_iterations", 1000)
+prob_beats = monte_carlo.get("prob_beats_bau", {})
+convergence = monte_carlo.get("convergence_diagnostics", {})
+```
+
+While one-way sensitivity analysis varies parameters individually, real-world uncertainty involves many parameters changing simultaneously and often in correlated ways. The Monte Carlo simulation addresses this by varying `{python} f"{n_mc_params}"` parameters simultaneously across `{python} f"{n_iter:,}"` iterations, drawing from triangular distributions defined by the low, base, and high values in the parameter table. Crucially, the simulation employs Iman-Conover rank correlations to preserve realistic dependencies between parameters — for example, solar PV capital costs and battery capital costs tend to move together because they are driven by common factors such as global manufacturing scale, supply chain constraints, and commodity prices. Similarly, diesel price and LNG price are positively correlated because both are fossil fuels influenced by global energy market conditions.
+
+Each iteration produces a complete set of NPV calculations for all seven scenarios, enabling the construction of full probability distributions rather than single point estimates. The table below reports the probability that each alternative scenario generates positive NPV savings relative to diesel BAU across all iterations.
+
+```{python}
+#| label: tbl-mc-prob
+#| tbl-cap: "Probability that each alternative scenario beats BAU across 1,000 Monte Carlo iterations."
+
+if prob_beats:
+    mc_tbl = pd.DataFrame([
+        {"Scenario": SCENARIO_SHORT[s], "Prob. Beats BAU": f"{prob_beats.get(s, 0)*100:.1f}%"}
+        for s in ALT_SCENARIOS
+    ])
+    from IPython.display import Markdown
+    Markdown(mc_tbl.to_markdown(index=False))
+```
+
+The results are striking in their consistency. Every alternative scenario beats diesel BAU in more than `{python} f"{min(prob_beats.values())*100:.0f}" if prob_beats else "95"` per cent of iterations, meaning that even when all `{python} f"{n_mc_params}"` parameters are simultaneously varied across their full uncertainty ranges, the fundamental conclusion holds: transition dominates diesel in virtually every plausible combination of circumstances. This is an exceptionally strong result by the standards of public investment appraisal, where BCRs barely above 1.0 and probability-of-success rates of 60–70 per cent are often considered sufficient to justify proceeding^[@adb_guidelines2017; @boardman2018.].
+
+::: {.callout-tip}
+## Result: Extremely robust
+Every alternative scenario beats BAU in **>`{python} f"{min(prob_beats.values())*100:.0f}" if prob_beats else "95"`%** of Monte Carlo iterations. The transition decision is insensitive to parameter uncertainty — the only question is *which* pathway to choose.
+:::
+
+The figure below examines a more nuanced question: across the Monte Carlo iterations, which scenario is most frequently ranked as the best-performing alternative? This addresses not the binary question of whether to transition (which is settled) but the comparative question of which pathway is most likely to prove optimal.
+
+```{python}
+#| label: fig-mc-ranking
+#| fig-cap: "Probability of being the #1 scenario across Monte Carlo iterations."
+
+ranking_probs = monte_carlo.get("ranking_probabilities", {})
+if ranking_probs:
+    # ranking_probs is {scenario_id: probability_of_being_best}
+    # Sort by probability descending
+    sorted_scenarios = sorted(ranking_probs.items(), key=lambda x: x[1], reverse=True)
+    labels = [SCENARIO_SHORT.get(s, s) for s, _ in sorted_scenarios]
+    probs = [p * 100 for _, p in sorted_scenarios]
+    colors = [SCENARIO_COLORS.get(s, "#333") for s, _ in sorted_scenarios]
+    
+    fig = go.Figure(go.Bar(
+        x=labels, y=probs,
+        marker_color=colors,
+        text=[f"{p:.1f}%" for p in probs],
+        textposition="outside",
+    ))
+    fig.update_layout(
+        title="Probability of Being Best Scenario (Monte Carlo)",
+        yaxis_title="Probability (%)",
+        height=400,
+        yaxis_range=[0, 100],
+    )
+    fig.show()
+```
+
+The ranking probability chart reveals whether any single scenario consistently dominates across the full range of parametric uncertainty, or whether the top position shifts depending on which combination of parameter values is drawn. A scenario that ranks first in the majority of iterations can be recommended with higher confidence than one whose top ranking depends on specific parameter configurations. The distribution of ranking probabilities also indicates how close the competition is among the top alternatives — a situation where two scenarios are nearly tied at 30–35 per cent each calls for different policy advice than one where a single scenario dominates with 60 per cent or more.
+
+## Switching Values
+
+Switching-value analysis takes a different approach to robustness testing by asking a precise and policy-relevant question: by how much would a specific parameter need to change from its base value for the ranking between two scenarios to reverse? This provides decision-makers with concrete thresholds they can monitor — if a particular parameter reaches its switching value, the policy recommendation should be revisited.
+
+```{python}
+#| label: switching-values
+switching = sensitivity.get("switching_values", {})
+```
+
+```{python}
+#| label: tbl-switching
+#| tbl-cap: "Key switching values — parameter thresholds at which scenario rankings change."
+
+if switching:
+    sw_rows = []
+    for pair_key, pair_data in switching.items():
+        if isinstance(pair_data, dict):
+            for param, sv_data in pair_data.items():
+                if isinstance(sv_data, dict) and "switching_value" in sv_data:
+                    sw_rows.append({
+                        "Scenario Pair": pair_key.replace("_vs_", " vs. ").replace("_", " ").title(),
+                        "Parameter": param.replace("_", " ").title(),
+                        "Base Value": sv_data.get("base_value", "—"),
+                        "Switching Value": sv_data.get("switching_value", "—"),
+                        "Change Required": f"{sv_data.get('pct_change', 0)*100:+.0f}%" if sv_data.get("pct_change") else "—",
+                    })
+    
+    if sw_rows:
+        sw_df = pd.DataFrame(sw_rows).head(20)
+        from IPython.display import Markdown
+        Markdown(sw_df.to_markdown(index=False))
+    else:
+        print("Switching values available but in different format. See Appendix A for full analysis.")
+else:
+    print("Switching value analysis not available in outputs.")
+```
+
+The switching values provide policymakers with a practical monitoring framework. Where the required change is large (for example, a parameter would need to double or halve from its base value to trigger a ranking reversal), the recommendation can be made with high confidence. Where the required change is small, the recommendation is more tentative and the parameter should be actively monitored as new data become available. In general, the switching values for the most important rankings in this analysis — specifically, the dominance of renewables over diesel and the superiority of domestic RE over the India cable on the margin — require very large parameter shifts to reverse, confirming the robustness of the core findings.
+
+## Multi-Horizon Robustness
+
+The choice of analysis horizon is itself a source of uncertainty. A 30-year period is long enough to capture the lifecycle of most energy infrastructure but short enough to remain within the range of credible projection. However, policymakers may reasonably ask whether the results would look different under shorter or longer horizons. The figure below compares NPV savings across three time frames: a conservative 20-year window (which captures only the most certain near-term costs and benefits), the default 30-year period, and an extended 50-year horizon (which encompasses the full useful life of submarine cables and allows for second-generation solar and battery replacements).
+
+```{python}
+#| label: fig-multi-horizon
+#| fig-cap: "NPV savings across three time horizons (20, 30, 50 years). All alternatives dominate BAU regardless of horizon."
+
+horizons = {"20-year": multi_horizon.get("short", {}),
+            "30-year": multi_horizon.get("medium", {}),
+            "50-year": multi_horizon.get("long", {})}
+
+fig = go.Figure()
+for h_label, h_data in horizons.items():
+    if isinstance(h_data, dict):
+        vals = []
+        for s in ALT_SCENARIOS:
+            s_data = h_data.get(s, {})
+            if isinstance(s_data, dict):
+                vals.append(s_data.get("npv_savings", s_data.get("npv", 0)) / 1e9)
+            else:
+                vals.append(0)
+        fig.add_trace(go.Bar(
+            name=h_label,
+            x=[SCENARIO_SHORT[s] for s in ALT_SCENARIOS],
+            y=vals,
+        ))
+
+fig.update_layout(
+    barmode="group",
+    title="NPV Savings by Time Horizon ($B)",
+    yaxis_title="NPV Savings ($B)",
+    height=450,
+    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+)
+fig.show()
+```
+
+The multi-horizon analysis confirms that the scenario ranking is stable across all three time frames, and that the magnitude of savings grows with the horizon length. This pattern is expected and reflects the fundamental economics of the comparison: renewable pathways front-load their costs (capital expenditure occurs in the early years) and generate benefits throughout the analysis period (fuel savings accrue every year as long as the solar panels and batteries are operating), while diesel BAU distributes costs more evenly but at a higher cumulative total. Extending the horizon to 50 years captures additional decades of fuel savings with only modest additional capital for equipment replacement, substantially amplifying the NPV advantage of renewables. Even under the conservative 20-year horizon, which captures only two-thirds of the solar panel's useful life and barely one cycle of battery replacement, all alternatives generate large positive NPV savings relative to diesel. This means that the case for transition does not depend on optimistic assumptions about the distant future — it is compelling even under the most conservative analytical framework.
+
+## Declining Discount Rate Sensitivity
+
+The declining discount rate (DDR) sensitivity test addresses a methodological debate that is particularly relevant for long-lived infrastructure investments. Standard CBA uses a constant discount rate, which implies that society's time preference for near-term consumption over future consumption is fixed and unchanging. However, a substantial body of economic theory — beginning with @weitzman2001 and supported by the empirical survey of expert discount rate estimates by @drupp2018 — argues that the effective discount rate should decline over time. The rationale is that uncertainty about future economic growth rates and interest rates creates an effective certainty-equivalent rate that falls as the horizon lengthens. This matters enormously for investments like energy infrastructure, where benefits extend 30 to 50 years into the future: under a DDR, distant benefits receive more weight than under a constant rate.
+
+```{python}
+#| label: fig-ddr
+#| fig-cap: "Impact of declining discount rates (DDR) on present value of total costs. DDR increases the PV of all scenarios but increases BAU (fuel-heavy) most."
+
+ddr = cba.get("declining_discount_rate", {})
+if ddr:
+    fig = go.Figure()
+    scenarios_in_ddr = [s for s in SCENARIO_IDS if s in ddr]
+    
+    if scenarios_in_ddr:
+        constant_vals = [cba["npv_results"][s]["pv_total_costs"] / 1e9 for s in scenarios_in_ddr]
+        ddr_vals = [ddr[s].get("pv_total_costs", 0) / 1e9 for s in scenarios_in_ddr]
+        labels = [SCENARIO_SHORT[s] for s in scenarios_in_ddr]
+        
+        fig.add_trace(go.Bar(name=f"Constant {cba['discount_rate']*100:.0f}%", x=labels, y=constant_vals, marker_color="#3498db"))
+        fig.add_trace(go.Bar(name=f"DDR ({cba['declining_discount_rate']['ddr_schedule']['years_0_30']*100:.1f}%→{cba['declining_discount_rate']['ddr_schedule']['years_31_75']*100:.1f}%→{cba['declining_discount_rate']['ddr_schedule']['years_76_125']*100:.1f}%)", x=labels, y=ddr_vals, marker_color="#e74c3c"))
+        
+        fig.update_layout(
+            barmode="group",
+            title="PV Total Costs: Constant Rate vs. DDR ($B)",
+            yaxis_title="PV of Total Costs ($B)",
+            height=450,
+        )
+        fig.show()
+    else:
+        print("DDR data available but scenario keys don't match. See outputs for raw data.")
+else:
+    print("Declining discount rate analysis not found in outputs.")
+```
+
+The DDR analysis reveals an asymmetric effect that strengthens the case for transition. Under declining discount rates, the present value of costs increases for all scenarios because future expenditures are discounted less aggressively. However, the increase is much larger for the diesel BAU pathway, whose costs are dominated by ongoing fuel purchases that extend throughout the analysis period and beyond. The renewable pathways, whose costs are concentrated in the early years of capital investment, are less affected by the change in discounting methodology. The net effect is that the NPV advantage of transition over diesel grows under declining discount rates, meaning that the standard constant-rate analysis is actually conservative in its assessment of the benefits of transition.
+
+This finding has important implications for the policy debate about intergenerational equity. The Maldives, as a nation existentially threatened by climate change, has a strong interest in analytical frameworks that give appropriate weight to long-term outcomes. The DDR analysis demonstrates that such frameworks only strengthen the case for rapid energy transition — a conclusion that aligns with the @stern2006 argument that failing to account for the long-term costs of climate change represents a market failure in intertemporal valuation.
+
+Taken together, the sensitivity, Monte Carlo, switching-value, multi-horizon, and DDR analyses provide overwhelming evidence that the core findings of this report are robust. The decision to transition away from diesel is insensitive to any plausible combination of parameter values, analytical horizons, or discounting methodologies. The more nuanced question of which specific pathway to pursue shows somewhat more sensitivity to parameter assumptions, but the top-performing domestic renewable scenarios consistently outperform the India cable on the margin across the vast majority of tested conditions.

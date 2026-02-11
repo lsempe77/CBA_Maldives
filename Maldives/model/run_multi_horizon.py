@@ -2,7 +2,7 @@
 Maldives Energy CBA Model - Multi-Horizon Analysis
 ===================================================
 
-This script runs the CBA for all 4 scenarios across 3 time horizons:
+This script runs the CBA for all 7 scenarios across 3 time horizons:
 - Short-term: 20 years (2026-2046)
 - Medium-term: 30 years (2026-2056)
 - Long-term: 50 years (2026-2076)
@@ -38,6 +38,9 @@ from model.scenarios.status_quo import StatusQuoScenario
 from model.scenarios.green_transition import NationalGridScenario
 from model.scenarios.one_grid import FullIntegrationScenario
 from model.scenarios.islanded_green import IslandedGreenScenario
+from model.scenarios.nearshore_solar import NearShoreSolarScenario
+from model.scenarios.maximum_re import MaximumREScenario
+from model.scenarios.lng_transition import LNGTransitionScenario
 from model.cba import CBACalculator
 
 
@@ -71,6 +74,9 @@ SCENARIO_CLASSES = {
     "full_integration": ("Full Integration", FullIntegrationScenario),
     "national_grid": ("National Grid", NationalGridScenario),
     "islanded_green": ("Islanded Green", IslandedGreenScenario),
+    "nearshore_solar": ("Near-Shore Solar", NearShoreSolarScenario),
+    "maximum_re": ("Maximum RE", MaximumREScenario),
+    "lng_transition": ("LNG Transition", LNGTransitionScenario),
 }
 
 
@@ -113,12 +119,22 @@ def print_header():
 
 
 def create_config_for_horizon(horizon_key: str) -> Config:
-    """Create a config object configured for a specific time horizon."""
+    """Create a config object configured for a specific time horizon.
+    
+    Uses config.end_year_20/30/50 (loaded from parameters.csv Time category)
+    to override the HORIZONS dict, ensuring CSV is the single source of truth.
+    """
     config = get_config(load_from_csv=True)
     
-    horizon = HORIZONS[horizon_key]
-    config.end_year = horizon["end_year"]
-    config.time_horizon = horizon["time_horizon"]
+    # Override horizon end years from config (CSV-driven) if they differ
+    horizon_end_map = {
+        "short": config.end_year_20,
+        "medium": config.end_year_30,
+        "long": config.end_year_50,
+    }
+    end_year = horizon_end_map.get(horizon_key, HORIZONS[horizon_key]["end_year"])
+    config.end_year = end_year
+    config.time_horizon = list(range(config.base_year, end_year + 1))
     
     return config
 

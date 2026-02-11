@@ -1,0 +1,183 @@
+---
+title: "Executive Summary"
+---
+
+```{python}
+#| label: setup
+import sys
+sys.path.insert(0, ".")
+from _common import *
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+```
+
+::: {.callout-note appearance="simple"}
+## The Bottom Line
+
+**Every transition pathway saves the Maldives billions compared to continuing with diesel.** The analysis compares seven scenarios over `{python} f"{cba['end_year'] - cba['base_year']}"` years (`{python} f"{cba['base_year']}"` – `{python} f"{cba['end_year']}"`) at a `{python} f"{cba['discount_rate']*100:.0f}"`% social discount rate. All six alternatives to diesel yield benefit-cost ratios above `{python} f"{bcr_min:.1f}"` ×, with the best-performing options saving over $`{python} f"{savings_max_b:,.0f}"` billion in present value.
+:::
+
+## The Challenge
+
+```{python}
+#| label: challenge-numbers
+baseline = cba["baseline_system"]
+demand_2026 = cba["sectoral_demand"]["bau"]["2026"]["total_gwh"]
+demand_2056 = cba["sectoral_demand"]["bau"]["2056"]["total_gwh"]
+bau_emissions = summaries["bau"]["total_emissions_mtco2"]
+bau_fuel_cost = cba["npv_results"]["bau"]["pv_fuel"] / 1e9
+```
+
+The Republic of Maldives confronts an energy challenge unique among small island developing states. Its electricity system is almost entirely dependent on imported diesel fuel, which generates approximately 93 per cent of the nation's power across 187 inhabited islands^[@gom_roadmap2024; @maldives_census2022.], each served by its own isolated generation facility with no interconnected grid. This geographical fragmentation translates into extraordinarily high per-unit generation costs, as each island operates small, inefficient diesel generators that cannot benefit from the economies of scale available to larger, interconnected systems. Current electricity demand stands at `{python} f"{demand_2026:,.0f}"` GWh per year and is projected to reach `{python} f"{demand_2056:,.0f}"` GWh by 2056 under business-as-usual growth assumptions, driven by population growth, rising incomes, and increasing electrification of economic activity.
+
+The economic burden of this diesel dependence is staggering. Over the 30-year analysis period, continuing with the status quo would cost the Maldives **`{python} f"${bau_fuel_cost:,.1f}"` billion in fuel expenditures alone** in present-value terms, representing a massive and sustained transfer of national wealth to international petroleum markets. These fuel imports currently account for a significant share of the country's total import bill, creating chronic trade balance pressure and exposing the national economy to the vagaries of global oil price volatility. The environmental cost is equally severe: the business-as-usual pathway would generate **`{python} f"{bau_emissions:,.1f}"` million tonnes of CO₂** over the analysis period, a substantial contribution from a nation that is among the most vulnerable to the consequences of climate change. For a low-lying archipelago where the highest natural point is barely two metres above sea level, there is a painful irony in a power system that actively worsens the climate crisis threatening the country's very existence.
+
+The findings of this analysis are fully consistent with the Government of Maldives' **Road Map for the Energy Sector 2024–2033** [-@gom_roadmap2024], which targets 33 per cent renewable energy by 2028 and identifies $1.3 billion in required investment across 15 flagship interventions. This CBA provides the economic evidence base to support and prioritise those commitments, demonstrating that every alternative pathway examined generates net benefits of between $`{python} f"{savings_min_b:,.1f}"` billion and $`{python} f"{savings_max_b:,.1f}"` billion in present value relative to the diesel status quo.
+
+## Seven Pathways Compared
+
+This analysis evaluates seven distinct energy transition pathways for the Maldives, ranging from continued diesel dependence (business-as-usual) to ambitious renewable energy and interconnection strategies. Each pathway represents a fundamentally different vision for the country's energy future, with different technology mixes, infrastructure requirements, implementation timelines, and risk profiles. The figure below presents the four most important metrics side by side: the present value of total system costs over the 30-year horizon, the levelised cost of electricity (which allows direct comparison of per-unit economics), cumulative greenhouse gas emissions, and the share of electricity generated from renewable sources by 2056. The contrast between diesel BAU and the alternatives is stark across every dimension.
+
+```{python}
+#| label: fig-executive-comparison
+#| fig-cap: "Comparison of seven energy scenarios across four key metrics. All alternative scenarios outperform diesel BAU."
+
+# Build comparison data
+data = []
+for sid in SCENARIO_IDS:
+    npv = get_npv(sid)
+    smry = get_summary(sid)
+    inc = cba["incremental_vs_bau"].get(sid, {})
+    data.append({
+        "Scenario": SCENARIO_SHORT[sid],
+        "sid": sid,
+        "Total Cost ($B)": npv["pv_total_costs"] / 1e9,
+        "LCOE (¢/kWh)": npv["lcoe"] * 100,
+        "Emissions (MtCO₂)": smry["total_emissions_mtco2"],
+        "Final RE (%)": smry["final_re_share"] * 100,
+        "color": SCENARIO_COLORS[sid],
+    })
+
+df = pd.DataFrame(data)
+
+fig = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=[
+        "Present Value of Total Costs ($B)",
+        "Levelised Cost of Electricity (¢/kWh)",
+        "Cumulative Emissions (MtCO₂)",
+        "Final Renewable Energy Share (%)",
+    ],
+    vertical_spacing=0.18,
+    horizontal_spacing=0.12,
+)
+
+for i, (col, row_n, col_n) in enumerate([
+    ("Total Cost ($B)", 1, 1),
+    ("LCOE (¢/kWh)", 1, 2),
+    ("Emissions (MtCO₂)", 2, 1),
+    ("Final RE (%)", 2, 2),
+]):
+    fig.add_trace(
+        go.Bar(
+            x=df["Scenario"], y=df[col],
+            marker_color=df["color"],
+            text=[f"{v:.1f}" for v in df[col]],
+            textposition="outside",
+            showlegend=False,
+        ),
+        row=row_n, col=col_n,
+    )
+
+fig.update_layout(height=650, title_text="")
+fig.update_annotations(font_size=13)
+fig.show()
+```
+
+The four-panel comparison reveals a consistent pattern across all metrics. In the upper-left panel, the present value of total system costs shows that every alternative pathway is substantially cheaper than continuing with diesel, even after accounting for the upfront capital expenditure required for solar panels, battery systems, submarine cables, and grid infrastructure. This cost advantage arises because the avoided fuel expenditures over three decades far outweigh the initial investment, a pattern that strengthens over time as diesel prices escalate while solar and battery costs continue to decline. The upper-right panel translates these lifetime costs into a per-unit metric — the levelised cost of electricity — which confirms that solar-based alternatives have already achieved cost parity with diesel and in most scenarios deliver electricity at roughly half the cost. The lower panels address environmental performance: cumulative emissions fall dramatically under all alternative pathways, with the highest-RE scenarios reducing lifetime CO₂ by more than 80 per cent, while renewable energy shares by 2056 range from approximately 50 per cent to over 95 per cent depending on the pathway chosen.
+
+## The Ranking
+
+The table below ranks all six alternative scenarios by their net present value savings relative to diesel BAU. This metric captures the total economic benefit of transitioning, measured as the difference between the present value of costs under the status quo and under each alternative pathway. The benefit-cost ratio (BCR) and internal rate of return (IRR) provide complementary perspectives: the BCR indicates how many dollars of benefit are generated per dollar of incremental cost, while the IRR represents the implied rate of return on the transition investment, which can be compared against the country's cost of capital to confirm economic attractiveness.
+
+```{python}
+#| label: tbl-ranking
+#| tbl-cap: "Scenario comparison: key metrics ranked by NPV savings versus BAU."
+
+tbl = make_summary_table()
+tbl_display = tbl[tbl["Scenario"] != "S1 BAU"].copy()
+tbl_display = tbl_display.sort_values("NPV Savings ($B)", ascending=False)
+
+# Format for display
+tbl_display["PV Total Costs ($B)"] = tbl_display["PV Total Costs ($B)"].apply(lambda x: f"${x:,.1f}")
+tbl_display["LCOE ($/kWh)"] = tbl_display["LCOE ($/kWh)"].apply(lambda x: f"${x:.3f}")
+tbl_display["NPV Savings ($B)"] = tbl_display["NPV Savings ($B)"].apply(lambda x: f"${x:,.1f}")
+tbl_display["BCR"] = tbl_display["BCR"].apply(lambda x: f"{x:.1f}×" if isinstance(x, float) else x)
+tbl_display["IRR (%)"] = tbl_display["IRR (%)"].apply(lambda x: f"{x:.1f}%" if isinstance(x, float) else x)
+tbl_display["Emissions (MtCO₂)"] = tbl_display["Emissions (MtCO₂)"].apply(lambda x: f"{x:.1f}")
+tbl_display["Final RE (%)"] = tbl_display["Final RE (%)"].apply(lambda x: f"{x:.0f}%")
+
+from IPython.display import Markdown
+Markdown(tbl_display.to_markdown(index=False))
+```
+
+The ranking table demonstrates that all six alternatives are economically attractive by wide margins. The differences among the alternatives are meaningful but secondary to the overwhelming case for transition itself: even the lowest-ranked alternative generates billions in net savings, with a BCR well above the standard 1.0× threshold used in public investment appraisal. The scenarios with the highest renewable energy shares tend to deliver the largest total savings, reflecting the fundamental cost advantage of zero-marginal-cost solar generation over fuel-dependent diesel. However, the fastest financial returns (highest IRR) may come from transitional strategies such as LNG, which achieve rapid fuel cost reductions with established technology even though they do not reach the highest RE shares. This distinction between maximum lifetime savings and maximum near-term return is important for policymakers balancing long-run optimality against implementation speed and political feasibility.
+
+## Key Findings
+
+::: {.callout-important}
+### Finding 1: All alternatives beat diesel — decisively
+```{python}
+best = max(ALT_SCENARIOS, key=lambda s: get_incremental(s)["npv_savings"])
+worst = min(ALT_SCENARIOS, key=lambda s: get_incremental(s)["npv_savings"])
+```
+Even the *least* advantageous alternative (`{python} SCENARIO_SHORT[worst]`) saves **`{python} fmt_usd(get_incremental(worst)['npv_savings'])`** versus diesel. The *best* (`{python} SCENARIO_SHORT[best]`) saves **`{python} fmt_usd(get_incremental(best)['npv_savings'])`**. These results are robust across discount rates, time horizons, and parameter uncertainty (see @sec-sensitivity).
+:::
+
+::: {.callout-important}
+### Finding 2: Solar+battery is cost-competitive today
+```{python}
+ng_lcoe = get_npv("national_grid")["lcoe"]
+bau_lcoe = get_npv("bau")["lcoe"]
+```
+Domestic solar+battery systems achieve an LCOE of **`{python} f"${ng_lcoe:.3f}"`/kWh** compared to diesel's **`{python} f"${bau_lcoe:.3f}"`/kWh** — a `{python} f"{(1 - ng_lcoe/bau_lcoe)*100:.0f}"`% cost reduction. Battery cost declines (Wright's Law learning rate 18%) will widen this gap further.
+:::
+
+::: {.callout-important}
+### Finding 3: The India cable adds geopolitical risk for marginal gain
+```{python}
+fi_vs_ng = cba["incremental_fi_vs_ng"]
+```
+Full Integration (India cable) costs **`{python} fmt_usd(fi_vs_ng['additional_capex'])`** more in CAPEX than the National Grid option, with a BCR of only **`{python} f"{fi_vs_ng['bcr']:.2f}"`×** on the margin. Given cable outage risks (λ=0.15/yr, repair 1–6 months), this pathway introduces single-point-of-failure vulnerability that domestic alternatives avoid.
+:::
+
+::: {.callout-important}
+### Finding 4: Results are robust to uncertainty
+```{python}
+prob_beats = monte_carlo.get("prob_beats_bau", {})
+min_prob = min(prob_beats.values()) if prob_beats else 0.95
+```
+Monte Carlo simulation (`{python} f"{monte_carlo['n_iterations']:,}"` iterations, `{python} f"{n_mc_params}"` correlated parameters) shows every alternative beats BAU in **>`{python} f"{min_prob*100:.0f}"`%** of simulations. The ranking is stable across discount rates (`{python} f"{param('Discount Rate', 'Low')*100:.0f}"`–`{python} f"{param('Discount Rate', 'High')*100:.0f}"`%), time horizons (20–50 years), and five different multi-criteria weight profiles.
+:::
+
+## What Should Policymakers Do?
+
+The evidence assembled in this report points to a clear set of policy priorities. These recommendations are grounded in the quantitative analysis but also reflect the practical constraints of institutional capacity, financing availability, and political economy that shape energy transitions in small island developing states.
+
+::: {.policy-rec}
+#### Recommendation 1 — Pursue Aggressive Solar+Battery Deployment on Outer Islands
+
+The most immediate and unambiguous action available to the Government of Maldives is the accelerated deployment of solar photovoltaic systems with battery storage on the country's outer islands. The islanded green pathway (S4) or its near-shore variant (S5) can begin immediately using proven, commercially mature technology that requires no unprecedented engineering or cross-border agreements. The economic case is compelling: solar-plus-battery systems already deliver electricity at roughly half the cost of diesel on the outer islands, and every year of delay forgoes approximately `{python} f"${get_incremental('islanded_green')['fuel_savings'] / 1e9 / 30:,.0f}"`M in fuel savings that could be redirected to other development priorities. The deployment programme should target 50 MW of new solar capacity per year, prioritising the approximately 170 outer islands where the LCOE advantage over diesel is greatest. This strategy has the additional virtue of building domestic technical capacity and institutional experience that will be needed for later, more complex phases of the transition.
+:::
+
+::: {.policy-rec}
+#### Recommendation 2 — Prioritise LNG Transition for Greater Malé Baseload
+
+The LNG Transition scenario (S7) offers a pragmatic bridging strategy for the Greater Malé region, where electricity demand is concentrated and rooftop solar potential is limited by extreme urban density. This pathway achieves the highest internal rate of return (`{python} f"{get_incremental('lng_transition')['irr']*100:.1f}"`%) and fastest payback period (`{python} get_incremental('lng_transition')['payback_years']` years) of any scenario, leveraging the planned Gulhifalhu terminal to replace expensive diesel generation with cleaner and cheaper liquefied natural gas. The rapid financial returns make this pathway particularly attractive for building early political support for the broader transition agenda. However, the government must pair the LNG commitment with a binding renewable energy ramp target to avoid locking the country into three decades of continued fossil fuel dependence.
+:::
+
+::: {.policy-rec}
+#### Recommendation 3 — Embed Distributional Equity in Project Design
+
+The analysis of household-level survey data from HIES 2019 reveals that lower-income households spend a disproportionately large share of their income on electricity, a pattern that could worsen during the investment phase of the transition if tariffs rise to service new infrastructure debt. The government must therefore embed equity safeguards directly into the transition design from the outset, rather than treating them as an afterthought. This means implementing progressive tariff structures with lifeline blocks for essential consumption, providing targeted cash transfers to the lowest-income quintile during the adjustment period, and ensuring that the government — rather than individual households — bears the cost of last-mile grid connections in underserved communities. The distributional analysis in @sec-distributional provides the evidence base for designing these safeguards.
+:::

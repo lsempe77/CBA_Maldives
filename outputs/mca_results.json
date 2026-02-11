@@ -1,0 +1,1016 @@
+{
+  "method": "Multi-Criteria Analysis (MCA)",
+  "normalisation": "min-max (0-1)",
+  "weights": {
+    "economic_efficiency": 0.18,
+    "environmental_impact": 0.135,
+    "energy_security": 0.135,
+    "health_benefits": 0.09,
+    "fiscal_burden": 0.09,
+    "implementation_ease": 0.09,
+    "social_equity": 0.09,
+    "climate_resilience": 0.09,
+    "job_creation": 0.05,
+    "forex_savings": 0.05
+  },
+  "note": "MCA complements CBA by evaluating non-monetary dimensions. Qualitative criteria (implementation_ease, social_equity, climate_resilience) use expert-assigned scores. Quantitative criteria are derived from CBA model outputs.",
+  "ranking": [
+    {
+      "rank": 1,
+      "scenario": "maximum_re",
+      "label": "S6: Maximum RE (80%+)",
+      "score": 0.7713
+    },
+    {
+      "rank": 2,
+      "scenario": "nearshore_solar",
+      "label": "S5: Near-Shore Solar",
+      "score": 0.6459
+    },
+    {
+      "rank": 3,
+      "scenario": "lng_transition",
+      "label": "S7: LNG Transition",
+      "score": 0.5757
+    },
+    {
+      "rank": 4,
+      "scenario": "islanded_green",
+      "label": "S4: Islanded Green (All Solar)",
+      "score": 0.5616
+    },
+    {
+      "rank": 5,
+      "scenario": "national_grid",
+      "label": "S3: National Grid (Progressive)",
+      "score": 0.519
+    },
+    {
+      "rank": 6,
+      "scenario": "full_integration",
+      "label": "S2: India Cable (Full Integration)",
+      "score": 0.1765
+    }
+  ],
+  "scenarios": {
+    "maximum_re": {
+      "label": "S6: Maximum RE (80%+)",
+      "criteria": {
+        "economic_efficiency": {
+          "label": "Economic Efficiency (NPV savings)",
+          "unit": "$M",
+          "raw_value": 12156.63,
+          "normalised": 0.9831,
+          "weight": 0.18000000000000002,
+          "weighted_score": 0.177,
+          "direction": "higher_better"
+        },
+        "environmental_impact": {
+          "label": "Environmental Impact (CO\u2082 reduction)",
+          "unit": "MtCO\u2082",
+          "raw_value": 39.21,
+          "normalised": 1.0,
+          "weight": 0.135,
+          "weighted_score": 0.135,
+          "direction": "higher_better"
+        },
+        "energy_security": {
+          "label": "Energy Security (RE share)",
+          "unit": "%",
+          "raw_value": 0.56,
+          "normalised": 1.0,
+          "weight": 0.135,
+          "weighted_score": 0.135,
+          "direction": "higher_better"
+        },
+        "health_benefits": {
+          "label": "Health Co-Benefits (Diesel GWh Avoided)",
+          "unit": "GWh",
+          "raw_value": 56838.5,
+          "normalised": 0.3169,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0285,
+          "direction": "higher_better"
+        },
+        "fiscal_burden": {
+          "label": "Fiscal Burden (CAPEX)",
+          "unit": "$M",
+          "raw_value": 3342.05,
+          "normalised": 0.5554,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.05,
+          "direction": "lower_better"
+        },
+        "implementation_ease": {
+          "label": "Implementation Feasibility",
+          "unit": "score",
+          "raw_value": 0.4,
+          "normalised": 0.2,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.018,
+          "direction": "higher_better"
+        },
+        "social_equity": {
+          "label": "Social Equity (Access)",
+          "unit": "score",
+          "raw_value": 0.8,
+          "normalised": 0.8,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.072,
+          "direction": "higher_better"
+        },
+        "climate_resilience": {
+          "label": "Climate Resilience",
+          "unit": "score",
+          "raw_value": 0.85,
+          "normalised": 1.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.09,
+          "direction": "higher_better"
+        },
+        "job_creation": {
+          "label": "Job Creation (job-years)",
+          "unit": "job-years",
+          "raw_value": 50131.0,
+          "normalised": 1.0,
+          "weight": 0.05,
+          "weighted_score": 0.05,
+          "direction": "higher_better"
+        },
+        "forex_savings": {
+          "label": "Forex Savings (reduced imports)",
+          "unit": "$M",
+          "raw_value": 14607.5,
+          "normalised": 0.3169,
+          "weight": 0.05,
+          "weighted_score": 0.0158,
+          "direction": "higher_better"
+        }
+      },
+      "total_weighted_score": 0.7713,
+      "rank": 1
+    },
+    "nearshore_solar": {
+      "label": "S5: Near-Shore Solar",
+      "criteria": {
+        "economic_efficiency": {
+          "label": "Economic Efficiency (NPV savings)",
+          "unit": "$M",
+          "raw_value": 11118.1,
+          "normalised": 0.6042,
+          "weight": 0.18000000000000002,
+          "weighted_score": 0.1087,
+          "direction": "higher_better"
+        },
+        "environmental_impact": {
+          "label": "Environmental Impact (CO\u2082 reduction)",
+          "unit": "MtCO\u2082",
+          "raw_value": 35.18,
+          "normalised": 0.8234,
+          "weight": 0.135,
+          "weighted_score": 0.1112,
+          "direction": "higher_better"
+        },
+        "energy_security": {
+          "label": "Energy Security (RE share)",
+          "unit": "%",
+          "raw_value": 0.5,
+          "normalised": 0.8762,
+          "weight": 0.135,
+          "weighted_score": 0.1183,
+          "direction": "higher_better"
+        },
+        "health_benefits": {
+          "label": "Health Co-Benefits (Diesel GWh Avoided)",
+          "unit": "GWh",
+          "raw_value": 50875.7,
+          "normalised": 0.1339,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0121,
+          "direction": "higher_better"
+        },
+        "fiscal_burden": {
+          "label": "Fiscal Burden (CAPEX)",
+          "unit": "$M",
+          "raw_value": 2860.29,
+          "normalised": 0.8447,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.076,
+          "direction": "lower_better"
+        },
+        "implementation_ease": {
+          "label": "Implementation Feasibility",
+          "unit": "score",
+          "raw_value": 0.6,
+          "normalised": 0.6,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.054,
+          "direction": "higher_better"
+        },
+        "social_equity": {
+          "label": "Social Equity (Access)",
+          "unit": "score",
+          "raw_value": 0.75,
+          "normalised": 0.7,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.063,
+          "direction": "higher_better"
+        },
+        "climate_resilience": {
+          "label": "Climate Resilience",
+          "unit": "score",
+          "raw_value": 0.75,
+          "normalised": 0.7143,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0643,
+          "direction": "higher_better"
+        },
+        "job_creation": {
+          "label": "Job Creation (job-years)",
+          "unit": "job-years",
+          "raw_value": 42904.0,
+          "normalised": 0.6326,
+          "weight": 0.05,
+          "weighted_score": 0.0316,
+          "direction": "higher_better"
+        },
+        "forex_savings": {
+          "label": "Forex Savings (reduced imports)",
+          "unit": "$M",
+          "raw_value": 13075.1,
+          "normalised": 0.134,
+          "weight": 0.05,
+          "weighted_score": 0.0067,
+          "direction": "higher_better"
+        }
+      },
+      "total_weighted_score": 0.6459,
+      "rank": 2
+    },
+    "lng_transition": {
+      "label": "S7: LNG Transition",
+      "criteria": {
+        "economic_efficiency": {
+          "label": "Economic Efficiency (NPV savings)",
+          "unit": "$M",
+          "raw_value": 12202.99,
+          "normalised": 1.0,
+          "weight": 0.18000000000000002,
+          "weighted_score": 0.18,
+          "direction": "higher_better"
+        },
+        "environmental_impact": {
+          "label": "Environmental Impact (CO\u2082 reduction)",
+          "unit": "MtCO\u2082",
+          "raw_value": 32.44,
+          "normalised": 0.7032,
+          "weight": 0.135,
+          "weighted_score": 0.0949,
+          "direction": "higher_better"
+        },
+        "energy_security": {
+          "label": "Energy Security (RE share)",
+          "unit": "%",
+          "raw_value": 0.38,
+          "normalised": 0.6421,
+          "weight": 0.135,
+          "weighted_score": 0.0867,
+          "direction": "higher_better"
+        },
+        "health_benefits": {
+          "label": "Health Co-Benefits (Diesel GWh Avoided)",
+          "unit": "GWh",
+          "raw_value": 61237.5,
+          "normalised": 0.4518,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0407,
+          "direction": "higher_better"
+        },
+        "fiscal_burden": {
+          "label": "Fiscal Burden (CAPEX)",
+          "unit": "$M",
+          "raw_value": 3045.91,
+          "normalised": 0.7332,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.066,
+          "direction": "lower_better"
+        },
+        "implementation_ease": {
+          "label": "Implementation Feasibility",
+          "unit": "score",
+          "raw_value": 0.6,
+          "normalised": 0.6,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.054,
+          "direction": "higher_better"
+        },
+        "social_equity": {
+          "label": "Social Equity (Access)",
+          "unit": "score",
+          "raw_value": 0.5,
+          "normalised": 0.2,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.018,
+          "direction": "higher_better"
+        },
+        "climate_resilience": {
+          "label": "Climate Resilience",
+          "unit": "score",
+          "raw_value": 0.55,
+          "normalised": 0.1429,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0129,
+          "direction": "higher_better"
+        },
+        "job_creation": {
+          "label": "Job Creation (job-years)",
+          "unit": "job-years",
+          "raw_value": 30459.0,
+          "normalised": 0.0,
+          "weight": 0.05,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "forex_savings": {
+          "label": "Forex Savings (reduced imports)",
+          "unit": "$M",
+          "raw_value": 15738.0,
+          "normalised": 0.4518,
+          "weight": 0.05,
+          "weighted_score": 0.0226,
+          "direction": "higher_better"
+        }
+      },
+      "total_weighted_score": 0.5757,
+      "rank": 3
+    },
+    "islanded_green": {
+      "label": "S4: Islanded Green (All Solar)",
+      "criteria": {
+        "economic_efficiency": {
+          "label": "Economic Efficiency (NPV savings)",
+          "unit": "$M",
+          "raw_value": 9462.21,
+          "normalised": 0.0,
+          "weight": 0.18000000000000002,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "environmental_impact": {
+          "label": "Environmental Impact (CO\u2082 reduction)",
+          "unit": "MtCO\u2082",
+          "raw_value": 32.23,
+          "normalised": 0.6942,
+          "weight": 0.135,
+          "weighted_score": 0.0937,
+          "direction": "higher_better"
+        },
+        "energy_security": {
+          "label": "Energy Security (RE share)",
+          "unit": "%",
+          "raw_value": 0.45,
+          "normalised": 0.7782,
+          "weight": 0.135,
+          "weighted_score": 0.1051,
+          "direction": "higher_better"
+        },
+        "health_benefits": {
+          "label": "Health Co-Benefits (Diesel GWh Avoided)",
+          "unit": "GWh",
+          "raw_value": 46509.3,
+          "normalised": 0.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "fiscal_burden": {
+          "label": "Fiscal Burden (CAPEX)",
+          "unit": "$M",
+          "raw_value": 2980.78,
+          "normalised": 0.7723,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0695,
+          "direction": "lower_better"
+        },
+        "implementation_ease": {
+          "label": "Implementation Feasibility",
+          "unit": "score",
+          "raw_value": 0.8,
+          "normalised": 1.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.09,
+          "direction": "higher_better"
+        },
+        "social_equity": {
+          "label": "Social Equity (Access)",
+          "unit": "score",
+          "raw_value": 0.9,
+          "normalised": 1.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.09,
+          "direction": "higher_better"
+        },
+        "climate_resilience": {
+          "label": "Climate Resilience",
+          "unit": "score",
+          "raw_value": 0.8,
+          "normalised": 0.8571,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0771,
+          "direction": "higher_better"
+        },
+        "job_creation": {
+          "label": "Job Creation (job-years)",
+          "unit": "job-years",
+          "raw_value": 44712.0,
+          "normalised": 0.7245,
+          "weight": 0.05,
+          "weighted_score": 0.0362,
+          "direction": "higher_better"
+        },
+        "forex_savings": {
+          "label": "Forex Savings (reduced imports)",
+          "unit": "$M",
+          "raw_value": 11952.9,
+          "normalised": 0.0,
+          "weight": 0.05,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        }
+      },
+      "total_weighted_score": 0.5616,
+      "rank": 4
+    },
+    "national_grid": {
+      "label": "S3: National Grid (Progressive)",
+      "criteria": {
+        "economic_efficiency": {
+          "label": "Economic Efficiency (NPV savings)",
+          "unit": "$M",
+          "raw_value": 10333.75,
+          "normalised": 0.318,
+          "weight": 0.18000000000000002,
+          "weighted_score": 0.0572,
+          "direction": "higher_better"
+        },
+        "environmental_impact": {
+          "label": "Environmental Impact (CO\u2082 reduction)",
+          "unit": "MtCO\u2082",
+          "raw_value": 32.67,
+          "normalised": 0.7133,
+          "weight": 0.135,
+          "weighted_score": 0.0963,
+          "direction": "higher_better"
+        },
+        "energy_security": {
+          "label": "Energy Security (RE share)",
+          "unit": "%",
+          "raw_value": 0.47,
+          "normalised": 0.8115,
+          "weight": 0.135,
+          "weighted_score": 0.1096,
+          "direction": "higher_better"
+        },
+        "health_benefits": {
+          "label": "Health Co-Benefits (Diesel GWh Avoided)",
+          "unit": "GWh",
+          "raw_value": 47153.5,
+          "normalised": 0.0198,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0018,
+          "direction": "higher_better"
+        },
+        "fiscal_burden": {
+          "label": "Fiscal Burden (CAPEX)",
+          "unit": "$M",
+          "raw_value": 2601.54,
+          "normalised": 1.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.09,
+          "direction": "lower_better"
+        },
+        "implementation_ease": {
+          "label": "Implementation Feasibility",
+          "unit": "score",
+          "raw_value": 0.5,
+          "normalised": 0.4,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.036,
+          "direction": "higher_better"
+        },
+        "social_equity": {
+          "label": "Social Equity (Access)",
+          "unit": "score",
+          "raw_value": 0.7,
+          "normalised": 0.6,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.054,
+          "direction": "higher_better"
+        },
+        "climate_resilience": {
+          "label": "Climate Resilience",
+          "unit": "score",
+          "raw_value": 0.7,
+          "normalised": 0.5714,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0514,
+          "direction": "higher_better"
+        },
+        "job_creation": {
+          "label": "Job Creation (job-years)",
+          "unit": "job-years",
+          "raw_value": 39023.0,
+          "normalised": 0.4353,
+          "weight": 0.05,
+          "weighted_score": 0.0218,
+          "direction": "higher_better"
+        },
+        "forex_savings": {
+          "label": "Forex Savings (reduced imports)",
+          "unit": "$M",
+          "raw_value": 12118.4,
+          "normalised": 0.0198,
+          "weight": 0.05,
+          "weighted_score": 0.001,
+          "direction": "higher_better"
+        }
+      },
+      "total_weighted_score": 0.519,
+      "rank": 5
+    },
+    "full_integration": {
+      "label": "S2: India Cable (Full Integration)",
+      "criteria": {
+        "economic_efficiency": {
+          "label": "Economic Efficiency (NPV savings)",
+          "unit": "$M",
+          "raw_value": 9545.07,
+          "normalised": 0.0302,
+          "weight": 0.18000000000000002,
+          "weighted_score": 0.0054,
+          "direction": "higher_better"
+        },
+        "environmental_impact": {
+          "label": "Environmental Impact (CO\u2082 reduction)",
+          "unit": "MtCO\u2082",
+          "raw_value": 16.39,
+          "normalised": 0.0,
+          "weight": 0.135,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "energy_security": {
+          "label": "Energy Security (RE share)",
+          "unit": "%",
+          "raw_value": 0.08,
+          "normalised": 0.0,
+          "weight": 0.135,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "health_benefits": {
+          "label": "Health Co-Benefits (Diesel GWh Avoided)",
+          "unit": "GWh",
+          "raw_value": 79107.0,
+          "normalised": 1.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.09,
+          "direction": "higher_better"
+        },
+        "fiscal_burden": {
+          "label": "Fiscal Burden (CAPEX)",
+          "unit": "$M",
+          "raw_value": 4267.2,
+          "normalised": 0.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0,
+          "direction": "lower_better"
+        },
+        "implementation_ease": {
+          "label": "Implementation Feasibility",
+          "unit": "score",
+          "raw_value": 0.3,
+          "normalised": 0.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "social_equity": {
+          "label": "Social Equity (Access)",
+          "unit": "score",
+          "raw_value": 0.4,
+          "normalised": 0.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "climate_resilience": {
+          "label": "Climate Resilience",
+          "unit": "score",
+          "raw_value": 0.5,
+          "normalised": 0.0,
+          "weight": 0.09000000000000001,
+          "weighted_score": 0.0,
+          "direction": "higher_better"
+        },
+        "job_creation": {
+          "label": "Job Creation (job-years)",
+          "unit": "job-years",
+          "raw_value": 42672.0,
+          "normalised": 0.6208,
+          "weight": 0.05,
+          "weighted_score": 0.031,
+          "direction": "higher_better"
+        },
+        "forex_savings": {
+          "label": "Forex Savings (reduced imports)",
+          "unit": "$M",
+          "raw_value": 20330.5,
+          "normalised": 1.0,
+          "weight": 0.05,
+          "weighted_score": 0.05,
+          "direction": "higher_better"
+        }
+      },
+      "total_weighted_score": 0.1765,
+      "rank": 6
+    }
+  },
+  "methodology_notes": {
+    "criterion_independence": "The MCA uses 10 criteria, of which 'economic_efficiency' (NPV savings) already includes monetised emission savings, health co-benefits, reliability benefits, and environmental externalities. The separate 'environmental_impact' criterion uses physical units (MtCO2 avoided, NOT monetised), providing a genuinely independent dimension. 'health_benefits' uses physical diesel GWh avoided (not monetised), providing a genuinely independent dimension that captures the health-relevant driver (less diesel combustion = less PM2.5/NOx exposure) without overlapping with NPV. 'job_creation' uses IRENA (2020) employment multipliers applied to CAPEX (job-years). 'forex_savings' estimates import substitution from reduced diesel purchases ($M). Both are independent of NPV. Users should interpret MCA rankings as complementary to, not a substitute for, the ENPV analysis.",
+    "normalisation": "Min-max normalisation to [0, 1] across scenarios",
+    "aggregation": "Linear additive weighted sum (MCDM standard)"
+  },
+  "weight_sensitivity": {
+    "equal": {
+      "weights": {
+        "economic_efficiency": 0.1,
+        "environmental_impact": 0.1,
+        "energy_security": 0.1,
+        "health_benefits": 0.1,
+        "fiscal_burden": 0.1,
+        "implementation_ease": 0.1,
+        "social_equity": 0.1,
+        "climate_resilience": 0.1,
+        "job_creation": 0.1,
+        "forex_savings": 0.1
+      },
+      "ranking": [
+        {
+          "rank": 1,
+          "scenario": "maximum_re",
+          "label": "S6: Maximum RE (80%+)",
+          "score": 0.7172
+        },
+        {
+          "rank": 2,
+          "scenario": "nearshore_solar",
+          "label": "S5: Near-Shore Solar",
+          "score": 0.6063
+        },
+        {
+          "rank": 3,
+          "scenario": "islanded_green",
+          "label": "S4: Islanded Green (All Solar)",
+          "score": 0.5826
+        },
+        {
+          "rank": 4,
+          "scenario": "lng_transition",
+          "label": "S7: LNG Transition",
+          "score": 0.4925
+        },
+        {
+          "rank": 5,
+          "scenario": "national_grid",
+          "label": "S3: National Grid (Progressive)",
+          "score": 0.4889
+        },
+        {
+          "rank": 6,
+          "scenario": "full_integration",
+          "label": "S2: India Cable (Full Integration)",
+          "score": 0.2651
+        }
+      ]
+    },
+    "economic_focus": {
+      "weights": {
+        "economic_efficiency": 0.35,
+        "environmental_impact": 0.08,
+        "energy_security": 0.08,
+        "health_benefits": 0.04,
+        "fiscal_burden": 0.12,
+        "implementation_ease": 0.05,
+        "social_equity": 0.05,
+        "climate_resilience": 0.08,
+        "job_creation": 0.05,
+        "forex_savings": 0.1
+      },
+      "ranking": [
+        {
+          "rank": 1,
+          "scenario": "maximum_re",
+          "label": "S6: Maximum RE (80%+)",
+          "score": 0.7951
+        },
+        {
+          "rank": 2,
+          "scenario": "lng_transition",
+          "label": "S7: LNG Transition",
+          "score": 0.6603
+        },
+        {
+          "rank": 3,
+          "scenario": "nearshore_solar",
+          "label": "S5: Near-Shore Solar",
+          "score": 0.6213
+        },
+        {
+          "rank": 4,
+          "scenario": "national_grid",
+          "label": "S3: National Grid (Progressive)",
+          "score": 0.4735
+        },
+        {
+          "rank": 5,
+          "scenario": "islanded_green",
+          "label": "S4: Islanded Green (All Solar)",
+          "score": 0.4153
+        },
+        {
+          "rank": 6,
+          "scenario": "full_integration",
+          "label": "S2: India Cable (Full Integration)",
+          "score": 0.1816
+        }
+      ]
+    },
+    "environmental_focus": {
+      "weights": {
+        "economic_efficiency": 0.08,
+        "environmental_impact": 0.25,
+        "energy_security": 0.12,
+        "health_benefits": 0.15,
+        "fiscal_burden": 0.05,
+        "implementation_ease": 0.05,
+        "social_equity": 0.05,
+        "climate_resilience": 0.15,
+        "job_creation": 0.05,
+        "forex_savings": 0.05
+      },
+      "ranking": [
+        {
+          "rank": 1,
+          "scenario": "maximum_re",
+          "label": "S6: Maximum RE (80%+)",
+          "score": 0.7898
+        },
+        {
+          "rank": 2,
+          "scenario": "nearshore_solar",
+          "label": "S5: Near-Shore Solar",
+          "score": 0.6321
+        },
+        {
+          "rank": 3,
+          "scenario": "islanded_green",
+          "label": "S4: Islanded Green (All Solar)",
+          "score": 0.5703
+        },
+        {
+          "rank": 4,
+          "scenario": "lng_transition",
+          "label": "S7: LNG Transition",
+          "score": 0.5213
+        },
+        {
+          "rank": 5,
+          "scenario": "national_grid",
+          "label": "S3: National Grid (Progressive)",
+          "score": 0.5126
+        },
+        {
+          "rank": 6,
+          "scenario": "full_integration",
+          "label": "S2: India Cable (Full Integration)",
+          "score": 0.2335
+        }
+      ]
+    },
+    "equity_focus": {
+      "weights": {
+        "economic_efficiency": 0.08,
+        "environmental_impact": 0.05,
+        "energy_security": 0.08,
+        "health_benefits": 0.08,
+        "fiscal_burden": 0.08,
+        "implementation_ease": 0.15,
+        "social_equity": 0.25,
+        "climate_resilience": 0.05,
+        "job_creation": 0.13,
+        "forex_savings": 0.05
+      },
+      "ranking": [
+        {
+          "rank": 1,
+          "scenario": "maximum_re",
+          "label": "S6: Maximum RE (80%+)",
+          "score": 0.7043
+        },
+        {
+          "rank": 2,
+          "scenario": "islanded_green",
+          "label": "S4: Islanded Green (All Solar)",
+          "score": 0.6958
+        },
+        {
+          "rank": 3,
+          "scenario": "nearshore_solar",
+          "label": "S5: Near-Shore Solar",
+          "score": 0.6275
+        },
+        {
+          "rank": 4,
+          "scenario": "national_grid",
+          "label": "S3: National Grid (Progressive)",
+          "score": 0.5038
+        },
+        {
+          "rank": 5,
+          "scenario": "lng_transition",
+          "label": "S7: LNG Transition",
+          "score": 0.4311
+        },
+        {
+          "rank": 6,
+          "scenario": "full_integration",
+          "label": "S2: India Cable (Full Integration)",
+          "score": 0.2131
+        }
+      ]
+    },
+    "jobs_forex_focus": {
+      "weights": {
+        "economic_efficiency": 0.08,
+        "environmental_impact": 0.05,
+        "energy_security": 0.05,
+        "health_benefits": 0.05,
+        "fiscal_burden": 0.07,
+        "implementation_ease": 0.05,
+        "social_equity": 0.05,
+        "climate_resilience": 0.05,
+        "job_creation": 0.3,
+        "forex_savings": 0.25
+      },
+      "ranking": [
+        {
+          "rank": 1,
+          "scenario": "maximum_re",
+          "label": "S6: Maximum RE (80%+)",
+          "score": 0.7126
+        },
+        {
+          "rank": 2,
+          "scenario": "nearshore_solar",
+          "label": "S5: Near-Shore Solar",
+          "score": 0.5231
+        },
+        {
+          "rank": 3,
+          "scenario": "full_integration",
+          "label": "S2: India Cable (Full Integration)",
+          "score": 0.4887
+        },
+        {
+          "rank": 4,
+          "scenario": "islanded_green",
+          "label": "S4: Islanded Green (All Solar)",
+          "score": 0.4879
+        },
+        {
+          "rank": 5,
+          "scenario": "national_grid",
+          "label": "S3: National Grid (Progressive)",
+          "score": 0.3868
+        },
+        {
+          "rank": 6,
+          "scenario": "lng_transition",
+          "label": "S7: LNG Transition",
+          "score": 0.3813
+        }
+      ]
+    },
+    "rank_reversal_analysis": {
+      "reversals_found": 8,
+      "details": [
+        {
+          "scenario_a": "nearshore_solar",
+          "scenario_b": "islanded_green",
+          "a_ranked_higher_under": [
+            "equal",
+            "economic_focus",
+            "environmental_focus",
+            "jobs_forex_focus"
+          ],
+          "b_ranked_higher_under": [
+            "equity_focus"
+          ]
+        },
+        {
+          "scenario_a": "nearshore_solar",
+          "scenario_b": "lng_transition",
+          "a_ranked_higher_under": [
+            "equal",
+            "environmental_focus",
+            "equity_focus",
+            "jobs_forex_focus"
+          ],
+          "b_ranked_higher_under": [
+            "economic_focus"
+          ]
+        },
+        {
+          "scenario_a": "islanded_green",
+          "scenario_b": "lng_transition",
+          "a_ranked_higher_under": [
+            "equal",
+            "environmental_focus",
+            "equity_focus",
+            "jobs_forex_focus"
+          ],
+          "b_ranked_higher_under": [
+            "economic_focus"
+          ]
+        },
+        {
+          "scenario_a": "islanded_green",
+          "scenario_b": "national_grid",
+          "a_ranked_higher_under": [
+            "equal",
+            "environmental_focus",
+            "equity_focus",
+            "jobs_forex_focus"
+          ],
+          "b_ranked_higher_under": [
+            "economic_focus"
+          ]
+        },
+        {
+          "scenario_a": "islanded_green",
+          "scenario_b": "full_integration",
+          "a_ranked_higher_under": [
+            "equal",
+            "economic_focus",
+            "environmental_focus",
+            "equity_focus"
+          ],
+          "b_ranked_higher_under": [
+            "jobs_forex_focus"
+          ]
+        },
+        {
+          "scenario_a": "lng_transition",
+          "scenario_b": "national_grid",
+          "a_ranked_higher_under": [
+            "equal",
+            "economic_focus",
+            "environmental_focus"
+          ],
+          "b_ranked_higher_under": [
+            "equity_focus",
+            "jobs_forex_focus"
+          ]
+        },
+        {
+          "scenario_a": "lng_transition",
+          "scenario_b": "full_integration",
+          "a_ranked_higher_under": [
+            "equal",
+            "economic_focus",
+            "environmental_focus",
+            "equity_focus"
+          ],
+          "b_ranked_higher_under": [
+            "jobs_forex_focus"
+          ]
+        },
+        {
+          "scenario_a": "national_grid",
+          "scenario_b": "full_integration",
+          "a_ranked_higher_under": [
+            "equal",
+            "economic_focus",
+            "environmental_focus",
+            "equity_focus"
+          ],
+          "b_ranked_higher_under": [
+            "jobs_forex_focus"
+          ]
+        }
+      ],
+      "interpretation": "8 rank reversal(s) detected across 5 weight profiles and 6 scenarios. Rank reversals indicate sensitivity to stakeholder priorities and should be disclosed in the report."
+    }
+  }
+}

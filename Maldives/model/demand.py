@@ -2,12 +2,21 @@
 Demand Projections Module
 =========================
 
-Projects electricity demand from 2024 to 2050 for each scenario.
+Projects electricity demand from 2026 to 2056 for each scenario.
 Handles:
 - Base demand trajectory
 - Scenario-specific growth rates
 - Peak demand calculations
 - Induced demand from price changes
+
+DEMAND SCOPE (R7):
+  base_demand_2026 = 1,200 GWh is PUBLIC UTILITY demand only.
+  This EXCLUDES resort sector (~1,050 GWh off-grid self-generated diesel).
+  Total national electricity: ~2,250 GWh (1,200 utility + 1,050 resort).
+  The Roadmap's 2,400 GWh figure INCLUDES resort demand.
+  
+  All scenario projections operate on the 1,200 GWh utility base.
+  Resort emissions are reported separately for context (see run_cba.py).
 """
 
 import pandas as pd
@@ -27,6 +36,36 @@ class DemandProjection:
     peak_demand_mw: float
     growth_rate: float
     cumulative_growth: float
+
+
+@dataclass
+class SectoralDemand:
+    """M5: Disaggregated demand by sector.
+    
+    Splits total public grid demand into residential, commercial, and public
+    sectors. Resorts are off-grid and excluded from this breakdown.
+    Shares from SAARC 2005 Energy Balance (52/24/24 residential/commercial/public).
+    """
+    year: int
+    total_gwh: float
+    residential_gwh: float
+    commercial_gwh: float
+    public_gwh: float
+    residential_share: float
+    commercial_share: float
+    public_share: float
+    
+    def to_dict(self) -> dict:
+        return {
+            'year': self.year,
+            'total_gwh': self.total_gwh,
+            'residential_gwh': round(self.residential_gwh, 2),
+            'commercial_gwh': round(self.commercial_gwh, 2),
+            'public_gwh': round(self.public_gwh, 2),
+            'residential_share': self.residential_share,
+            'commercial_share': self.commercial_share,
+            'public_share': self.public_share,
+        }
 
 
 class DemandProjector:
@@ -52,12 +91,20 @@ class DemandProjector:
         
         # Get base demand
         self.base_demand = base_demand_gwh or self.config.demand.base_demand_gwh
-        self.base_peak = self.config.demand.base_peak_mw
+        # LW-10: base_peak_mw not stored — peak is always derived from
+        # energy demand and load factor in project_year() for consistency
         
-        # Get growth rate for scenario
-        self.growth_rate = growth_rate or self.config.demand.growth_rates.get(
-            scenario, 0.035
-        )
+        # Get growth rate for scenario — must be defined in config
+        if growth_rate is not None:
+            self.growth_rate = growth_rate
+        elif scenario in self.config.demand.growth_rates:
+            self.growth_rate = self.config.demand.growth_rates[scenario]
+        else:
+            raise ValueError(
+                f"No growth rate defined for scenario '{scenario}'. "
+                f"Available: {list(self.config.demand.growth_rates.keys())}. "
+                f"Add to parameters.csv or pass growth_rate explicitly."
+            )
         
         # Load factor for peak calculations
         self.load_factor = self.config.demand.load_factor
@@ -90,6 +137,19 @@ class DemandProjector:
         cumulative_growth = (1 + self.growth_rate) ** years_elapsed
         demand_gwh = self.base_demand * cumulative_growth
         
+        # A-M-01: Demand saturation ceiling (per-capita)
+        # Cap demand when per-capita consumption reaches the ceiling.
+        # Prevents unrealistic extrapolation (e.g., 5%/yr for 30 years would
+        # yield ~14,000 kWh/capita — higher than Singapore). Once the ceiling
+        # binds, demand grows only at the population growth rate.
+        sat_ceiling = self.config.demand.demand_saturation_kwh_per_capita
+        pop_base = self.config.current_system.population_2026
+        pop_growth = self.config.current_system.population_growth_rate
+        population = pop_base * ((1 + pop_growth) ** years_elapsed)
+        max_demand_gwh = sat_ceiling * population / 1e6  # kWh → GWh
+        if demand_gwh > max_demand_gwh:
+            demand_gwh = max_demand_gwh
+        
         # Peak demand from energy demand
         # Peak (MW) = Energy (GWh) * 1000 / (8760 hours * load_factor)
         hours_per_year = 8760
@@ -114,6 +174,34 @@ class DemandProjector:
         """Get peak demand in MW for a specific year."""
         return self.project_year(year).peak_demand_mw
     
+    def get_sectoral_demand(self, year: int) -> SectoralDemand:
+        """M5: Disaggregate total demand into sectors.
+        
+        Applies static sectoral shares from config (parameters.csv).
+        Shares are for public grid demand only — resorts are off-grid.
+        
+        Args:
+            year: Year to calculate sectoral breakdown for
+            
+        Returns:
+            SectoralDemand with residential, commercial, and public GWh
+        """
+        total = self.get_demand(year)
+        res_share = self.config.demand.sectoral_residential
+        com_share = self.config.demand.sectoral_commercial
+        pub_share = self.config.demand.sectoral_public
+        
+        return SectoralDemand(
+            year=year,
+            total_gwh=total,
+            residential_gwh=total * res_share,
+            commercial_gwh=total * com_share,
+            public_gwh=total * pub_share,
+            residential_share=res_share,
+            commercial_share=com_share,
+            public_share=pub_share,
+        )
+    
     def get_trajectory(self) -> pd.DataFrame:
         """
         Get full demand trajectory as DataFrame.
@@ -137,15 +225,21 @@ class DemandProjector:
     def apply_induced_demand(
         self,
         year: int,
-        price_reduction_pct: float,
+        price_drop_fraction: float,  # C-WC-04: positive fraction (e.g. 0.20 = price 20% lower)
         elasticity: float = None,
     ) -> float:
         """
         Calculate induced demand from price reduction.
         
+        L8: Activated for Full Integration scenario post-cable.
+        Price reduction computed as (diesel_LCOE - PPA_price) / diesel_LCOE.
+        Elasticity from config.demand.price_elasticity (default -0.3).
+        
         Args:
             year: Year to calculate
-            price_reduction_pct: Price reduction as decimal (e.g., 0.20 for 20%)
+            price_drop_fraction: Fraction by which price dropped (positive = cheaper,
+                e.g. 0.20 means new price is 20% below baseline). Sign convention:
+                elasticity < 0 and price_drop > 0 → demand increases.
             elasticity: Price elasticity of demand (default from config)
             
         Returns:
@@ -155,9 +249,9 @@ class DemandProjector:
         
         base_demand = self.get_demand(year)
         
-        # Induced demand: % change in demand = elasticity * % change in price
-        # Negative elasticity means demand increases when price decreases
-        demand_change_pct = elasticity * (-price_reduction_pct)
+        # Induced demand: % change in demand = elasticity × (–price_drop_fraction)
+        # Negative elasticity × negative price change → positive demand change
+        demand_change_pct = elasticity * (-price_drop_fraction)
         induced_demand = base_demand * (1 + demand_change_pct)
         
         return round(induced_demand, 1)
@@ -294,7 +388,7 @@ if __name__ == "__main__":
     one_grid = multi.projectors["one_grid"]
     for year in [2030, 2040, 2050]:
         base = one_grid.get_demand(year)
-        induced = one_grid.apply_induced_demand(year, price_reduction_pct=0.20)
+        induced = one_grid.apply_induced_demand(year, price_drop_fraction=0.20)
         print(f"{year}: Base {base:,.0f} GWh -> With induced demand: {induced:,.0f} GWh (+{induced-base:,.0f})")
     
     print("\n✓ Demand module tests passed!")

@@ -188,11 +188,12 @@ Python 3.12
 numpy
 pandas
 matplotlib
+numpy-financial  # IRR calculation in CBA module
 folium          # Interactive Leaflet maps (HTML report only)
 branca          # Colormap support for folium
 quarto          # Report rendering (install separately)
 ```
 
-Install with: `pip install numpy pandas matplotlib folium branca`
+Install with: `pip install -r requirements.txt`
 
 

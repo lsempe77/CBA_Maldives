@@ -36,3 +36,12 @@ Maldives/outputs/
 
 # Archive (optional — remove this line to track archive)
 _archive/
+# Large data files (exceed GitHub 100MB limit)
+Maldives/data/hies2019.7z
+Maldives/data/hies2019/Dataset/HIES2019_STATA format/nonfood_expunit.dta
+Maldives/data/hies2019/Dataset/HIES2019_STATA format/master_exp.dta
+Maldives/data/hies2019/Dataset/HIES2019_EXCEL format/Non-Raised_Dataset.7z
+Maldives/data/hies2019/Dataset/HIES2019_EXCEL format/Raised_Dataset.7z
+Maldives/data/20181105-pub-island-electricity-data-book-2018.pdf
+Maldives/data/20241107-pub-energy-roadmap-maldives-2024-2033-.pdf
+Maldives/data/Maldives-Poverty-Assessment-2022-1.pdf

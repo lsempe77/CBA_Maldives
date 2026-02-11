@@ -1,0 +1,373 @@
+---
+title: "Appendix A — Technical Methodology"
+---
+
+```{python}
+#| label: setup
+import sys
+sys.path.insert(0, ".")
+from _common import *
+```
+
+This appendix provides the complete mathematical specification of the Maldives Energy CBA model. Every equation implemented in the model code is documented here with full parameter traceability to the central parameter registry (`parameters.csv`). For the policy-oriented summary of the methodology, see @sec-methodology.
+
+The equations are organised to mirror the model's computational pipeline: demand projection feeds into cost and emissions calculations, which flow into the NPV framework, which in turn supports sensitivity analysis and multi-criteria assessment. Each equation is labelled with a prefix (EQ-D for demand, EQ-C for costs, EQ-E for emissions, EQ-N for NPV, EQ-L for least-cost) for cross-referencing with the model codebase and the full CBA methodology audit document.
+
+## A.1 Model Architecture {#sec-arch}
+
+The model follows a strictly layered architecture in which a single parameter file serves as the authoritative source for every numeric value used in the analysis. This design ensures that changing any parameter — whether for sensitivity analysis, Monte Carlo simulation, or scenario calibration — propagates automatically through the entire computation chain without risk of inconsistency between different model components.
+
+The model follows a strictly layered architecture:
+
+```
+parameters.csv  →  config.py  →  get_config()  →  model code
+     ↓                                                ↓
+ SINGLE SOURCE                                  scenarios/*.py
+ OF TRUTH for                                   costs.py
+ all numbers                                    demand.py
+                                                cba/npv_calculator.py
+                                                     ↓
+                                                outputs/*.json
+                                                     ↓
+                                                This report
+```
+
+**Key design principles:**
+
+1. Every parameter lives in `parameters.csv` with 7 columns: Category, Parameter, Value, Low, High, Unit, Source
+2. `config.py` loads the CSV into typed Python dataclasses via `get_config()`
+3. No numeric parameter appears as a literal in any `.py` script — only mathematical constants (π, 8760 hours/year, unit conversions)
+4. Sensitivity analysis and Monte Carlo work by modifying the config object — the same parameter pipeline ensures consistency
+
+This architecture enforces a zero-hardcoded-values discipline that prevents the silent divergence between parameter files and code that plagues many energy models. Every numeric value that enters any calculation can be traced back to a specific row in the CSV file, with its source citation, low and high bounds for sensitivity analysis, and unit specification.
+
+**Horizons:** 20 years (2026–2046), 30 years (2026–2056, default), 50 years (2026–2076)
+
+**Scenarios:** S1–S7 as described in @sec-scenarios
+
+**Discount rate:** 6% real (ADB SIDS standard), with declining discount rate sensitivity (3.5% → 3.0% → 2.5%)
+
+---
+
+## A.2 Demand Module
+
+The demand module projects electricity consumption over the analysis horizon. The Maldives' electricity demand has grown at approximately five percent per year over the past decade, driven by population growth, urbanisation, rising incomes, and expanding tourism infrastructure. The demand equations translate this historical pattern into forward projections that account for scenario-specific growth rates and price-induced demand effects.
+
+### EQ-D1: Compound Demand Growth
+
+$$D(t) = D_0 \times (1 + g)^{t - t_0}$$
+
+where $D_0$ = base demand in 2026 (1,200 GWh), $g$ = scenario-specific growth rate, and $t_0$ = 2026.
+
+### EQ-D2: Peak Demand from Energy
+
+$$P(t) = \frac{D(t) \times 1000}{8760 \times LF}$$
+
+where $LF$ = load factor (0.68, empirical from 2018 Island Electricity Data Book).
+
+### EQ-D3: Induced Demand (Price Elasticity)
+
+Applied in the Full Integration scenario (S2) only, where imported electricity reduces the effective price:
+
+$$D'(t) = D(t) \times \left(1 + \varepsilon \times (-\Delta p)\right)$$
+
+where $\varepsilon$ = price elasticity of demand (−0.3, Wolfram et al. 2012; Burke et al. 2015), and $\Delta p$ = fractional price reduction from cable import.
+
+### EQ-D4: Sectoral Demand Split
+
+$$D_r(t) = D(t) \times s_r, \quad D_c(t) = D(t) \times s_c, \quad D_p(t) = D(t) \times s_p$$
+
+where $s_r = 0.52$, $s_c = 0.24$, $s_p = 0.24$ (SAARC 2005 Energy Balance for the Maldives).
+
+---
+
+## A.3 Cost Module
+
+The cost module computes capital expenditure, operating expenditure, fuel costs, and generation output for each technology across the analysis horizon. Solar PV and battery costs incorporate both learning-curve-driven cost declines and climate adaptation premiums, while diesel costs incorporate the two-part fuel consumption curve validated against island-level operational data. The equations below specify each cost component with its full parameter set.
+
+### EQ-C1: Solar PV CAPEX
+
+$$\text{CAPEX}_{\text{solar}}(t) = C_{\text{solar}} \times (1 - \delta_s)^{t-t_0} \times Q_{\text{kW}} \times (1 + \alpha)$$
+
+where $C_{\text{solar}}$ = initial CAPEX ($/kW), $\delta_s$ = annual cost decline rate, and $\alpha$ = climate adaptation premium (7.5%).
+
+### EQ-C2: Solar PV Generation (Temperature Derating + Degradation)
+
+$$G_{\text{solar}}(t) = Q_{\text{MW}} \times 8760 \times CF \times f_T \times f_D(t)$$
+
+Temperature derating:
+$$T_{\text{cell}} = T_{\text{amb}} + k_{\text{NOCT}} \times \frac{GHI}{24}$$
+$$f_T = \max\left(0, \; 1 - k_t \times (T_{\text{cell}} - 25)\right)$$
+
+Annual degradation:
+$$f_D(t) = (1 - d)^{t - t_{\text{install}}}$$
+
+where $k_t = 0.005$ $/°C (IEC 61215), $k_{\text{NOCT}} = 25.6$ (OnSSET), and $d = 0.005$/yr (Jordan & Kurtz 2013).
+
+### EQ-C3: Battery CAPEX
+
+$$\text{CAPEX}_{\text{batt}}(t) = C_{\text{batt}} \times (1 - \delta_b)^{t-t_0} \times Q_{\text{kWh}} \times (1 + \alpha)$$
+
+where $C_{\text{batt}}$ = battery CAPEX ($/kWh), $\delta_b$ = annual cost decline rate.
+
+### EQ-C4: Diesel Fuel Cost (Two-Part Curve)
+
+$$F(t) = L(t) \times P_f(t)$$
+
+Fuel consumption uses the two-part Mandelli (2016) fuel curve:
+$$L(t) = Q_{\text{kW}} \times c_{\text{idle}} \times h + G_{\text{kWh}} \times c_{\text{prop}}$$
+
+where $c_{\text{idle}} = 0.08145$ L/hr/kW (idle/no-load coefficient) and $c_{\text{prop}} = 0.246$ L/kWh (proportional coefficient), following OnSSET L266 (Mandelli 2016).
+
+Fuel price escalation:
+$$P_f(t) = P_0 \times (1 + e_f)^{t-t_0}$$
+
+Operating hours:
+$$h = \min\left(8760, \; \frac{G_{\text{kWh}}}{Q_{\text{kW}} \times \bar{l}}\right), \quad \bar{l} = \frac{l_{\min} + 1}{2}$$
+
+### EQ-C5: T&D Loss Gross-Up
+
+$$G_{\text{gross}} = \frac{D_{\text{net}}}{(1 - l_d) \times (1 - l_c)}$$
+
+where $l_d = 0.11$ (distribution loss, World Bank WDI) and $l_c = 0.04$ (HVDC cable loss, Skog et al. CIGRÉ 2010 B1-106). Multiplicative formulation (not additive).
+
+### EQ-C6: Cable CAPEX (Full Breakdown)
+
+$$\text{CAPEX}_{\text{cable}} = \left[L_{\text{km}} \times C_{\text{cable/km}} + C_{\text{conv/MW}} \times P_{\text{cap}} + C_{\text{land}} \times N_{\text{land}}\right] \times (1 + r_{\text{IDC}}) + C_{\text{grid}} \times (1 + \alpha)$$
+
+### EQ-C7: PPA Import Cost
+
+$$\text{PPA}(t) = G_{\text{import}} \times \left(P_{\text{PPA}} + P_{\text{tx}}\right) \times (1 + e_{\text{PPA}})^{t - t_{\text{online}}}$$
+
+### EQ-C8: Connection Cost per Household
+
+$$\text{CAPEX}_{\text{connection}}(t) = \begin{cases} C_{\text{HH}} \times N_{\text{HH}} / Y_{\text{rollout}} & \text{if } t \leq t_0 + Y_{\text{rollout}} \\ 0 & \text{otherwise} \end{cases}$$
+
+where $C_{\text{HH}} = \$200$/household, $N_{\text{HH}} = 100{,}000$, $Y_{\text{rollout}} = 5$ years.
+
+---
+
+## A.4 Emissions Module
+
+The emissions module quantifies the environmental impact of each scenario in terms of carbon dioxide emissions and their monetised social cost. Diesel generation produces direct emissions at a rate determined by the IPCC Tier 1 emission factor, while imported electricity from the Indian grid carries an attributed emission factor that declines over time as India decarbonises its power sector. The social cost of carbon follows the US EPA's interim schedule, growing over time to reflect increasing marginal climate damages.
+
+### EQ-E1: Diesel CO₂ Emissions
+
+$$E_{\text{diesel}} = G_{\text{kWh}} \times EF_{\text{CO}_2}$$
+
+where $EF_{\text{CO}_2} = 0.72$ kgCO₂/kWh (IPCC 2006 emission factor for diesel generation).
+
+### EQ-E2: Import Emissions (India Grid, Declining)
+
+$$E_{\text{import}}(t) = G_{\text{kWh}} \times EF_{\text{India}} \times (1 - d_{\text{India}})^{t - t_{\text{base}}}$$
+
+where $EF_{\text{India}} = 0.70$ kgCO₂/kWh and $d_{\text{India}} = 0.02$/yr (2% annual grid decarbonisation).
+
+### EQ-E3: Social Cost of Carbon
+
+$$SCC(t) = SCC_0 \times (1 + g_{\text{SCC}})^{t - t_0}$$
+
+where $SCC_0 = \$51$/tCO₂ (EPA 2023 interim at 3% discount rate) and $g_{\text{SCC}} = 0.02$/yr.
+
+### EQ-E4: Environmental Externalities
+
+$$B_{\text{env}}(t) = \Delta D_{\text{diesel}}(t) \times \left(C_{\text{noise}} + C_{\text{spill}} + C_{\text{biodiversity}}\right)$$
+
+where $C_{\text{noise}} = \$5$/MWh, $C_{\text{spill}} = \$3$/MWh, $C_{\text{biodiversity}} = \$2$/MWh (total: $10/MWh).
+
+---
+
+## A.5 NPV / CBA Calculator
+
+The NPV calculator is the central aggregation engine that combines all cost and benefit streams into the summary metrics reported in @sec-results. It implements the standard discounted cash flow framework recommended by the Asian Development Bank for infrastructure appraisal in developing countries, augmented with five distinct benefit streams that capture both market and non-market values of the energy transition.
+
+### EQ-N1: Net Present Value
+
+$$\text{NPV} = \sum_{t=t_0}^{T} \frac{B(t) - C(t)}{(1 + r)^{t - t_0}}$$
+
+where $r = 0.06$ (6% real discount rate, ADB SIDS standard).
+
+**Benefit streams** $B(t)$:
+
+1. **Fuel savings:** BAU fuel cost − scenario fuel cost
+2. **Emission reduction:** (BAU emissions − scenario emissions) × SCC(t)
+3. **Health co-benefits:** Diesel reduction × $40/MWh (Parry et al. 2014, IMF WP/14/199)
+4. **Environmental externalities:** Diesel reduction × $10/MWh
+5. **Subsidy avoidance:** Diesel reduction × $0.15/kWh (current government subsidy rate)
+
+**Cost streams** $C(t)$:
+
+1. CAPEX (solar, battery, cable, grid upgrades, connections)
+2. OPEX (solar, battery, diesel O&M)
+3. PPA import costs (for cable scenarios)
+
+### EQ-N2: Incremental Analysis
+
+$$\Delta\text{NPV} = \text{NPV}_{\text{scenario}} - \text{NPV}_{\text{BAU}}$$
+
+### EQ-N3: Benefit-Cost Ratio
+
+$$\text{BCR} = \frac{\sum_{t} PV(\text{Benefits}_t)}{\sum_{t} PV(\text{Costs}_t)}$$
+
+### EQ-N4: Internal Rate of Return
+
+The IRR is the discount rate $r^*$ that makes the NPV of the incremental cash flows equal to zero:
+
+$$\sum_{t=t_0}^{T} \frac{\Delta B(t) - \Delta C(t)}{(1 + r^*)^{t - t_0}} = 0$$
+
+### EQ-N5: Salvage Value
+
+$$S_T = \text{CAPEX} \times \max\left(0, \; 1 - \frac{T - t_{\text{install}}}{\tau_{\text{tech}}}\right)$$
+
+Salvage is computed at the end of the analysis horizon for any asset with remaining useful life. The value is discounted back to the base year and added to the NPV as a terminal benefit.
+
+### EQ-N6: Declining Discount Rate (DDR)
+
+For the DDR sensitivity:
+
+| Years | Rate |
+|-------|------|
+| 0–30 | 3.5% |
+| 31–75 | 3.0% |
+| 76–125 | 2.5% |
+
+Based on HM Treasury Green Book, Drupp et al. (2018), and Weitzman (2001).
+
+$$PV_t = \frac{1}{\prod_{s=0}^{t-1}(1 + r_s)}$$
+
+---
+
+## A.6 Least-Cost Electrification Engine
+
+The least-cost engine determines the optimal generation technology for each of the Maldives' approximately one hundred and seventy inhabited islands, based on the full-lifecycle levelised cost of electricity (LCOE) for each technology option. This per-island approach is essential because the economics of small-island power generation vary dramatically with island size, population, solar resource, land availability, and diesel transport costs. An island with five hundred residents has fundamentally different optimal technology from one with fifty thousand.
+
+The per-island technology assignment uses discounted LCOE computed over the project lifetime with reinvestment:
+
+### EQ-L1: Discounted LCOE (General Form)
+
+$$\text{LCOE} = \frac{\sum_{y=0}^{N-1} \frac{I_y + O_y + F_y - S_y}{(1+r)^y}}{\sum_{y=0}^{N-1} \frac{G_y}{(1+r)^y}}$$
+
+Reinvestment occurs at year $y = \tau_{\text{tech}}$, $2\tau_{\text{tech}}$, … while $y < N$.
+
+### EQ-L2: Solar+Battery LCOE
+
+Sizing:
+$$Q_{\text{solar,kW}} = \frac{D / (1 - l_d)}{CF_{\text{eff}} \times 8760}$$
+$$Q_{\text{batt,kWh}} = \frac{P_{\text{kW}} \times h_{\text{batt}}}{DoD}$$
+
+Split into separate LCOE components (different lifetimes):
+$$\text{LCOE}_{\text{solar+batt}} = \text{LCOE}_{\text{solar}} + \text{LCOE}_{\text{batt}}$$
+
+### EQ-L3: Solar Land Constraint
+
+$$Q_{\text{solar,max}} = A_{\text{island}} \times f_{\text{solar}} \times \frac{1000}{A_{\text{panel}}}$$
+
+where $f_{\text{solar}}$ is the usable land fraction for solar (varies by island density) and $A_{\text{panel}}$ is the panel area requirement (m²/kW).
+
+---
+
+## A.7 Sensitivity & Monte Carlo
+
+The sensitivity and Monte Carlo modules systematically explore how parameter uncertainty affects the model's conclusions. One-way sensitivity analysis identifies which individual parameters have the greatest influence on results, while Monte Carlo simulation captures the joint effect of simultaneous variation in all uncertain parameters, accounting for correlations between related variables.
+
+### One-Way Sensitivity
+
+Each parameter is varied independently between its Low and High bounds while all others remain at base values. NPV change is computed for each variation:
+
+$$\Delta\text{NPV}_i^{\pm} = \text{NPV}(p_i^{\pm}) - \text{NPV}(p_i^{\text{base}})$$
+
+Results are displayed as tornado diagrams ranked by $|\Delta\text{NPV}_i^+ - \Delta\text{NPV}_i^-|$.
+
+### Monte Carlo Simulation
+
+```{python}
+#| label: mc-params
+n_iter = monte_carlo.get("n_iterations", 1000)
+n_params = len(monte_carlo.get("parameter_correlations", {}).get("correlations", []))
+```
+
+**Method:** `{python} n_iter` iterations with Latin Hypercube Sampling (LHS) over `{python} n_params` correlated parameters. Correlations imposed via Iman–Conover rank-correlation method.
+
+For each iteration $k$:
+
+1. Sample parameter vector $\mathbf{p}^{(k)}$ from the joint distribution (triangular marginals, Low–Base–High)
+2. Impose correlation structure via rank reordering
+3. Run full CBA with $\mathbf{p}^{(k)}$ to obtain $\text{NPV}^{(k)}$ for all scenarios
+4. Record scenario rankings
+
+**Convergence diagnostic:** Standard error of mean NPV falls below 1% of the mean after ~500 iterations.
+
+### Switching Values
+
+The switching value analysis identifies the parameter value at which the preferred scenario changes:
+
+$$p_i^* : \text{NPV}_A(p_i^*) = \text{NPV}_B(p_i^*)$$
+
+This is solved by linear interpolation between the Low and High NPV evaluations.
+
+---
+
+## A.8 Multi-Criteria Analysis
+
+### Scoring Methodology
+
+For each criterion $j$ and scenario $i$:
+
+$$\text{Score}_{ij} = \frac{x_{ij} - \min_i(x_{ij})}{\max_i(x_{ij}) - \min_i(x_{ij})}$$
+
+with direction adjustment (higher-is-better vs. lower-is-better). Weighted aggregate:
+
+$$W_i = \sum_{j=1}^{8} w_j \times \text{Score}_{ij}$$
+
+**Criteria:** Economic Efficiency (NPV), Cost Effectiveness (LCOE), Environmental Impact, Energy Security, Social Equity, Implementation Feasibility, Climate Resilience, Financial Viability.
+
+---
+
+## A.9 Financing Module
+
+### Grant Element Calculation
+
+$$GE = 1 - \frac{\sum_{t=1}^{T} \frac{A_t}{(1+r_m)^t}}{L}$$
+
+where $A_t$ = annual repayment, $r_m$ = market interest rate (11.55%, World Bank WDI 2024), and $L$ = loan face value.
+
+### Weighted Average Cost of Capital
+
+$$\text{WACC} = w_{\text{ADB}} \times r_{\text{ADB}} + w_{\text{comm}} \times r_{\text{comm}}$$
+
+where $w_{\text{ADB}}$ = ADB-eligible share, $r_{\text{ADB}} = 1\%$, and $r_{\text{comm}} = 11.55\%$.
+
+---
+
+## A.10 Dispatch Model
+
+The hourly dispatch simulation validates annual capacity factor assumptions using 8,760-hour profiles:
+
+1. **Solar output:** $G_{\text{solar}}(h) = Q_{\text{MW}} \times \frac{GHI(h)}{1000} \times f_T(h)$
+2. **Battery charge/discharge:** Subject to $\text{SOC}_{\min} = 1 - DoD$, round-trip efficiency $\eta_{\text{RT}} = 0.88$
+3. **Diesel backstop:** Fills any gap, subject to minimum load fraction $l_{\min} = 0.40$
+
+The simulation uses hourly GHI and temperature data from `GHI_hourly.csv` and `Temperature_hourly.csv`.
+
+---
+
+## A.11 Parameter Traceability Summary
+
+```{python}
+#| label: tbl-param-count
+#| tbl-cap: "Parameter categories and counts"
+# Count parameters by category from the loaded CSV
+param_data = parameters.dropna(subset=["Parameter"])
+param_data = param_data[param_data["Parameter"].str.strip() != ""]
+cat_counts = param_data.groupby("Category").size().reset_index(name="Count")
+cat_counts = cat_counts.sort_values("Count", ascending=False)
+
+from IPython.display import Markdown
+md = "| Category | Parameters |\n|---|---|\n"
+for _, row in cat_counts.iterrows():
+    md += f"| {row['Category']} | {row['Count']} |\n"
+md += f"| **Total** | **{cat_counts['Count'].sum()}** |"
+Markdown(md)
+```
+
+Every parameter in the table above flows through the same pipeline: `parameters.csv → config.py (load_parameters_from_csv) → get_config() → consuming module`. No exceptions. This ensures that sensitivity analysis and Monte Carlo automatically capture every parameter — there are no "hidden" values in the code.

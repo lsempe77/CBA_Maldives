@@ -1,0 +1,245 @@
+---
+---
+
+```{python}
+#| label: setup
+import sys
+sys.path.insert(0, ".")
+from _common import *
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import numpy as np
+```
+
+# Results {#sec-results}
+
+::: {.chapter-opening}
+This chapter presents the core economic findings of the cost-benefit analysis. It examines the present-value costs, savings, benefit-cost ratios, levelised costs of electricity, and emissions trajectories for all seven scenarios, and provides a detailed incremental analysis comparing the India cable against domestic renewable alternatives.
+:::
+
+## The Big Picture: All Alternatives Beat Diesel
+
+The most important finding of this analysis can be stated simply: every single alternative pathway generates billions of dollars in net economic benefits compared to continued diesel dependence. This result is not marginal or ambiguous — the savings are large, they are consistent across scenarios, and as demonstrated in @sec-sensitivity, they are robust to wide variation in key parameters.
+
+```{python}
+#| label: fig-npv-savings
+#| fig-cap: "Net present value of savings versus BAU for each alternative scenario. All alternatives generate billions in net benefits."
+
+savings = {s: get_incremental(s)["npv_savings"] / 1e9 for s in ALT_SCENARIOS}
+fig = bar_scenario_comparison(
+    values=savings,
+    title="NPV Savings vs. Diesel BAU ($ Billions)",
+    yaxis_title="NPV Savings ($B)",
+    highlight_bau=False,
+)
+fig.update_layout(height=420)
+fig.show()
+```
+
+```{python}
+#| label: headline-numbers
+best_sid = max(ALT_SCENARIOS, key=lambda s: get_incremental(s)["npv_savings"])
+worst_sid = min(ALT_SCENARIOS, key=lambda s: get_incremental(s)["npv_savings"])
+best_savings = get_incremental(best_sid)["npv_savings"] / 1e9
+worst_savings = get_incremental(worst_sid)["npv_savings"] / 1e9
+```
+
+The figure above displays the net present value of savings for each alternative scenario relative to the diesel business-as-usual counterfactual. The results are unambiguous: every alternative saves the Maldives between `{python} f"${worst_savings:,.1f}"` billion and `{python} f"${best_savings:,.1f}"` billion in present value over the `{python} f"{cba['end_year'] - cba['base_year']}"`-year analysis period. The `{python} SCENARIO_LABELS[best_sid]` scenario achieves the highest NPV savings, while even `{python} SCENARIO_LABELS[worst_sid]` — the least advantageous alternative — delivers substantial net benefits. The magnitude of these savings reflects the enormous cumulative cost of diesel fuel over three decades, which dwarfs the upfront capital investment required for any of the transition pathways.
+
+It is worth emphasising that these savings are calculated at a `{python} f"{cba['discount_rate']*100:.0f}"` per cent real discount rate, which heavily discounts benefits occurring in later years. At lower discount rates (`{python} f"{param('Discount Rate', 'Low')*100:.0f}"`–4 per cent, as used by several OECD development agencies), the savings would be even larger, because the long tail of fuel cost avoidance in the 2040s and 2050s receives greater weight. Conversely, even at the high end of the ADB range (`{python} f"{param('Discount Rate', 'High')*100:.0f}"` per cent), all alternatives still dominate diesel — the breakeven discount rate for every scenario is well above `{python} f"{irr_min:.0f}"` per cent.
+
+## Cost Breakdown by Component
+
+Understanding *why* the alternatives are cheaper requires examining the composition of costs under each pathway. The stacked bar chart below decomposes the present value of total system costs into four components: capital expenditure (the upfront investment in solar panels, batteries, cables, generators, and other infrastructure), operating expenditure (annual maintenance, labour, and non-fuel running costs), fuel costs (diesel and LNG purchases), and power purchase agreement imports (the cost of electricity imported via the India cable).
+
+```{python}
+#| label: fig-cost-breakdown
+#| fig-cap: "Present value of costs by component for each scenario. Fuel costs dominate BAU; CAPEX dominates alternatives but at lower total cost."
+
+components = ["pv_capex", "pv_opex", "pv_fuel", "pv_ppa"]
+comp_labels = ["CAPEX", "OPEX", "Fuel", "PPA Imports"]
+comp_colors = ["#3498db", "#2ecc71", "#e74c3c", "#9b59b6"]
+
+fig = go.Figure()
+for comp, label, color in zip(components, comp_labels, comp_colors):
+    vals = [cba["npv_results"][s].get(comp, 0) / 1e9 for s in SCENARIO_IDS]
+    fig.add_trace(go.Bar(
+        name=label,
+        x=[SCENARIO_SHORT[s] for s in SCENARIO_IDS],
+        y=vals,
+        marker_color=color,
+    ))
+
+fig.update_layout(
+    barmode="stack",
+    title="Present Value of Costs by Component ($B)",
+    yaxis_title="PV of Costs ($ Billions)",
+    height=480,
+    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+)
+fig.show()
+```
+
+The cost structure reveals a fundamental shift between diesel and renewable pathways. Under business-as-usual, the dominant cost component is fuel, which accounts for `{python} f"${cba['npv_results']['bau']['pv_fuel']/1e9:,.1f}"` billion or approximately `{python} f"{cba['npv_results']['bau']['pv_fuel']/cba['npv_results']['bau']['pv_total_costs']*100:.0f}"` per cent of total lifetime system costs. This reflects the inherent economics of diesel generation: the capital cost of generators is relatively modest, but the ongoing fuel expenditure compounds relentlessly over `{python} f"{cba['end_year'] - cba['base_year']}"` years, especially as diesel prices escalate and demand grows.
+
+The renewable scenarios invert this cost structure. Capital expenditure — for solar panels, battery systems, and in some cases submarine cables and LNG terminals — becomes the dominant cost component, while fuel costs shrink dramatically or disappear entirely. The critical insight is that even though the upfront CAPEX of the renewable pathways is higher than the BAU generator replacement cost, the total lifetime system cost is substantially lower because the avoided fuel expenditure far outweighs the additional capital investment. Solar panels and batteries, once installed, generate electricity at near-zero marginal cost for decades, whereas diesel generators require a continuous stream of expensive imported fuel.
+
+The Full Integration scenario (S2) is unique in exhibiting significant PPA import costs alongside CAPEX, reflecting the ongoing payments for electricity imported through the India cable. While these import costs are far lower than the diesel fuel costs they displace, they represent a continuing outflow that the purely domestic renewable scenarios avoid entirely.
+
+## Benefit-Cost Ratios and Returns
+
+The benefit-cost ratio and internal rate of return provide complementary perspectives on the economic attractiveness of each transition pathway. The BCR indicates the total present value of benefits generated per dollar of incremental cost, with any value above 1.0 indicating that the investment creates net value for society. The IRR identifies the discount rate at which the project breaks even, with values exceeding the `{python} f"{cba['discount_rate']*100:.0f}"` per cent hurdle rate confirming economic viability.
+
+```{python}
+#| label: fig-bcr-irr
+#| fig-cap: "Benefit-cost ratios (left) and internal rates of return (right) for each alternative scenario."
+
+fig = make_subplots(rows=1, cols=2, subplot_titles=["Benefit-Cost Ratio", "Internal Rate of Return (%)"])
+
+bcrs = {s: get_incremental(s)["bcr"] for s in ALT_SCENARIOS}
+irrs = {s: get_incremental(s)["irr"] * 100 for s in ALT_SCENARIOS}
+labels = [SCENARIO_SHORT[s] for s in ALT_SCENARIOS]
+colors = [SCENARIO_COLORS[s] for s in ALT_SCENARIOS]
+
+fig.add_trace(go.Bar(
+    x=labels, y=list(bcrs.values()),
+    marker_color=colors,
+    text=[f"{v:.1f}×" for v in bcrs.values()],
+    textposition="outside",
+    showlegend=False,
+), row=1, col=1)
+
+fig.add_trace(go.Bar(
+    x=labels, y=list(irrs.values()),
+    marker_color=colors,
+    text=[f"{v:.1f}%" for v in irrs.values()],
+    textposition="outside",
+    showlegend=False,
+), row=1, col=2)
+
+# Add hurdle rate line
+fig.add_hline(y=cba["discount_rate"] * 100, line_dash="dash", line_color="red",
+              annotation_text=f"Hurdle rate ({cba['discount_rate']*100:.0f}%)",
+              row=1, col=2)
+
+fig.update_layout(height=400)
+fig.show()
+```
+
+The left panel shows that all six alternatives achieve BCRs well above the 1.0 threshold, meaning that society receives substantially more in benefits than it pays in costs under every transition pathway. The right panel shows that the IRR for every scenario exceeds the `{python} f"{cba['discount_rate']*100:.0f}"` per cent hurdle rate (indicated by the dashed red line), confirming that the transition investments would generate returns above the social opportunity cost of capital even under more conservative assumptions about the discount rate. The scenarios with the highest BCRs tend to be those that achieve the deepest displacement of diesel fuel, because the avoided fuel costs constitute the largest benefit stream. The LNG scenario (S7) achieves the highest IRR, reflecting its combination of relatively modest CAPEX and rapid, large fuel cost savings from replacing expensive diesel with cheaper gas — even though it does not achieve the highest absolute NPV savings.
+
+The full results table below consolidates all key metrics for ready comparison across scenarios.
+
+```{python}
+#| label: tbl-results-summary
+#| tbl-cap: "Full scenario comparison table: costs, savings, returns, emissions."
+
+tbl = make_summary_table()
+tbl_fmt = tbl.copy()
+tbl_fmt["PV Total Costs ($B)"] = tbl_fmt["PV Total Costs ($B)"].apply(lambda x: f"${x:,.1f}")
+tbl_fmt["LCOE ($/kWh)"] = tbl_fmt["LCOE ($/kWh)"].apply(lambda x: f"${x:.3f}")
+tbl_fmt["NPV Savings ($B)"] = tbl_fmt["NPV Savings ($B)"].apply(lambda x: f"${x:,.1f}" if x > 0 else "—")
+tbl_fmt["BCR"] = tbl_fmt["BCR"].apply(lambda x: f"{x:.1f}×" if isinstance(x, float) else "—")
+tbl_fmt["IRR (%)"] = tbl_fmt["IRR (%)"].apply(lambda x: f"{x:.1f}%" if isinstance(x, (int, float)) and x > 0 else "—")
+tbl_fmt["Emissions (MtCO₂)"] = tbl_fmt["Emissions (MtCO₂)"].apply(lambda x: f"{x:.1f}")
+tbl_fmt["Final RE (%)"] = tbl_fmt["Final RE (%)"].apply(lambda x: f"{x:.0f}%")
+
+from IPython.display import Markdown
+Markdown(tbl_fmt.to_markdown(index=False))
+```
+
+The summary table reinforces the central finding that every alternative pathway is economically superior to continued diesel dependence, and it allows the reader to see the trade-offs among them. The scenarios with the highest renewable energy shares tend to deliver the largest NPV savings, the lowest LCOE, and the deepest emissions reductions, but they may also require more capital and involve greater technological risk (as with floating solar in S6). The LNG scenario stands out for its combination of fast payback and high IRR, which reflects its bridging character — it achieves rapid cost savings by swapping one fossil fuel for a cheaper one, rather than by fundamentally transforming the technology base.
+
+## LCOE Comparison
+
+The levelised cost of electricity provides the most intuitive metric for comparing generation costs across technologies and scenarios. Unlike total system cost or NPV, which are sensitive to demand projections and discount rates, LCOE expresses the average cost of producing one unit of electricity over the project lifetime, making it directly comparable to retail tariffs, benchmark studies, and international experience.
+
+```{python}
+#| label: fig-lcoe
+#| fig-cap: "Levelised cost of electricity by scenario, with international benchmarks for context."
+
+lcoes = {s: get_npv(s)["lcoe"] * 100 for s in SCENARIO_IDS}
+benchmarks = cba.get("benchmarks", {})
+
+fig = go.Figure()
+
+# Scenario bars
+fig.add_trace(go.Bar(
+    x=[SCENARIO_SHORT[s] for s in SCENARIO_IDS],
+    y=[lcoes[s] for s in SCENARIO_IDS],
+    marker_color=[SCENARIO_COLORS[s] for s in SCENARIO_IDS],
+    text=[f"{lcoes[s]:.1f}¢" for s in SCENARIO_IDS],
+    textposition="outside",
+    name="Maldives Scenarios",
+))
+
+# Benchmark lines
+if benchmarks:
+    bm_data = [
+        ("IRENA Global Solar", benchmarks.get("global_solar_lcoe", 0.049) * 100, "#27ae60"),
+        ("SIDS Average RE", benchmarks.get("sids_avg_renewable_lcoe", 0.16) * 100, "#f39c12"),
+        ("Global Diesel Mini-grid", benchmarks.get("global_diesel_gen_lcoe", 0.28) * 100, "#e74c3c"),
+    ]
+    for label, val, color in bm_data:
+        fig.add_hline(y=val, line_dash="dot", line_color=color,
+                      annotation_text=label, annotation_position="top left")
+
+fig.update_layout(
+    title="Levelised Cost of Electricity (¢/kWh)",
+    yaxis_title="LCOE (¢/kWh)",
+    height=450,
+    showlegend=False,
+)
+fig.show()
+```
+
+The LCOE comparison chart places the Maldives scenarios in the context of international benchmarks. The diesel BAU LCOE substantially exceeds global diesel mini-grid averages, reflecting the particular cost penalties of small-island generation: fuel transport surcharges, scale inefficiencies of small generators, and high labour costs for maintenance on remote islands. The renewable-based scenarios achieve LCOEs that approach the SIDS average for renewable generation and, in some cases, come close to global utility-scale solar benchmarks — a remarkable achievement for a small island nation with severe logistical constraints. The gap between the BAU LCOE and the best alternative LCOEs represents the per-unit cost advantage of transition, which compounds into the billions of dollars of NPV savings documented above.
+
+## Emissions Trajectories
+
+Climate impact is a critical dimension of the energy transition decision, both because the Maldives has committed to ambitious emissions reduction targets under the Paris Agreement and because, as the world's lowest-lying nation, it has an existential stake in global climate action. The figure below compares cumulative CO₂ emissions across all seven scenarios over the 30-year analysis period.
+
+```{python}
+#| label: fig-emissions
+#| fig-cap: "Cumulative CO₂ emissions by scenario. All alternatives achieve significant emission reductions versus diesel BAU."
+
+emissions = {s: summaries[s]["total_emissions_mtco2"] for s in SCENARIO_IDS}
+
+fig = bar_scenario_comparison(
+    values=emissions,
+    title="Cumulative CO₂ Emissions, 2026–2056 (MtCO₂)",
+    yaxis_title="MtCO₂",
+    highlight_bau=True,
+)
+fig.show()
+```
+
+```{python}
+#| label: emission-reductions
+bau_em = summaries["bau"]["total_emissions_mtco2"]
+best_em_sid = min(ALT_SCENARIOS, key=lambda s: summaries[s]["total_emissions_mtco2"])
+best_em = summaries[best_em_sid]["total_emissions_mtco2"]
+reduction_pct = (1 - best_em / bau_em) * 100
+```
+
+The emissions comparison reveals the enormous environmental dividend of transition. Under diesel BAU, the Maldives electricity sector would emit `{python} f"{bau_em:,.1f}"` million tonnes of CO₂ over the `{python} f"{cba['end_year'] - cba['base_year']}"`-year period. The cleanest scenario, `{python} SCENARIO_SHORT[best_em_sid]`, reduces cumulative emissions by `{python} f"{reduction_pct:.0f}"` per cent to just `{python} f"{best_em:,.1f}"` million tonnes. Even the scenarios that retain some fossil fuel component — such as the LNG Transition (S7), which achieves a `{python} f"{(1 - param('LNG Emission Factor') / 0.72)*100:.0f}"` per cent reduction in emission intensity by switching from diesel to natural gas — deliver substantial climate benefits relative to the status quo.
+
+The emissions ranking does not perfectly mirror the economic ranking, which creates an interesting policy tension. Some scenarios that are slightly less cost-optimal deliver substantially deeper decarbonisation, meaning that policymakers face a genuine choice about how much additional cost (if any) they are willing to accept to achieve greater emissions reduction. However, the trade-off is modest: the cost difference between the most economically efficient scenario and the most environmentally ambitious one is small relative to the savings both deliver versus diesel.
+
+## The India Cable vs. Domestic Alternatives
+
+A question of particular strategic importance is whether the India submarine cable (S2) justifies its substantial cost premium over domestic renewable alternatives. While the cable clearly dominates diesel BAU (as do all alternatives), the relevant policy comparison is against the next-best option that does not require international infrastructure. The incremental analysis comparing S2 (Full Integration) against S3 (National Grid, the best domestic alternative) directly addresses this question.
+
+```{python}
+#| label: fi-vs-ng
+fi_vs_ng = cba["incremental_fi_vs_ng"]
+```
+
+The incremental analysis reveals that the India cable requires `{python} fmt_usd(fi_vs_ng['additional_capex'])` in additional capital expenditure beyond what the National Grid domestic scenario would cost. This additional investment yields an incremental benefit-cost ratio of only `{python} f"{fi_vs_ng['bcr']:.2f}"`, which falls below the 1.0 threshold — meaning that the marginal costs of the cable exceed its marginal benefits relative to domestic solar-plus-battery. The incremental IRR of `{python} f"{fi_vs_ng['irr']*100:.1f}"` per cent is below the `{python} f"{cba['discount_rate']*100:.0f}"` per cent social discount rate, and the incremental payback period extends to `{python} fi_vs_ng['payback_years']` years, raising questions about the cable's economic justification on the margin.
+
+::: {.callout-important}
+## The cable does not pay for itself on the margin
+While S2 saves money versus *diesel* (BCR `{python} f"{get_incremental('full_integration')['bcr']:.1f}"` ×), it does *not* save money versus *domestic solar+battery* (S3). The cable's marginal BCR of `{python} f"{fi_vs_ng['bcr']:.2f}"` means that every additional dollar invested in the cable yields only `{python} f"{fi_vs_ng['bcr']*100:.0f}"` cents of additional benefit. Domestic RE is more cost-effective.
+:::
+
+This finding does not categorically rule out the India cable — there may be strategic, geopolitical, or energy security arguments that fall outside the scope of economic CBA. However, it does establish that from a pure cost-effectiveness standpoint, the Maldives would be better served by investing the same capital in domestic solar, battery, and near-shore solar capacity. The cable's marginal economics would improve if India were to share the construction cost (the sensitivity analysis explores a 50 per cent cost-sharing scenario), if Indian electricity export prices were lower than assumed, or if domestic solar deployment encountered unforeseen cost escalation. These conditions are possible but uncertain, which reinforces the real-options argument for deferring the cable decision presented in @sec-real-options.
