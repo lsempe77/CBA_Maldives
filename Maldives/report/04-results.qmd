@@ -1,5 +1,4 @@
----
----
+
 
 ```{python}
 #| label: setup
@@ -85,6 +84,156 @@ The cost structure reveals a fundamental shift between diesel and renewable path
 The renewable scenarios invert this cost structure. Capital expenditure — for solar panels, battery systems, and in some cases submarine cables and LNG terminals — becomes the dominant cost component, while fuel costs shrink dramatically or disappear entirely. The critical insight is that even though the upfront CAPEX of the renewable pathways is higher than the BAU generator replacement cost, the total lifetime system cost is substantially lower because the avoided fuel expenditure far outweighs the additional capital investment. Solar panels and batteries, once installed, generate electricity at near-zero marginal cost for decades, whereas diesel generators require a continuous stream of expensive imported fuel.
 
 The Full Integration scenario (S2) is unique in exhibiting significant PPA import costs alongside CAPEX, reflecting the ongoing payments for electricity imported through the India cable. While these import costs are far lower than the diesel fuel costs they displace, they represent a continuing outflow that the purely domestic renewable scenarios avoid entirely.
+
+### Why Fuel Costs Remain Substantial Even Under Renewable Scenarios {#sec-fuel-persistence}
+
+```{python}
+#| label: fuel-persistence-data
+
+# Compute fuel shares and RE shares for all scenarios
+_fuel_pcts = {}
+_re_finals = {}
+_diesel_shares = {}
+for _s in SCENARIO_IDS:
+    _nr = cba["npv_results"][_s]
+    _fuel_pcts[_s] = _nr.get("pv_fuel", 0) / _nr["pv_total_costs"] * 100
+    _ss_data = summaries[_s]
+    _re_finals[_s] = _ss_data["final_re_share"] * 100
+    _diesel_shares[_s] = _ss_data.get("final_diesel_share", 1.0 - _ss_data["final_re_share"]) * 100
+
+_best_re_sid = max(ALT_SCENARIOS, key=lambda s: _re_finals[s])
+_best_re_pct = _re_finals[_best_re_sid]
+_worst_re_sid = min(ALT_SCENARIOS, key=lambda s: _re_finals[s])
+_worst_re_pct = _re_finals[_worst_re_sid]
+```
+
+A natural question arises from @fig-cost-breakdown: if all alternative scenarios involve substantial renewable energy investment, why does fuel still constitute between `{python} f"{min(_fuel_pcts[s] for s in ALT_SCENARIOS):.0f}"` and `{python} f"{max(_fuel_pcts[s] for s in ALT_SCENARIOS):.0f}"` per cent of total lifetime costs in the domestic scenarios (S3–S7)? The answer lies in a set of binding physical, geographic, and technical constraints that limit the achievable renewable energy penetration on small coral islands.
+
+**Land scarcity.** The most fundamental constraint is that the Maldives has only `{python} f"{param('Total Inhabited Island Area'):.0f}"` km² of total inhabited island area, spread across nearly 200 islands. Solar PV requires approximately `{python} f"{param('Area Per kW'):.0f}"` m² per installed kW (including panel spacing and access), and the model caps the usable share of island area at `{python} f"{param('Max Land Fraction')*100:.0f}"` per cent to preserve land for housing, agriculture, vegetation, and public use. On the smallest and most densely populated islands, solar demand for space exceeds this limit, forcing them into diesel-hybrid configurations regardless of economics. Across all inhabited islands, this physical ceiling means that rooftop and ground-mount solar alone cannot supply the growing national demand.
+
+**The Malé bottleneck.** Greater Malé — comprising Malé, Hulhumalé, and Villimalé — consumes more than half of national electricity but is among the most densely built urban areas in the world. With limited available land, rooftop and commercial installations are capped at approximately `{python} f"{param('Male Rooftop Solar Potential'):.0f}"` MWp, which can supply only about `{python} f"{param('Male Max RE Share')*100:.0f}"` per cent of Malé's demand^[ADB Energy Roadmap 2024–2033 (Table 8): 4 MW ASSURE rooftop + 5 MW additional rooftop + 25 MW commercial rooftop on Gulhifalhu/Thilafushi = 34 MWp total. This is nearly double the earlier ZNES Flensburg estimate of 18 MWp (public buildings and sports facilities only).]. Because Malé's demand share is so large, even if every outer island achieved 100 per cent renewable supply, the national weighted average would be constrained by Malé's limited rooftop potential. The Near-Shore Solar (S5) and Maximum RE (S6) scenarios exist specifically to break this bottleneck by siting `{python} f"{param('Near-Shore Solar MW'):.0f}"` MW on uninhabited islands, `{python} f"{param('Floating Solar MW'):.0f}"` MW on floating platforms, and `{python} f"{param('Wind Capacity MW', category='Wind'):.0f}"` MW of wind energy near Malé — which is why S6 achieves the highest final RE share at `{python} f"{_best_re_pct:.0f}"` per cent.
+
+**Deployment speed.** Even where economics and land permit, construction logistics impose a practical ceiling of `{python} f"{param('Deployment Ramp MW per Year'):.0f}"` MW of new solar capacity per year nationally. The ADB Energy Roadmap 2024–2033 identifies a pipeline of 424 MW of planned and potential solar initiatives over five years (approximately 85 MW per year), which the model adopts as the base deployment pace. This reflects the realities of importing equipment to remote atolls, limited port capacity, skilled labour scarcity, and the sequential nature of island-by-island installation. Over the `{python} f"{cba['end_year'] - cba['base_year']}"` year analysis period, cumulative installations are substantial, but growing demand (at approximately `{python} f"{param('Growth Rate - BAU')*100:.0f}"` per cent per year) constantly expands the denominator against which the RE share is measured.
+
+Note that the Government of Maldives targets **33 per cent** renewable energy in electricity consumption by 2028 (ADB Energy Roadmap 2024–2033), which requires approximately 800 GWh from renewable sources against projected demand of 2,400 GWh. The model's deployment trajectory is calibrated to this near-term target, and the scenarios explore what happens as the transition continues beyond 2028 toward 2056, with the ultimate RE share determined by the interplay of deployment speed, land constraints, and demand growth.
+
+**Storage duration.** Solar panels produce electricity for roughly six to eight hours per day, concentrated around midday. The model assumes `{python} f"{param('Storage Hours'):.0f}"` hours of battery storage per site, which covers the evening demand peak but cannot carry load through the entire night. With a maximum depth of discharge of `{python} f"{param('Battery DoD Max')*100:.0f}"` per cent and round-trip efficiency of `{python} f"{param('Round-trip Efficiency')*100:.0f}"` per cent, the usable energy per cycle is further reduced. Diesel backup therefore remains essential for overnight and extended cloudy-period generation. Increasing storage to eight or more hours would substantially raise RE penetration, but at current battery prices (`{python} f"${param('CAPEX 2026', category='Battery'):.0f}"`/kWh installed), the cost of doubling storage duration exceeds the fuel savings it would displace.
+
+**The net effect** is that even the most ambitious technically feasible scenario (S6 Maximum RE) reaches only `{python} f"{_best_re_pct:.0f}"` per cent renewable penetration by `{python} f"{cba['end_year']}"`, while the more conservative pathways (S3, S4) plateau around `{python} f"{_re_finals['national_grid']:.0f}"` to `{python} f"{_re_finals['islanded_green']:.0f}"` per cent. The remaining generation gap — ranging from `{python} f"{_diesel_shares[_best_re_sid]:.0f}"` to `{python} f"{_diesel_shares[_worst_re_sid]:.0f}"` per cent — must be filled by diesel (or LNG in S7), and the cumulative fuel cost of that residual fossil generation over `{python} f"{cba['end_year'] - cba['base_year']}"` years is what produces the large red bars visible in every scenario. This persistent fuel exposure is precisely why the sensitivity analysis (@sec-sensitivity) identifies diesel price as the single most influential parameter across all pathways: even after transition, the Maldives remains partially dependent on imported fuel, and the economic case for transition is strengthened — not weakened — by this reality, because the alternative is *total* dependence under BAU.
+
+## Renewable Energy Ceiling: Can the Maldives Reach 70–80 Per Cent? {#sec-re-ceiling}
+
+```{python}
+#| label: re-ceiling-data
+
+# RE trajectory for Maximum RE (S6)
+mx_gen = summaries["maximum_re"]["generation_trajectory"]
+wind_mw = param("Wind Capacity MW", category="Wind")
+wind_cf = param("Wind Capacity Factor", category="Wind")
+wind_gwh = wind_mw * wind_cf * 8.76  # annual generation
+floating_mw = param("Floating Solar MW")
+nearshore_mw = param("Near-Shore Solar MW")
+male_rooftop_mw = param("Male Rooftop Solar Potential")
+deployment_ramp = param("Deployment Ramp MW per Year")
+growth_rate = param("Growth Rate - BAU")
+base_demand = param("Base Demand 2026")
+
+# RE shares at key years from trajectory
+def _get_re_at_year(traj, yr):
+    for row in traj:
+        if row.get("year") == yr:
+            return row.get("re_share", 0) * 100
+    return None
+
+re_2035 = _get_re_at_year(mx_gen, 2035)
+re_2040 = _get_re_at_year(mx_gen, 2040)
+re_2050 = _get_re_at_year(mx_gen, 2050)
+re_2056 = summaries["maximum_re"]["final_re_share"] * 100
+
+# Demand at 2050
+demand_2050 = base_demand * (1 + growth_rate) ** (2050 - 2026)
+```
+
+The Government of Maldives' Energy Roadmap 2024–2033 [-@gom_roadmap2024] targets 33 per cent renewable energy by 2028. A question of significant policy interest is whether the Maldives can push further — to 70, 80, or even higher renewable energy shares by mid-century. The Maximum RE scenario (S6) provides the analytical framework to answer this question, and the results reveal both encouraging progress and sobering structural limits.
+
+```{python}
+#| label: fig-re-trajectory
+#| fig-cap: "Renewable energy share trajectory under Maximum RE (S6). RE peaks in the late 2030s before demand growth erodes the share."
+
+years = [row["year"] for row in mx_gen]
+re_shares = [row.get("re_share", 0) * 100 for row in mx_gen]
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(
+    x=years, y=re_shares,
+    mode="lines+markers",
+    name="S6 Maximum RE",
+    line=dict(color="#ffc107", width=3),
+    marker=dict(size=4),
+))
+
+# GoM target line
+fig.add_hline(y=33, line_dash="dash", line_color="#198754",
+              annotation_text="GoM 2028 target (33%)",
+              annotation_position="top left")
+
+# Aspirational ceiling lines
+fig.add_hline(y=70, line_dash="dot", line_color="#0d6efd",
+              annotation_text="70% aspiration",
+              annotation_position="top left")
+fig.add_hline(y=80, line_dash="dot", line_color="#dc3545",
+              annotation_text="80% aspiration",
+              annotation_position="top left")
+
+fig.update_layout(
+    title="Renewable Energy Share Over Time (S6 Maximum RE)",
+    xaxis_title="Year",
+    yaxis_title="Renewable Energy Share (%)",
+    yaxis_range=[0, 100],
+    height=450,
+)
+fig.show()
+```
+
+@fig-re-trajectory reveals a striking and counterintuitive pattern: **the RE share does not rise monotonically** but instead peaks in the late 2030s before gradually declining. Under the Maximum RE scenario, renewable energy reaches approximately `{python} f"{re_2035:.0f}"` per cent by 2035 and peaks around `{python} f"{re_2040:.0f}"` per cent by 2040 — temporarily exceeding the 70 per cent threshold — before falling back to `{python} f"{re_2050:.0f}"` per cent by 2050 and `{python} f"{re_2056:.0f}"` per cent by `{python} f"{cba['end_year']}"`. This phenomenon occurs because renewable energy capacity is bounded by physical constraints (land area, deployment speed, technology availability), while electricity demand continues growing at approximately `{python} f"{growth_rate*100:.0f}"` per cent per year.
+
+### Supply-Side RE Potential
+
+The Maximum RE scenario deploys every available domestic renewable energy technology:
+
+| Technology | Capacity | Annual Generation | Source |
+|---|---|---|---|
+| Rooftop solar (Malé) | `{python} f"{male_rooftop_mw:.0f}"` MWp | ~`{python} f"{male_rooftop_mw * 0.175 * 8.76:.0f}"` GWh | ADB Roadmap Table 8 |
+| Near-shore solar | `{python} f"{nearshore_mw:.0f}"` MW | ~`{python} f"{nearshore_mw * 0.175 * 8.76:.0f}"` GWh | Uninhabited islands |
+| Floating solar | `{python} f"{floating_mw:.0f}"` MW | ~`{python} f"{floating_mw * 0.175 * 8.76:.0f}"` GWh | GoM Roadmap target |
+| Wind energy | `{python} f"{wind_mw:.0f}"` MW | ~`{python} f"{wind_gwh:.0f}"` GWh | ADB Roadmap §4.7.2 |
+| Outer island solar | Variable | Growing with demand | Least-cost engine |
+| Waste-to-energy | 14 MW | ~98 GWh | Thilafushi facility |
+
+The combined Malé-region RE potential (rooftop + near-shore + floating + wind) is approximately `{python} f"{male_rooftop_mw + nearshore_mw + floating_mw + wind_mw:.0f}"` MW, capable of generating roughly `{python} f"{(male_rooftop_mw + nearshore_mw + floating_mw) * 0.175 * 8.76 + wind_gwh:.0f}"` GWh per year. This is substantial — but it is a *fixed ceiling*, while demand is an exponentially growing quantity.
+
+### The Demand Growth Denominator
+
+At `{python} f"{growth_rate*100:.0f}"` per cent annual growth, national electricity demand roughly doubles every 14 years. By 2050, demand is projected to reach approximately `{python} f"{demand_2050:,.0f}"` GWh — nearly four times the 2026 level. Even if every available renewable technology is deployed at maximum capacity, the fixed RE generation ceiling means that the *share* of renewable energy in total supply inevitably declines once the deployment programme is complete and demand continues growing.
+
+This is the fundamental arithmetic challenge: **renewable capacity is area-constrained; electricity demand is not.** The Maldives cannot manufacture more island area, and floating solar and wind capacity — while helpful — are bounded by lagoon area, environmental constraints, and technical feasibility.
+
+### Pathways to Sustained 70 Per Cent or Higher
+
+Sustaining RE penetration above 70 per cent beyond the 2040 window would require one or more of the following structural changes:
+
+1. **Demand moderation.** If demand growth were moderated to 3.5 per cent per year (the Low sensitivity case) rather than `{python} f"{growth_rate*100:.0f}"` per cent, 2050 demand would be approximately `{python} f"{base_demand * (1.035 ** 24):,.0f}"` GWh rather than `{python} f"{demand_2050:,.0f}"` GWh — a reduction of `{python} f"{(1 - base_demand * 1.035**24 / demand_2050) * 100:.0f}"` per cent that would sustain RE shares above 70 per cent for significantly longer. Energy efficiency standards, time-of-use pricing, and demand-side management programmes are the principal policy levers.
+
+2. **Floating solar expansion beyond 195 MW.** The current target of `{python} f"{floating_mw:.0f}"` MW is aligned with the GoM Roadmap, but the Maldives has approximately 26,000 km² of lagoon area, of which even 0.1 per cent utilisation would yield over 3,000 MW of potential. If floating solar technology matures and costs decline as projected, a second phase of 200–400 MW could substantially extend the RE ceiling. This remains speculative given the technology's immaturity in tropical marine environments.
+
+3. **Wind energy expansion.** The ADB Roadmap identifies `{python} f"{wind_mw:.0f}"` MW of wind potential, contributing approximately `{python} f"{wind_gwh:.0f}"` GWh per year (roughly 4–5 percentage points of RE share). Scaling wind beyond `{python} f"{wind_mw:.0f}"` MW is constrained by the Maldives' relatively modest wind resources — capacity factors of `{python} f"{wind_cf*100:.0f}"` per cent are below the global average for onshore wind — but it provides valuable generation diversity (wind and solar have partially complementary diurnal profiles).
+
+4. **India submarine cable.** The Full Integration scenario (S2) achieves the highest *total* clean energy supply by importing grid electricity from India, but this reduces *domestic* RE share to approximately `{python} f"{summaries['full_integration']['final_re_share']*100:.0f}"` per cent. Whether imported electricity counts toward RE targets depends on the carbon intensity of the Indian grid, which is currently `{python} f"{param('India Grid Emission Factor'):.2f}"` kgCO₂/kWh and declining.
+
+::: {.callout-important}
+## 70% RE is achievable but time-limited
+The Maximum RE scenario demonstrates that 70 per cent renewable energy penetration is technically feasible and economically attractive in the late 2030s window. However, sustaining this level requires either moderating demand growth, expanding floating solar beyond current plans, or accepting that the Maldives' domestic RE share will plateau in the 60–65 per cent range by 2050 under base-case demand growth.
+:::
 
 ## Benefit-Cost Ratios and Returns
 

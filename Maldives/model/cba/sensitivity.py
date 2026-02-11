@@ -457,6 +457,35 @@ class SensitivityAnalysis:
             description="Battery storage sizing per MW solar (NREL ATB 2024; BNEF 2025)",
         )
         
+        # Wind energy parameters (ADB Roadmap 2024-2033)
+        if 'wind_capex' in sp:
+            params["wind_capex"] = SensitivityParameter(
+                name="Wind CAPEX per kW",
+                base_value=self.config.wind.capex_per_kw,
+                low_value=sp['wind_capex']['low'],
+                high_value=sp['wind_capex']['high'],
+                unit="USD/kW",
+                description="Island wind turbine CAPEX (IRENA RPGC 2024; SIDS premium)",
+            )
+        if 'wind_capacity_factor' in sp:
+            params["wind_capacity_factor"] = SensitivityParameter(
+                name="Wind Capacity Factor",
+                base_value=self.config.wind.capacity_factor,
+                low_value=sp['wind_capacity_factor']['low'],
+                high_value=sp['wind_capacity_factor']['high'],
+                unit="ratio",
+                description="Wind CF at 5.7 m/s avg (IEC Class III; ADB Roadmap)",
+            )
+        if 'wind_capacity_mw' in sp:
+            params["wind_capacity_mw"] = SensitivityParameter(
+                name="Wind Capacity MW",
+                base_value=self.config.wind.capacity_mw,
+                low_value=sp['wind_capacity_mw']['low'],
+                high_value=sp['wind_capacity_mw']['high'],
+                unit="MW",
+                description="Wind potential on Gulhifalhu/Thilafushi (ADB Roadmap 2024-2033)",
+            )
+        
         # Item-2: 6 additional high-impact parameters
         
         # Demand saturation ceiling (A-M-01)
@@ -775,6 +804,13 @@ class SensitivityAnalysis:
             config.transport.pm25_damage_per_vkm = value
         elif parameter_name == "petrol_price":
             config.transport.petrol_price_2026 = value
+        # Wind energy parameters
+        elif parameter_name == "wind_capex":
+            config.wind.capex_per_kw = value
+        elif parameter_name == "wind_capacity_factor":
+            config.wind.capacity_factor = value
+        elif parameter_name == "wind_capacity_mw":
+            config.wind.capacity_mw = value
         
         return config
     
@@ -1086,6 +1122,13 @@ class SensitivityAnalysis:
             config.transport.pm25_damage_per_vkm = value
         elif parameter_name == "petrol_price":
             config.transport.petrol_price_2026 = value
+        # Wind energy parameters
+        elif parameter_name == "wind_capex":
+            config.wind.capex_per_kw = value
+        elif parameter_name == "wind_capacity_factor":
+            config.wind.capacity_factor = value
+        elif parameter_name == "wind_capacity_mw":
+            config.wind.capacity_mw = value
         
         return config
     

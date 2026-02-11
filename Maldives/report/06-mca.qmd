@@ -1,5 +1,4 @@
----
----
+
 
 ```{python}
 #| label: setup
@@ -53,7 +52,7 @@ if mca_scenarios:
     scenario_scores = {}
     for sid, sdata in mca_scenarios.items():
         if isinstance(sdata, dict):
-            total = sdata.get("total_score", sdata.get("weighted_total", 0))
+            total = sdata.get("total_weighted_score", sdata.get("total_score", sdata.get("weighted_total", 0)))
             scenario_scores[sid] = total
     
     if scenario_scores:
@@ -84,7 +83,10 @@ The heatmap below disaggregates the overall MCA score into its component criteri
 #| fig-cap: "Normalised scores by criterion and scenario. Darker green indicates better performance."
 
 if mca_scenarios:
-    criteria = list(weights.keys()) if weights else []
+    # Get criteria list from first scenario's criteria dict
+    first_s = next(iter(mca_scenarios.values()), {})
+    criteria_dict = first_s.get("criteria", {})
+    criteria = list(criteria_dict.keys()) if criteria_dict else list(weights.keys())
     
     if criteria:
         z_data = []
@@ -92,9 +94,13 @@ if mca_scenarios:
         for sid in SCENARIO_IDS:
             if sid in mca_scenarios and sid != "bau":
                 sdata = mca_scenarios[sid]
+                crit_data = sdata.get("criteria", sdata)
                 row = []
                 for c in criteria:
-                    score = sdata.get(c, sdata.get(f"{c}_normalised", sdata.get(f"{c}_score", 0)))
+                    if isinstance(crit_data.get(c), dict):
+                        score = crit_data[c].get("normalised", crit_data[c].get("weighted_score", 0))
+                    else:
+                        score = crit_data.get(c, 0)
                     row.append(score if isinstance(score, (int, float)) else 0)
                 z_data.append(row)
                 y_labels.append(SCENARIO_SHORT.get(sid, sid))
@@ -102,7 +108,7 @@ if mca_scenarios:
         if z_data:
             fig = go.Figure(data=go.Heatmap(
                 z=z_data,
-                x=[c.replace("_", " ").title() for c in criteria],
+                x=[criteria_dict[c].get("label", c.replace("_", " ").title()) if isinstance(criteria_dict.get(c), dict) else c.replace("_", " ").title() for c in criteria],
                 y=y_labels,
                 colorscale="Greens",
                 text=[[f"{v:.2f}" for v in row] for row in z_data],
@@ -140,7 +146,15 @@ if weight_sens:
             if isinstance(profile_data, dict):
                 profile_ranking = profile_data.get("ranking", [])
                 if isinstance(profile_ranking, list):
-                    rank = profile_ranking.index(sid) + 1 if sid in profile_ranking else len(ALT_SCENARIOS)
+                    # ranking is list of dicts with 'scenario' and 'rank' keys
+                    rank = len(ALT_SCENARIOS)
+                    for entry in profile_ranking:
+                        if isinstance(entry, dict) and entry.get("scenario") == sid:
+                            rank = entry.get("rank", rank)
+                            break
+                        elif entry == sid:  # fallback: flat list
+                            rank = profile_ranking.index(sid) + 1
+                            break
                 else:
                     rank = len(ALT_SCENARIOS)
             else:

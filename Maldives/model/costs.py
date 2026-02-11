@@ -50,6 +50,7 @@ class AnnualCosts:
     capex_connection: float = 0.0  # L11: last-mile household connections
     capex_wte: float = 0.0  # R6: waste-to-energy plant CAPEX
     capex_lng: float = 0.0  # E-3-4: LNG plant CAPEX (S7 LNG Transition)
+    capex_wind: float = 0.0  # Wind turbine CAPEX (S6 Maximum RE)
     
     # OPEX
     opex_solar: float = 0.0
@@ -57,6 +58,7 @@ class AnnualCosts:
     opex_diesel: float = 0.0
     opex_cable: float = 0.0
     opex_wte: float = 0.0  # R6: waste-to-energy O&M
+    opex_wind: float = 0.0  # Wind turbine O&M
     
     # Fuel and imports
     fuel_diesel: float = 0.0
@@ -79,7 +81,8 @@ class AnnualCosts:
             self.capex_grid +
             self.capex_connection +
             self.capex_wte +
-            self.capex_lng  # E-3-4: include LNG CAPEX
+            self.capex_lng +  # E-3-4: include LNG CAPEX
+            self.capex_wind  # Wind CAPEX
         )
     
     @property
@@ -90,6 +93,7 @@ class AnnualCosts:
             self.opex_diesel + 
             self.opex_cable +
             self.opex_wte +
+            self.opex_wind +
             self.supply_security
         )
     

@@ -15,6 +15,16 @@ import plotly.express as px
 import plotly.io as pio
 
 # ---------------------------------------------------------------------------
+# Output format detection — switch Plotly to static images for DOCX/PDF
+# ---------------------------------------------------------------------------
+# Quarto sets QUARTO_FIG_FORMAT when rendering; fall back to checking
+# QUARTO_DOCUMENT_OUTPUT_FORMAT or default to interactive HTML.
+_fig_fmt = os.environ.get("QUARTO_FIG_FORMAT", "")
+_out_fmt = os.environ.get("QUARTO_DOCUMENT_OUTPUT_FORMAT", "html")
+if _fig_fmt in ("png", "pdf") or _out_fmt in ("docx", "pdf", "latex"):
+    pio.renderers.default = "png"
+
+# ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 REPORT_DIR = Path(__file__).parent

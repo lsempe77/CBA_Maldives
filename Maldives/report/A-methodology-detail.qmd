@@ -197,8 +197,8 @@ where $r = 0.06$ (6% real discount rate, ADB SIDS standard).
 
 **Cost streams** $C(t)$:
 
-1. CAPEX (solar, battery, cable, grid upgrades, connections)
-2. OPEX (solar, battery, diesel O&M)
+1. CAPEX (solar, wind, battery, cable, grid upgrades, connections)
+2. OPEX (solar, wind, battery, diesel O&M)
 3. PPA import costs (for cable scenarios)
 
 ### EQ-N2: Incremental Analysis

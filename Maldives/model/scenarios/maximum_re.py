@@ -2,23 +2,25 @@
 Maximum RE Scenario
 ===================
 
-Scenario 6: Near-Shore Solar + Floating Solar on Malé lagoon.
+Scenario 6: Near-Shore Solar + Floating Solar + Wind on Greater Malé.
 
 Extends Near-Shore Solar (S5) by adding floating solar PV on Malé's
-protected lagoon areas, dramatically raising Malé's RE share to ~65%.
+protected lagoon areas and wind turbines on industrial islands,
+dramatically raising Malé's RE share.
 
-Three tranches of Malé solar:
-  1. Rooftop (existing): 18 MWp → ~4% of Malé demand
+Five tranches of Malé RE:
+  1. Rooftop (existing): 34 MWp → ~8% of Malé demand
   2. Near-shore islands: 104 MW → ~21% of Malé demand
   3. Floating solar: 195 MW (GoM Roadmap target) → ~19% of Malé demand
-  Total: ~317 MW → Malé RE ~44%  
+  4. Wind: 80 MW on Gulhifalhu/Thilafushi (ADB Roadmap) → ~7% of Malé demand
+  Total: ~413 MW → Malé RE ~55%  
 
-National RE target: ~70%+ (outer 100% + Malé ~44%)
+National RE target: ~80%+ (outer 100% + Malé ~55%)
 
 Key differences from Near-Shore Solar:
   - Floating solar CAPEX = standard solar × 1.5 premium
-  - Requires additional mooring/anchoring infrastructure
-  - Higher overall national RE (80%+ vs 70%)
+  - Wind turbines (2 MW, $3000/kW, CF 25%)
+  - Highest overall national RE (80%+)
   - Largest CAPEX of all domestic scenarios
 """
 
@@ -33,21 +35,22 @@ from . import BaseScenario, GenerationMix
 
 class MaximumREScenario(BaseScenario):
     """
-    Maximum RE: NG + near-shore solar + floating solar on Malé lagoon.
+    Maximum RE: NG + near-shore solar + floating solar + wind.
     
-    Four-segment RE model:
+    Five-segment RE model:
     - Outer islands (declining share): unconstrained, ramp to 100% RE
-    - Greater Malé rooftop (18 MWp): ~4% of Malé demand
+    - Greater Malé rooftop (34 MWp): ~8% of Malé demand
     - Near-shore solar (104 MW on uninhabited islands): ~21% of Malé
     - Floating solar (195 MW, GoM Roadmap target): ~19% of Malé demand
-    - Total Malé RE: ~44%, national ~70%+
+    - Wind (80 MW on Gulhifalhu/Thilafushi, ADB Roadmap): ~7% of Malé
+    - Total Malé RE: ~55%, national ~80%+
     """
     
     def __init__(self, config: Config = None):
         config = config or get_config()
         super().__init__(
             name="Maximum RE",
-            description="NG + near-shore + floating solar (80%+ RE)",
+            description="NG + near-shore + floating solar + wind (80%+ RE)",
             config=config,
         )
         
@@ -74,6 +77,16 @@ class MaximumREScenario(BaseScenario):
         self.floating_build_end = ns.floating_build_start + ns.floating_build_years - 1
         self.floating_capex_premium = ns.floating_solar_capex_premium  # 1.5×
         
+        # Wind energy parameters (ADB Roadmap: 80 MW on Gulhifalhu/Thilafushi)
+        wc = self.config.wind
+        self.wind_mw = wc.capacity_mw  # 80 MW
+        self.wind_cf = wc.capacity_factor  # 0.25
+        self.wind_build_start = wc.build_start
+        self.wind_build_end = wc.build_start + wc.build_years - 1
+        self.wind_capex_per_kw = wc.capex_per_kw  # $3000/kW
+        self.wind_opex_per_kw = wc.opex_per_kw  # $30/kW/yr
+        self.wind_lifetime = wc.lifetime  # 25 years
+        
         # D60: Density-constrained demand share
         self.male_demand_share_base = self.config.current_system.male_electricity_share
         self._scenario_growth_rate = self.config.demand.growth_rates["green_transition"]
@@ -88,6 +101,7 @@ class MaximumREScenario(BaseScenario):
         self.battery_additions: Dict[int, float] = {}
         self.nearshore_additions: Dict[int, float] = {}
         self.floating_additions: Dict[int, float] = {}
+        self.wind_additions: Dict[int, float] = {}
         
         # Inter-island grid
         self.inter_island_built = False
@@ -96,10 +110,11 @@ class MaximumREScenario(BaseScenario):
         self._calculate_deployment_schedule()
     
     def _non_ground_solar_mw(self, year: int) -> float:
-        """V7: Nearshore + floating solar bypass land constraint."""
+        """V7: Nearshore + floating solar + wind bypass land constraint."""
         ns = self._nearshore_cumulative_by_year.get(year, 0.0)
         fl = self._floating_cumulative_by_year.get(year, 0.0)
-        return ns + fl
+        wi = self._wind_cumulative_by_year.get(year, 0.0)
+        return ns + fl + wi
     
     def _init_demand_projector(self) -> DemandProjector:
         return DemandProjector(
@@ -110,11 +125,13 @@ class MaximumREScenario(BaseScenario):
     
     def _calculate_deployment_schedule(self) -> None:
         """
-        Endogenous deployment: outer islands at ramp + near-shore + floating phased.
+        Endogenous deployment: outer islands at ramp + near-shore + floating + wind phased.
         
         Near-shore deployed during nearshore_build_start..nearshore_build_end.
         Floating solar deployed during floating_build_start..floating_build_end.
+        Wind deployed during wind_build_start..wind_build_end.
         Floating solar CAPEX uses a premium multiplier (tracked separately).
+        Wind has separate CAPEX/OPEX and different capacity factor.
         """
         # LW-01: Use base class precomputed effective CF (temp-derated)
         self._effective_cf = self._effective_solar_cf
@@ -128,11 +145,13 @@ class MaximumREScenario(BaseScenario):
         prev_outer_solar_mw = self._existing_outer_solar_mw
         prev_battery = 0.0
         
-        # Near-shore / floating deployment tracking
+        # Near-shore / floating / wind deployment tracking
         nearshore_deployed_mw = 0.0
         floating_deployed_mw = 0.0
+        wind_deployed_mw = 0.0
         ns_annual_mw = self.nearshore_mw / max(1, self.config.nearshore.nearshore_build_years)
         fl_annual_mw = self.floating_mw / max(1, self.config.nearshore.floating_build_years)
+        wi_annual_mw = self.wind_mw / max(1, self.config.wind.build_years)
         
         # Store per-year RE shares and demand shares
         self._outer_re_by_year: Dict[int, float] = {}
@@ -140,6 +159,7 @@ class MaximumREScenario(BaseScenario):
         self._outer_share_by_year: Dict[int, float] = {}
         self._nearshore_cumulative_by_year: Dict[int, float] = {}
         self._floating_cumulative_by_year: Dict[int, float] = {}
+        self._wind_cumulative_by_year: Dict[int, float] = {}
         
         for year in self.config.time_horizon:
             # D60: Time-varying Malé demand share
@@ -182,7 +202,15 @@ class MaximumREScenario(BaseScenario):
             self.floating_additions[year] = fl_addition
             self._floating_cumulative_by_year[year] = floating_deployed_mw
             
-            # === TOTAL SOLAR ===
+            # === WIND: phased deployment on Gulhifalhu/Thilafushi ===
+            wi_addition = 0.0
+            if self.wind_build_start <= year <= self.wind_build_end:
+                wi_addition = min(wi_annual_mw, self.wind_mw - wind_deployed_mw)
+                wind_deployed_mw += wi_addition
+            self.wind_additions[year] = wi_addition
+            self._wind_cumulative_by_year[year] = wind_deployed_mw
+            
+            # === TOTAL SOLAR (excludes wind — wind has separate CF) ===
             total_solar_mw = (
                 new_outer_solar_mw + self.male_solar_cap_mw
                 + nearshore_deployed_mw + floating_deployed_mw
@@ -196,8 +224,8 @@ class MaximumREScenario(BaseScenario):
             self.solar_additions[year] = solar_addition
             prev_outer_solar_mw = new_outer_solar_mw
             
-            # Battery: ratio from config (outer + near-shore + floating, not Malé rooftop)
-            battery_base_mw = new_outer_solar_mw + nearshore_deployed_mw + floating_deployed_mw
+            # Battery: ratio from config (outer + near-shore + floating + wind, not Malé rooftop)
+            battery_base_mw = new_outer_solar_mw + nearshore_deployed_mw + floating_deployed_mw + wind_deployed_mw
             required_battery_mwh = battery_base_mw * self.config.green_transition.battery_ratio
             battery_addition = max(0, required_battery_mwh - prev_battery)
             self.battery_additions[year] = battery_addition
@@ -205,7 +233,7 @@ class MaximumREScenario(BaseScenario):
     
     def _get_male_re(self, year: int) -> float:
         """
-        Compute Malé RE share including rooftop + near-shore + floating.
+        Compute Malé RE share including rooftop + near-shore + floating + wind.
         """
         male_share = self._male_share_by_year.get(year, self.male_demand_share_base)
         net_demand = self.demand.get_demand(year)
@@ -228,7 +256,11 @@ class MaximumREScenario(BaseScenario):
         fl_mw = self._floating_cumulative_by_year.get(year, 0.0)
         fl_gwh = fl_mw * 8760 * self._effective_cf / 1000
         
-        male_re = min(1.0, (rooftop_gwh + ns_gwh + fl_gwh) / male_demand_gwh)
+        # Wind generation (different CF than solar)
+        wi_mw = self._wind_cumulative_by_year.get(year, 0.0)
+        wi_gwh = wi_mw * 8760 * self.wind_cf / 1000
+        
+        male_re = min(1.0, (rooftop_gwh + ns_gwh + fl_gwh + wi_gwh) / male_demand_gwh)
         return male_re
     
     def _get_national_re_target(self, year: int) -> float:
@@ -267,17 +299,29 @@ class MaximumREScenario(BaseScenario):
             existing_mw=self._existing_outer_solar_mw + self.male_solar_cap_mw,
         )
         
-        # Cap solar at national RE target
-        max_solar_gwh = demand_gwh * re_target
-        solar_gwh = min(solar_gwh, max_solar_gwh)
+        # Cap solar at national RE target (before adding wind)
+        max_re_gwh = demand_gwh * re_target
+        solar_gwh = min(solar_gwh, max_re_gwh)
+        
+        # Wind generation (separate CF from solar)
+        wi_mw = self._wind_cumulative_by_year.get(year, 0.0)
+        wind_gwh = wi_mw * 8760 * self.wind_cf / 1000
+        
+        # Cap total RE (solar + wind) at RE target
+        total_re_gwh = solar_gwh + wind_gwh
+        if total_re_gwh > max_re_gwh:
+            # Scale both proportionally
+            scale = max_re_gwh / total_re_gwh if total_re_gwh > 0 else 0
+            solar_gwh *= scale
+            wind_gwh *= scale
         
         # R6: Waste-to-energy baseload (Thilafushi 12 + Addu 1.5 + Vandhoo 0.5 = 14 MW)
         wte_gwh = 0.0
         if year >= self.config.wte.online_year:
-            wte_gwh = min(self.config.wte.annual_generation_gwh, max(0, demand_gwh - solar_gwh))
+            wte_gwh = min(self.config.wte.annual_generation_gwh, max(0, demand_gwh - solar_gwh - wind_gwh))
         
-        # Diesel meets the rest after solar + WTE
-        diesel_gwh = max(0, demand_gwh - solar_gwh - wte_gwh)
+        # Diesel meets the rest after solar + wind + WTE
+        diesel_gwh = max(0, demand_gwh - solar_gwh - wind_gwh - wte_gwh)
         
         # Diesel capacity management
         min_diesel_capacity = peak_mw * self.config.technology.min_diesel_backup
@@ -296,6 +340,7 @@ class MaximumREScenario(BaseScenario):
             solar_gwh=round(solar_gwh, 1),
             import_gwh=0.0,
             wte_gwh=round(wte_gwh, 1),
+            wind_gwh=round(wind_gwh, 1),
             diesel_capacity_mw=round(self.diesel_capacity_mw, 1),
             solar_capacity_mw=round(self.solar_capacity_mw, 1),
             battery_capacity_mwh=round(self.battery_capacity_mwh, 1),
@@ -305,7 +350,9 @@ class MaximumREScenario(BaseScenario):
         """
         Calculate costs for Maximum RE scenario.
         
-        Key difference: floating solar uses CAPEX premium (1.5×).
+        Key differences:
+        - Floating solar uses CAPEX premium (1.5×)
+        - Wind has separate CAPEX ($3000/kW) and OPEX ($30/kW/yr)
         """
         costs = AnnualCosts(year=year)
         
@@ -367,6 +414,22 @@ class MaximumREScenario(BaseScenario):
             diesel_capacity_mw=gen_mix.diesel_capacity_mw
         )
         
+        # CAPEX: Wind turbines (separate from solar — different cost structure)
+        wi_addition = self.wind_additions.get(year, 0)
+        if wi_addition > 0:
+            costs.capex_wind = wi_addition * 1000 * self.wind_capex_per_kw * (1 + self.config.technology.climate_adaptation_premium)
+        
+        # OPEX: Wind turbines ($30/kW/yr for deployed capacity)
+        wi_deployed = self._wind_cumulative_by_year.get(year, 0.0)
+        if wi_deployed > 0:
+            costs.opex_wind = wi_deployed * 1000 * self.wind_opex_per_kw
+        
+        # Wind turbine replacement (after wind_lifetime years)
+        if year - self.wind_lifetime >= self.config.base_year:
+            past_wi = self.wind_additions.get(year - self.wind_lifetime, 0)
+            if past_wi > 0:
+                costs.capex_wind += past_wi * 1000 * self.wind_capex_per_kw * (1 + self.config.technology.climate_adaptation_premium)
+        
         # R6: WTE CAPEX (one-time at online year) + annual OPEX
         if year == self.config.wte.online_year:
             costs.capex_wte = self.config.wte.total_capex * (1 + self.config.technology.climate_adaptation_premium)
@@ -389,27 +452,30 @@ if __name__ == "__main__":
     config = get_config()
     scenario = MaximumREScenario(config)
     
-    print("=" * 70)
+    print("=" * 80)
     print("MAXIMUM RE SCENARIO TEST")
     print(f"  Near-shore MW: {scenario.nearshore_mw} MW")
     print(f"  Floating MW:   {scenario.floating_mw} MW")
-    print(f"  Total Malé solar: {scenario.male_solar_cap_mw + scenario.nearshore_mw + scenario.floating_mw} MW")
+    print(f"  Wind MW:       {scenario.wind_mw} MW (CF={scenario.wind_cf:.0%})")
+    print(f"  Total Malé RE: {scenario.male_solar_cap_mw + scenario.nearshore_mw + scenario.floating_mw + scenario.wind_mw} MW")
     print(f"  Near-shore: {scenario.nearshore_build_start}-{scenario.nearshore_build_end}")
     print(f"  Floating:   {scenario.floating_build_start}-{scenario.floating_build_end}")
-    print("=" * 70)
+    print(f"  Wind:       {scenario.wind_build_start}-{scenario.wind_build_end}")
+    print("=" * 80)
     
     results = scenario.run()
     
     print("\n--- GENERATION MIX ---")
-    print(f"{'Year':<6} {'Demand':<10} {'Diesel':<10} {'Solar':<10} {'RE %':<10} {'Solar MW':<10} {'NS MW':<8} {'FL MW':<8}")
-    print("-" * 80)
+    print(f"{'Year':<6} {'Demand':<10} {'Diesel':<10} {'Solar':<10} {'Wind':<8} {'RE %':<10} {'Solar MW':<10} {'NS MW':<8} {'FL MW':<8} {'WI MW':<8}")
+    print("-" * 98)
     key_years = [config.base_year, 2030, 2033, 2035, 2038, 2040, 2050, config.end_year]
     for year in key_years:
         if year in results.generation_mix:
             gen = results.generation_mix[year]
             ns_mw = scenario._nearshore_cumulative_by_year.get(year, 0)
             fl_mw = scenario._floating_cumulative_by_year.get(year, 0)
-            print(f"{year:<6} {gen.total_demand_gwh:<10.0f} {gen.diesel_gwh:<10.0f} {gen.solar_gwh:<10.0f} {gen.re_share:<10.1%} {gen.solar_capacity_mw:<10.0f} {ns_mw:<8.0f} {fl_mw:<8.0f}")
+            wi_mw = scenario._wind_cumulative_by_year.get(year, 0)
+            print(f"{year:<6} {gen.total_demand_gwh:<10.0f} {gen.diesel_gwh:<10.0f} {gen.solar_gwh:<10.0f} {gen.wind_gwh:<8.0f} {gen.re_share:<10.1%} {gen.solar_capacity_mw:<10.0f} {ns_mw:<8.0f} {fl_mw:<8.0f} {wi_mw:<8.0f}")
     
     summary = scenario.get_summary()
     print(f"\nTotal costs: ${summary['total_costs_million']:,.0f}M")

@@ -1,5 +1,4 @@
----
----
+
 
 ```{python}
 #| label: setup
@@ -26,39 +25,34 @@ The optimal implementation strategy does not correspond to any single scenario i
 phasing = cba.get("investment_phasing_musd", {})
 
 if phasing:
-    phases = {
-        "Phase 1\n2026–28": "2026-28",
-        "Phase 2\n2029–32": "2029-32",
-        "Phase 3\n2033–36": "2033-36",
-        "Phase 4\n2037–40": "2037-40",
-        "Phase 5\n2041–50": "2041-50",
-    }
+    # Use national_grid as the representative 'recommended' pathway;
+    # fall back to first available non-BAU scenario
+    recommended = phasing.get("national_grid", phasing.get("islanded_green", {}))
+    if not recommended:
+        recommended = next((v for k, v in phasing.items() if k != "bau"), {})
     
-    techs = {
-        "Solar": ("#f39c12", "solar"),
-        "Battery": ("#2ecc71", "battery"),
-        "Inter-Island Grid": ("#3498db", "inter_island"),
-        "India Cable": ("#9b59b6", "india_cable"),
-    }
+    periods = ["2026-28", "2029-32", "2033-36", "2037-40", "2041-50"]
+    phase_labels = ["Phase 1\n2026–28", "Phase 2\n2029–32", "Phase 3\n2033–36", "Phase 4\n2037–40", "Phase 5\n2041–50"]
+    
+    techs = [
+        ("Solar", "solar", "#f39c12"),
+        ("Wind", "wind", "#17becf"),
+        ("Battery", "battery", "#2ecc71"),
+        ("Inter-Island Grid", "inter_island", "#3498db"),
+        ("India Cable", "india_cable", "#9b59b6"),
+    ]
     
     fig = go.Figure()
-    for tech_label, (color, key_prefix) in techs.items():
-        vals = []
-        for phase_label, period_key in phases.items():
-            # Search for matching key in phasing data
-            matching_val = 0
-            for pk, pv in phasing.items():
-                if key_prefix.replace("_", "") in pk.replace("_", "").replace(" ", "").lower() and period_key.replace("-", "") in pk.replace("_", "").replace("-", ""):
-                    matching_val = pv
-                    break
-            vals.append(matching_val)
-        
-        fig.add_trace(go.Bar(
-            name=tech_label,
-            x=list(phases.keys()),
-            y=vals,
-            marker_color=color,
-        ))
+    for tech_label, tech_key, color in techs:
+        tech_data = recommended.get(tech_key, {})
+        vals = [tech_data.get(p, 0) for p in periods]
+        if any(v > 0 for v in vals):  # only show technologies with investment
+            fig.add_trace(go.Bar(
+                name=tech_label,
+                x=phase_labels,
+                y=vals,
+                marker_color=color,
+            ))
     
     fig.update_layout(
         barmode="stack",
@@ -72,7 +66,7 @@ else:
     print("Investment phasing data not available in outputs.")
 ```
 
-@fig-roadmap illustrates the recommended investment phasing across four technology categories. The stacked bars show how different technology investments are distributed across the implementation timeline. The front-loading of solar and battery investments in the early phases reflects the principle of deploying proven, modular technologies first to capture immediate fuel savings and build institutional experience. Larger, more uncertain investments — such as submarine cable infrastructure — are deferred to later phases when costs, technology maturity, and geopolitical conditions can be better assessed.
+@fig-roadmap illustrates the recommended investment phasing across five technology categories. The stacked bars show how different technology investments are distributed across the implementation timeline. The front-loading of solar, wind, and battery investments in the early phases reflects the principle of deploying proven, modular technologies first to capture immediate fuel savings and build institutional experience. Larger, more uncertain investments — such as submarine cable infrastructure — are deferred to later phases when costs, technology maturity, and geopolitical conditions can be better assessed.
 
 ## Phase 1: Quick Wins (2026–2028)
 
@@ -92,7 +86,7 @@ Remaining outer-island solar-battery deployments continue throughout this phase,
 
 ## Phase 3: Optimisation (2033–2040)
 
-The third phase addresses the most uncertain and highest-stakes decisions in the transition programme. If floating solar technology has matured sufficiently for deployment in tropical marine environments — a question that cannot be definitively answered today — this phase provides the opportunity to deploy up to `{python} f"{param('Floating Solar MW'):.0f}"` megawatts of floating solar capacity in the Maldivian lagoons, dramatically expanding renewable energy supply beyond what land-constrained islands can support.
+The third phase addresses the most uncertain and highest-stakes decisions in the transition programme. If floating solar technology has matured sufficiently for deployment in tropical marine environments — a question that cannot be definitively answered today — this phase provides the opportunity to deploy up to `{python} f"{param('Floating Solar MW'):.0f}"` megawatts of floating solar capacity in the Maldivian lagoons, alongside `{python} f"{param('Wind Capacity MW', category='Wind'):.0f}"` megawatts of wind energy across suitable atolls, dramatically expanding renewable energy supply beyond what land-constrained islands can support.
 
 This phase also contains the critical go-or-no-go decision point for the India submarine cable, projected for approximately 2035. By this date, the government will have the benefit of nearly a decade of renewable energy operational experience, updated cable cost projections (which are expected to decline as global HVDC cable manufacturing capacity expands), clearer geopolitical signals regarding bilateral energy cooperation with India, and a better understanding of whether domestic renewable energy can meet demand growth without imported power. The real options analysis in @sec-real-options demonstrates that the value of waiting for this information substantially exceeds the cost of deferral, provided that alternative supply pathways can bridge the intervening period.
 
@@ -118,6 +112,7 @@ decisions = pd.DataFrame([
     {"Year": 2028, "Decision": "LNG terminal commitment", "Key Dependency": "Gulhifalhu infrastructure readiness", "Reversibility": f"High — {cba['end_year'] - cba['base_year']}yr fuel lock-in"},
     {"Year": 2030, "Decision": "India cable feasibility study", "Key Dependency": "Bilateral agreement status", "Reversibility": "Low — study only"},
     {"Year": 2032, "Decision": "Floating solar pilot", "Key Dependency": "Technology maturity; marine permits", "Reversibility": "Moderate"},
+    {"Year": 2031, "Decision": "Wind energy deployment", "Key Dependency": "ADB Roadmap site studies; turbine procurement", "Reversibility": "Moderate — phased over 3 years"},
     {"Year": 2035, "Decision": "India cable go/no-go", "Key Dependency": "Cable cost trends; domestic RE performance; geopolitics", "Reversibility": f"Very high — ${get_summary('full_integration')['total_capex_million']/1000:.1f}B+ commitment"},
 ])
 
@@ -135,7 +130,7 @@ Effective implementation requires not only a phased investment strategy but also
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Solar+battery cost increase | Low | Moderate | Locked-in via PPA; learning curves favour decline |
+| Solar/wind/battery cost increase | Low | Moderate | Locked-in via PPA; learning curves favour decline |
 | Diesel price spike | Medium | High | Accelerates transition ROI; increases BAU costs |
 | India cable outage | Medium (λ=`{python} f"{param('Outage Rate'):.2f}"`/yr)^a^ | Very high | Maintain 20% diesel backup; diversified supply |
 | Floating solar technology failure | Medium | Moderate | Defer commitment; pilot first; fallback to conventional |

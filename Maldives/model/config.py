@@ -82,7 +82,7 @@ class DemandConfig:
     
     # R2: Outer island growth (Roadmap §4.1.2 — guesthouse tourism boom)
     # Post-peak: accelerates to 6% (decentralization, ARISE targets)
-    outer_growth_near_term: float = 0.07  # Outer islands near-term growth
+    outer_growth_near_term: float = 0.09  # ADB Roadmap: 9% for 4 years (guesthouse boom)
     outer_growth_long_term: float = 0.05  # Converges to national rate
     outer_post_peak_growth: float = 0.06  # H17: outer accelerates post-2035
     outer_growth_taper_year: int = 2030   # Year outer island growth converges
@@ -465,7 +465,7 @@ class WTEConfig:
     # Capacity
     total_capacity_mw: float = 14.0  # MW — GoM Roadmap
     capacity_factor: float = 0.80  # Baseload, limited by waste supply
-    online_year: int = 2029  # Thilafushi under construction
+    online_year: int = 2025  # ADB Roadmap: Thilafushi operational end 2024; commissioning 2025
     plant_lifetime: int = 20  # years — ICLEI 2021
     
     # Costs
@@ -489,6 +489,46 @@ class WTEConfig:
     def annual_opex(self) -> float:
         """Annual WTE O&M in USD."""
         return self.total_capex * self.opex_pct
+
+
+# =============================================================================
+# WIND ENERGY — ADB/MCCEE Energy Roadmap 2024-2033
+# =============================================================================
+
+@dataclass
+class WindConfig:
+    """Wind energy parameters.
+    
+    80 MW wind on Gulhifalhu/Thilafushi industrial islands using 2 MW turbines.
+    Average wind speed 5.69-5.73 m/s at hub height (IEC Class III).
+    Source: ADB/MCCEE Energy Roadmap 2024-2033.
+    """
+    
+    # Capacity
+    capacity_mw: float = 80.0  # MW — ADB Roadmap
+    capacity_factor: float = 0.25  # ratio — moderate-low wind (5.7 m/s)
+    lifetime: int = 25  # years — IRENA RPGC 2024
+    build_start: int = 2031  # year — after initial solar pipeline
+    build_years: int = 3  # years — 40 × 2 MW turbines
+    
+    # Costs
+    capex_per_kw: float = 3000.0  # USD/kW — IRENA SIDS + island premium
+    opex_per_kw: float = 30.0  # USD/kW/yr — IRENA RPGC 2024
+    
+    @property
+    def annual_generation_gwh(self) -> float:
+        """Wind annual generation in GWh at full build-out."""
+        return self.capacity_mw * 8760 * self.capacity_factor / 1000
+    
+    @property
+    def total_capex(self) -> float:
+        """Total wind CAPEX in USD."""
+        return self.capacity_mw * 1000 * self.capex_per_kw
+    
+    @property
+    def annual_opex_total(self) -> float:
+        """Annual wind O&M in USD."""
+        return self.capacity_mw * 1000 * self.opex_per_kw
 
 
 # =============================================================================
@@ -654,7 +694,7 @@ class CurrentSystemConfig:
     male_electricity_share: float = 0.57  # Greater Malé = 57% of inhabited-island generation
     outer_island_electricity_cost: float = 0.45  # USD/kWh — outer island diesel LCOE
     resort_capacity_share: float = 0.48  # Resorts = 48.3% of national installed capacity (off-grid)
-    male_rooftop_solar_mwp: float = 18.0  # MWp — ZNES Flensburg: 5 public + 13 sports roofs
+    male_rooftop_solar_mwp: float = 34.0  # MWp — ADB Roadmap Table 8: 34 MW rooftop total
     
     # Macro context — from parameters.csv Macro category
     avg_hh_monthly_kwh: float = 300.0  # kWh/month — STELCO Annual Report 2023
@@ -699,14 +739,14 @@ class GreenTransitionConfig:
     """
     
     # Deployment ramp — maximum solar MW additions per year across outer islands
-    # GoM pipeline: 164 MW over ~3 years ≈ 55 MW/yr
-    deployment_ramp_mw_per_year: float = 50.0  # MW/yr — logistics-constrained
+    # ADB Roadmap 2024-2033: 424 MW pipeline over 5yr ≈ 85 MW/yr
+    deployment_ramp_mw_per_year: float = 80.0  # MW/yr — ADB Roadmap pipeline pace
     
     # Starting RE share on outer islands in base year (2026)
     initial_re_share_outer: float = 0.10  # DEPRECATED (D-01): loaded from CSV but never consumed by scenarios; RE share computed endogenously via deployment ramp
     
-    # Greater Malé max RE share (land-constrained: 18 MWp rooftop / 684 GWh demand)
-    male_max_re_share: float = 0.04  # ZNES Flensburg study
+    # Greater Malé max RE share (34 MWp rooftop → ~52 GWh/yr / 684 GWh = ~8%)
+    male_max_re_share: float = 0.08  # ADB Roadmap Table 8: 34 MWp Greater Malé rooftop
     
     # Battery storage as % of solar capacity (MWh per MW solar)
     battery_ratio: float = 3.0  # 3 MWh storage per MW solar - modern BESS sizing
@@ -742,7 +782,7 @@ class OneGridConfig:
     gom_share_pct: float = 1.00  # 100% Maldives (no cost-sharing agreement exists)
     
     # Complementary domestic RE
-    domestic_re_target_2050: float = 0.30  # 30% from domestic solar
+    domestic_re_target_2050: float = 0.50  # 50% domestic solar (GoM targets 33% by 2028)
     
     # One Grid operational parameters
     battery_ratio: float = 1.5  # MWh per MW solar (less than green transition)
@@ -800,9 +840,13 @@ SENSITIVITY_PARAMS = {
     "nearshore_solar_mw": {"low": 60, "base": 104, "high": 150},
     "nearshore_cable_cost": {"low": 200_000, "base": 250_000, "high": 350_000},
     "wte_capex": {"low": 6000, "base": 8000, "high": 12_000},
-    "deployment_ramp": {"low": 30, "base": 50, "high": 100},
-    "male_max_re": {"low": 0.02, "base": 0.04, "high": 0.08},
+    "deployment_ramp": {"low": 50, "base": 80, "high": 120},
+    "male_max_re": {"low": 0.04, "base": 0.08, "high": 0.15},
     "battery_ratio": {"low": 2.0, "base": 3.0, "high": 4.0},
+    # Wind energy parameters (ADB Roadmap 2024-2033)
+    "wind_capex": {"low": 2500, "base": 3000, "high": 4000},
+    "wind_capacity_factor": {"low": 0.18, "base": 0.25, "high": 0.32},
+    "wind_capacity_mw": {"low": 40, "base": 80, "high": 120},
 }
 
 
@@ -976,6 +1020,7 @@ class Config:
     nearshore: NearShoreConfig = field(default_factory=NearShoreConfig)
     lng: LNGConfig = field(default_factory=LNGConfig)
     wte: WTEConfig = field(default_factory=WTEConfig)
+    wind: WindConfig = field(default_factory=WindConfig)
     benchmarks: BenchmarksConfig = field(default_factory=BenchmarksConfig)
     distributional: DistributionalSharesConfig = field(default_factory=DistributionalSharesConfig)
     investment_phasing: InvestmentPhasingConfig = field(default_factory=InvestmentPhasingConfig)
@@ -1780,6 +1825,24 @@ def get_config(load_from_csv: bool = True) -> Config:
                 config.wte.online_year = int(_v(wte['WTE Online Year']))
             if 'WTE Emission Factor' in wte:
                 config.wte.emission_factor = float(_v(wte['WTE Emission Factor']))
+        
+        # Wind energy parameters — ADB Roadmap 2024-2033
+        if 'Wind' in params:
+            wi = params['Wind']
+            if 'Wind Capacity MW' in wi:
+                config.wind.capacity_mw = float(_v(wi['Wind Capacity MW']))
+            if 'Wind CAPEX per kW' in wi:
+                config.wind.capex_per_kw = float(_v(wi['Wind CAPEX per kW']))
+            if 'Wind Capacity Factor' in wi:
+                config.wind.capacity_factor = float(_v(wi['Wind Capacity Factor']))
+            if 'Wind OPEX per kW' in wi:
+                config.wind.opex_per_kw = float(_v(wi['Wind OPEX per kW']))
+            if 'Wind Lifetime' in wi:
+                config.wind.lifetime = int(_v(wi['Wind Lifetime']))
+            if 'Wind Build Start' in wi:
+                config.wind.build_start = int(_v(wi['Wind Build Start']))
+            if 'Wind Build Years' in wi:
+                config.wind.build_years = int(_v(wi['Wind Build Years']))
         
         # RE deployment parameters — endogenous ramp-based approach
         # CSV category: "RE Deployment" (replaces old "RE Targets")

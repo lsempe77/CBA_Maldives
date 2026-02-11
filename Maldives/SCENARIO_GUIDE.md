@@ -230,8 +230,9 @@ flowchart TD
     subgraph MX["S6: Maximum RE"]
         M1["= Near-Shore PLUS"]
         M2["195 MW floating solar\n(GoM Roadmap target)"]
+        M2b["80 MW wind energy\n(GoM Roadmap §4.7.2)"]
         M3["1.5x CAPEX premium\nfor floating panels"]
-        M4["Male RE rises to ~44%\nNational RE ~55%"]
+        M4["Male RE rises to ~44%\nNational RE ~65%"]
     end
 
     BAU -.->|counterfactual| FI
@@ -286,7 +287,7 @@ flowchart BT
     S3["S3: National Grid\n~50% RE, 31 Mt CO2\n9.3B USD PV costs\nInter-island cables"]
     S4["S4: Islanded Green\n~45% RE, 33 Mt CO2\n10.3B USD PV costs\nPer-island, higher unit cost"]
     S5["S5: Near-Shore Solar\n~53% RE, 28 Mt CO2\n8.8B USD PV costs\n+104 MW uninhabited islands"]
-    S6["S6: Maximum RE\n~55% RE\n+195 MW floating solar\n(GoM Roadmap aligned)"]
+    S6["S6: Maximum RE\n~65% RE\n+195 MW floating solar\n+80 MW wind\n(GoM Roadmap aligned)"]
     S7["S7: LNG Transition\n~50% RE, 23 Mt CO2\n6.2B USD PV costs\nMalé diesel→LNG, outer=S3"]
 
     S1 --- S2
@@ -646,7 +647,7 @@ flowchart TD
     subgraph PARTIAL["Partially Aligned"]
         A2["S3: National Grid\nMatches island interconnection\nbut more ambitious"]
         A3["S5: Near-Shore Solar\nRoadmap mentions Gulhifalhu\nnot our solar islands concept"]
-        A4["S6: Maximum RE\nNow aligned with Roadmap\n195 MW floating solar"]
+        A4["S6: Maximum RE\nNow aligned with Roadmap\n195 MW floating solar\n+80 MW wind"]
     end
 
     subgraph NOVEL["Our Unique Contribution"]
@@ -1065,7 +1066,7 @@ The primary Roadmap citation should be used throughout the report:
 | S3 National Grid | 🟨 Partially aligned | "National interconnection with RE — extends Roadmap's Greater Malé Grid concept" |
 | **S4 Islanded Green** | **🟩 Fully aligned** | **"Roadmap-aligned: per-island RE deployment following POISED/ASSURE model"** |
 | S5 Near-Shore Solar | 🟨 Partially aligned | "Near-shore solar farms — extends Roadmap floating solar concept" |
-| S6 Maximum RE | **🟩 Fully aligned** | **"Maximum RE — deploying Roadmap's full 195 MW floating solar target"** |
+| S6 Maximum RE | **🟩 Fully aligned** | **"Maximum RE — deploying Roadmap's full 195 MW floating solar target + 80 MW wind (§4.7.2)"** |
 | S7 LNG Transition | **🟩 Fully aligned** | **"LNG transition — Roadmap Flagship Intervention 8 (140 MW Gulhifalhu)"** |
 
 **Key citations to add to report:**

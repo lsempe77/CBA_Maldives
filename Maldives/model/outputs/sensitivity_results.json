@@ -1,0 +1,3797 @@
+{
+  "bau": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.12,
+      "base_npv": 22071748696.70634,
+      "low_npv": 35868291211.89063,
+      "high_npv": 10422568663.33391,
+      "range": 25445722548.556725
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 22071748696.70634,
+      "low_npv": 17850559034.901237,
+      "high_npv": 26292938358.51145,
+      "range": 8442379323.610214
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 22071748696.70634,
+      "low_npv": 18339549252.3925,
+      "high_npv": 31296356023.926952,
+      "range": 12956806771.53445
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.06,
+      "low_value": 0.04,
+      "high_value": 0.1,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1500.0,
+      "low_value": 900.0,
+      "high_value": 2200.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22061963489.42108,
+      "high_npv": 22083164771.87248,
+      "range": 21201282.451396942
+    },
+    "solar_cf": {
+      "name": "Solar Capacity Factor",
+      "base_value": 0.175,
+      "low_value": 0.15,
+      "high_value": 0.22,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22185607509.809494,
+      "high_npv": 21866842852.075035,
+      "range": 318764657.7344589
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 350.0,
+      "low_value": 200.0,
+      "high_value": 500.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 3000000.0,
+      "low_value": 2000000.0,
+      "high_value": 5000000.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 1.0,
+      "low_value": 0.5,
+      "high_value": 1.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 190.0,
+      "low_value": 0.0,
+      "high_value": 300.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 15682547137.88201,
+      "high_npv": 25770760125.499374,
+      "range": 10088212987.617365
+    },
+    "demand_growth": {
+      "name": "Demand Growth Rate",
+      "base_value": 0.05,
+      "low_value": 0.035,
+      "high_value": 0.065,
+      "base_npv": 22071748696.70634,
+      "low_npv": 17611972899.052887,
+      "high_npv": 26458683732.618603,
+      "range": 8846710833.565716
+    },
+    "outage_rate": {
+      "name": "Cable Outage Rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "idle_fleet_cost": {
+      "name": "Idle Fleet Annual Cost",
+      "base_value": 8.0,
+      "low_value": 5.0,
+      "high_value": 13.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "price_elasticity": {
+      "name": "Price Elasticity",
+      "base_value": -0.3,
+      "low_value": -0.5,
+      "high_value": -0.1,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "health_damage": {
+      "name": "Health Damage Cost",
+      "base_value": 40.0,
+      "low_value": 20.0,
+      "high_value": 80.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "fuel_efficiency": {
+      "name": "Fuel Efficiency",
+      "base_value": 3.3,
+      "low_value": 2.8,
+      "high_value": 3.8,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "base_demand": {
+      "name": "Base Demand 2026",
+      "base_value": 1200.0,
+      "low_value": 1050.0,
+      "high_value": 1350.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 19255625267.216248,
+      "high_npv": 24853166939.342224,
+      "range": 5597541672.125977
+    },
+    "battery_hours": {
+      "name": "Battery Storage Hours",
+      "base_value": 4.0,
+      "low_value": 3.0,
+      "high_value": 6.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "climate_premium": {
+      "name": "Climate Adaptation Premium",
+      "base_value": 0.075,
+      "low_value": 0.05,
+      "high_value": 0.15,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071179789.306034,
+      "high_npv": 22073455418.907257,
+      "range": 2275629.601222992
+    },
+    "converter_station": {
+      "name": "Converter Station Cost/MW",
+      "base_value": 1600000.0,
+      "low_value": 1200000.0,
+      "high_value": 2000000.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "connection_cost": {
+      "name": "Connection Cost/HH",
+      "base_value": 200.0,
+      "low_value": 150.0,
+      "high_value": 300.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "env_externality": {
+      "name": "Environmental Externality",
+      "base_value": 10.0,
+      "low_value": 4.0,
+      "high_value": 23.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "sectoral_residential": {
+      "name": "Sectoral Split (Residential)",
+      "base_value": 0.52,
+      "low_value": 0.4,
+      "high_value": 0.65,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "lng_capex": {
+      "name": "LNG CAPEX per MW",
+      "base_value": 1200000.0,
+      "low_value": 900000.0,
+      "high_value": 1500000.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "lng_fuel_cost": {
+      "name": "LNG Fuel Cost",
+      "base_value": 70.0,
+      "low_value": 50.0,
+      "high_value": 100.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "lng_fuel_escalation": {
+      "name": "LNG Fuel Escalation",
+      "base_value": 0.015,
+      "low_value": 0.005,
+      "high_value": 0.025,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "lng_emission_factor": {
+      "name": "LNG Emission Factor",
+      "base_value": 0.4,
+      "low_value": 0.35,
+      "high_value": 0.45,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "floating_capex_premium": {
+      "name": "Floating Solar CAPEX Premium",
+      "base_value": 1.5,
+      "low_value": 1.3,
+      "high_value": 1.8,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "floating_solar_mw": {
+      "name": "Floating Solar MW",
+      "base_value": 195.0,
+      "low_value": 100.0,
+      "high_value": 250.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "nearshore_solar_mw": {
+      "name": "Near-Shore Solar MW",
+      "base_value": 104.0,
+      "low_value": 60.0,
+      "high_value": 150.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "nearshore_cable_cost": {
+      "name": "Near-Shore Cable Cost/MW",
+      "base_value": 250000.0,
+      "low_value": 200000.0,
+      "high_value": 350000.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "wte_capex": {
+      "name": "WTE CAPEX per kW",
+      "base_value": 8000.0,
+      "low_value": 6000.0,
+      "high_value": 12000.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "deployment_ramp": {
+      "name": "Deployment Ramp",
+      "base_value": 80.0,
+      "low_value": 50.0,
+      "high_value": 120.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "male_max_re": {
+      "name": "Mal\u00e9 Max RE Share",
+      "base_value": 0.08,
+      "low_value": 0.04,
+      "high_value": 0.15,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "battery_ratio": {
+      "name": "Battery Ratio",
+      "base_value": 3.0,
+      "low_value": 2.0,
+      "high_value": 4.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "wind_capex": {
+      "name": "wind_capex",
+      "base_value": 3000,
+      "low_value": 2500,
+      "high_value": 4000,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "wind_capacity_factor": {
+      "name": "wind_capacity_factor",
+      "base_value": 0.25,
+      "low_value": 0.18,
+      "high_value": 0.32,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "wind_capacity_mw": {
+      "name": "wind_capacity_mw",
+      "base_value": 80,
+      "low_value": 40,
+      "high_value": 120,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "ev_adoption_midpoint": {
+      "name": "EV Adoption Midpoint",
+      "base_value": 2038.0,
+      "low_value": 2034.0,
+      "high_value": 2042.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "ev_motorcycle_premium": {
+      "name": "E-Motorcycle Premium",
+      "base_value": 800.0,
+      "low_value": 500.0,
+      "high_value": 1200.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "transport_health_damage": {
+      "name": "Transport PM2.5 Damage",
+      "base_value": 0.012,
+      "low_value": 0.006,
+      "high_value": 0.025,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "petrol_price": {
+      "name": "Petrol Price 2026",
+      "base_value": 1.1,
+      "low_value": 0.9,
+      "high_value": 1.4,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "demand_saturation": {
+      "name": "demand_saturation",
+      "base_value": 7000.0,
+      "low_value": 5000.0,
+      "high_value": 9000.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "male_growth_near": {
+      "name": "male_growth_near",
+      "base_value": 0.1,
+      "low_value": 0.08,
+      "high_value": 0.12,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "pv_degradation": {
+      "name": "pv_degradation",
+      "base_value": 0.005,
+      "low_value": 0.003,
+      "high_value": 0.008,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "idc_rate": {
+      "name": "idc_rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "lng_capacity_mw": {
+      "name": "lng_capacity_mw",
+      "base_value": 140.0,
+      "low_value": 100.0,
+      "high_value": 400.0,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    },
+    "subsidy_per_kwh": {
+      "name": "subsidy_per_kwh",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 22071748696.70634,
+      "low_npv": 22071748696.70634,
+      "high_npv": 22071748696.70634,
+      "range": 0.0
+    }
+  },
+  "full_integration": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.12,
+      "base_npv": 13541646011.777943,
+      "low_npv": 19350766388.841015,
+      "high_npv": 8157911425.548669,
+      "range": 11192854963.292347
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 13541646011.777943,
+      "low_npv": 12826169537.745726,
+      "high_npv": 14257122485.810158,
+      "range": 1430952948.0644321
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13202585817.118671,
+      "high_npv": 14329374002.96423,
+      "range": 1126788185.8455582
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.06,
+      "low_value": 0.04,
+      "high_value": 0.1,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13032562054.673542,
+      "high_npv": 14503303712.910114,
+      "range": 1470741658.2365723
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1500.0,
+      "low_value": 900.0,
+      "high_value": 2200.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13232525350.76725,
+      "high_npv": 13902286782.957077,
+      "range": 669761432.189827
+    },
+    "solar_cf": {
+      "name": "Solar Capacity Factor",
+      "base_value": 0.175,
+      "low_value": 0.15,
+      "high_value": 0.22,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13920101221.431414,
+      "high_npv": 12860485110.630335,
+      "range": 1059616110.8010788
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 350.0,
+      "low_value": 200.0,
+      "high_value": 500.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13422569602.14698,
+      "high_npv": 13660722421.408901,
+      "range": 238152819.26192093
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 3000000.0,
+      "low_value": 2000000.0,
+      "high_value": 5000000.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 12746146100.921227,
+      "high_npv": 15132645833.491371,
+      "range": 2386499732.5701447
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 1.0,
+      "low_value": 0.5,
+      "high_value": 1.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 12386985628.755009,
+      "high_npv": 13541646011.777943,
+      "range": 1154660383.022934
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 190.0,
+      "low_value": 0.0,
+      "high_value": 300.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 9035399569.082779,
+      "high_npv": 16150525531.233036,
+      "range": 7115125962.150257
+    },
+    "demand_growth": {
+      "name": "Demand Growth Rate",
+      "base_value": 0.05,
+      "low_value": 0.035,
+      "high_value": 0.065,
+      "base_npv": 13541646011.777943,
+      "low_npv": 11527902842.228172,
+      "high_npv": 15575190431.558144,
+      "range": 4047287589.3299713
+    },
+    "outage_rate": {
+      "name": "Cable Outage Rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13505895695.666168,
+      "high_npv": 13577396327.889717,
+      "range": 71500632.22354889
+    },
+    "idle_fleet_cost": {
+      "name": "Idle Fleet Annual Cost",
+      "base_value": 8.0,
+      "low_value": 5.0,
+      "high_value": 13.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13512988609.680172,
+      "high_npv": 13589408348.60756,
+      "range": 76419738.92738724
+    },
+    "price_elasticity": {
+      "name": "Price Elasticity",
+      "base_value": -0.3,
+      "low_value": -0.5,
+      "high_value": -0.1,
+      "base_npv": 13541646011.777943,
+      "low_npv": 14661386760.580952,
+      "high_npv": 12421899250.625507,
+      "range": 2239487509.9554443
+    },
+    "health_damage": {
+      "name": "Health Damage Cost",
+      "base_value": 40.0,
+      "low_value": 20.0,
+      "high_value": 80.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "fuel_efficiency": {
+      "name": "Fuel Efficiency",
+      "base_value": 3.3,
+      "low_value": 2.8,
+      "high_value": 3.8,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "base_demand": {
+      "name": "Base Demand 2026",
+      "base_value": 1200.0,
+      "low_value": 1050.0,
+      "high_value": 1350.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 12003947169.104456,
+      "high_npv": 15067366235.827673,
+      "range": 3063419066.723217
+    },
+    "battery_hours": {
+      "name": "Battery Storage Hours",
+      "base_value": 4.0,
+      "low_value": 3.0,
+      "high_value": 6.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "climate_premium": {
+      "name": "Climate Adaptation Premium",
+      "base_value": 0.075,
+      "low_value": 0.05,
+      "high_value": 0.15,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13444294043.33678,
+      "high_npv": 13833701917.101421,
+      "range": 389407873.7646408
+    },
+    "converter_station": {
+      "name": "Converter Station Cost/MW",
+      "base_value": 1600000.0,
+      "low_value": 1200000.0,
+      "high_value": 2000000.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13450731736.251461,
+      "high_npv": 13632560287.30442,
+      "range": 181828551.05295944
+    },
+    "connection_cost": {
+      "name": "Connection Cost/HH",
+      "base_value": 200.0,
+      "low_value": 150.0,
+      "high_value": 300.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13537433647.992374,
+      "high_npv": 13550070739.349072,
+      "range": 12637091.356697083
+    },
+    "env_externality": {
+      "name": "Environmental Externality",
+      "base_value": 10.0,
+      "low_value": 4.0,
+      "high_value": 23.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "sectoral_residential": {
+      "name": "Sectoral Split (Residential)",
+      "base_value": 0.52,
+      "low_value": 0.4,
+      "high_value": 0.65,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "lng_capex": {
+      "name": "LNG CAPEX per MW",
+      "base_value": 1200000.0,
+      "low_value": 900000.0,
+      "high_value": 1500000.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "lng_fuel_cost": {
+      "name": "LNG Fuel Cost",
+      "base_value": 70.0,
+      "low_value": 50.0,
+      "high_value": 100.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "lng_fuel_escalation": {
+      "name": "LNG Fuel Escalation",
+      "base_value": 0.015,
+      "low_value": 0.005,
+      "high_value": 0.025,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "lng_emission_factor": {
+      "name": "LNG Emission Factor",
+      "base_value": 0.4,
+      "low_value": 0.35,
+      "high_value": 0.45,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "floating_capex_premium": {
+      "name": "Floating Solar CAPEX Premium",
+      "base_value": 1.5,
+      "low_value": 1.3,
+      "high_value": 1.8,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "floating_solar_mw": {
+      "name": "Floating Solar MW",
+      "base_value": 195.0,
+      "low_value": 100.0,
+      "high_value": 250.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "nearshore_solar_mw": {
+      "name": "Near-Shore Solar MW",
+      "base_value": 104.0,
+      "low_value": 60.0,
+      "high_value": 150.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "nearshore_cable_cost": {
+      "name": "Near-Shore Cable Cost/MW",
+      "base_value": 250000.0,
+      "low_value": 200000.0,
+      "high_value": 350000.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "wte_capex": {
+      "name": "WTE CAPEX per kW",
+      "base_value": 8000.0,
+      "low_value": 6000.0,
+      "high_value": 12000.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13528399095.87902,
+      "high_npv": 13568139843.575783,
+      "range": 39740747.696762085
+    },
+    "deployment_ramp": {
+      "name": "Deployment Ramp",
+      "base_value": 80.0,
+      "low_value": 50.0,
+      "high_value": 120.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13991565263.74886,
+      "high_npv": 12941862880.410257,
+      "range": 1049702383.3386021
+    },
+    "male_max_re": {
+      "name": "Mal\u00e9 Max RE Share",
+      "base_value": 0.08,
+      "low_value": 0.04,
+      "high_value": 0.15,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "battery_ratio": {
+      "name": "Battery Ratio",
+      "base_value": 3.0,
+      "low_value": 2.0,
+      "high_value": 4.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "wind_capex": {
+      "name": "wind_capex",
+      "base_value": 3000,
+      "low_value": 2500,
+      "high_value": 4000,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "wind_capacity_factor": {
+      "name": "wind_capacity_factor",
+      "base_value": 0.25,
+      "low_value": 0.18,
+      "high_value": 0.32,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "wind_capacity_mw": {
+      "name": "wind_capacity_mw",
+      "base_value": 80,
+      "low_value": 40,
+      "high_value": 120,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "ev_adoption_midpoint": {
+      "name": "EV Adoption Midpoint",
+      "base_value": 2038.0,
+      "low_value": 2034.0,
+      "high_value": 2042.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "ev_motorcycle_premium": {
+      "name": "E-Motorcycle Premium",
+      "base_value": 800.0,
+      "low_value": 500.0,
+      "high_value": 1200.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "transport_health_damage": {
+      "name": "Transport PM2.5 Damage",
+      "base_value": 0.012,
+      "low_value": 0.006,
+      "high_value": 0.025,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "petrol_price": {
+      "name": "Petrol Price 2026",
+      "base_value": 1.1,
+      "low_value": 0.9,
+      "high_value": 1.4,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "demand_saturation": {
+      "name": "demand_saturation",
+      "base_value": 7000.0,
+      "low_value": 5000.0,
+      "high_value": 9000.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "male_growth_near": {
+      "name": "male_growth_near",
+      "base_value": 0.1,
+      "low_value": 0.08,
+      "high_value": 0.12,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "pv_degradation": {
+      "name": "pv_degradation",
+      "base_value": 0.005,
+      "low_value": 0.003,
+      "high_value": 0.008,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "idc_rate": {
+      "name": "idc_rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "lng_capacity_mw": {
+      "name": "lng_capacity_mw",
+      "base_value": 140.0,
+      "low_value": 100.0,
+      "high_value": 400.0,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    },
+    "subsidy_per_kwh": {
+      "name": "subsidy_per_kwh",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 13541646011.777943,
+      "low_npv": 13541646011.777943,
+      "high_npv": 13541646011.777943,
+      "range": 0.0
+    }
+  },
+  "national_grid": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.12,
+      "base_npv": 11787243960.904392,
+      "low_npv": 17659522641.364937,
+      "high_npv": 6525530678.239756,
+      "range": 11133991963.125181
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 11787243960.904392,
+      "low_npv": 9928081855.327139,
+      "high_npv": 13646406066.481651,
+      "range": 3718324211.1545124
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 11787243960.904392,
+      "low_npv": 10349961921.535063,
+      "high_npv": 15233977546.876886,
+      "range": 4884015625.341824
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.06,
+      "low_value": 0.04,
+      "high_value": 0.1,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1500.0,
+      "low_value": 900.0,
+      "high_value": 2200.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11406141961.813515,
+      "high_npv": 12231862959.84375,
+      "range": 825720998.0302353
+    },
+    "solar_cf": {
+      "name": "Solar Capacity Factor",
+      "base_value": 0.175,
+      "low_value": 0.15,
+      "high_value": 0.22,
+      "base_npv": 11787243960.904392,
+      "low_npv": 12234978856.944118,
+      "high_npv": 11214755564.380434,
+      "range": 1020223292.5636845
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 350.0,
+      "low_value": 200.0,
+      "high_value": 500.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11538985009.593649,
+      "high_npv": 12035502912.215136,
+      "range": 496517902.62148666
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 3000000.0,
+      "low_value": 2000000.0,
+      "high_value": 5000000.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 1.0,
+      "low_value": 0.5,
+      "high_value": 1.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 190.0,
+      "low_value": 0.0,
+      "high_value": 300.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 8578689424.481562,
+      "high_npv": 13644828166.201824,
+      "range": 5066138741.720263
+    },
+    "demand_growth": {
+      "name": "Demand Growth Rate",
+      "base_value": 0.05,
+      "low_value": 0.035,
+      "high_value": 0.065,
+      "base_npv": 11787243960.904392,
+      "low_npv": 10152391702.794939,
+      "high_npv": 13949040365.735003,
+      "range": 3796648662.9400635
+    },
+    "outage_rate": {
+      "name": "Cable Outage Rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "idle_fleet_cost": {
+      "name": "Idle Fleet Annual Cost",
+      "base_value": 8.0,
+      "low_value": 5.0,
+      "high_value": 13.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "price_elasticity": {
+      "name": "Price Elasticity",
+      "base_value": -0.3,
+      "low_value": -0.5,
+      "high_value": -0.1,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "health_damage": {
+      "name": "Health Damage Cost",
+      "base_value": 40.0,
+      "low_value": 20.0,
+      "high_value": 80.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "fuel_efficiency": {
+      "name": "Fuel Efficiency",
+      "base_value": 3.3,
+      "low_value": 2.8,
+      "high_value": 3.8,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "base_demand": {
+      "name": "Base Demand 2026",
+      "base_value": 1200.0,
+      "low_value": 1050.0,
+      "high_value": 1350.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 10133863120.567947,
+      "high_npv": 13505845407.807066,
+      "range": 3371982287.2391186
+    },
+    "battery_hours": {
+      "name": "Battery Storage Hours",
+      "base_value": 4.0,
+      "low_value": 3.0,
+      "high_value": 6.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "climate_premium": {
+      "name": "Climate Adaptation Premium",
+      "base_value": 0.075,
+      "low_value": 0.05,
+      "high_value": 0.15,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11748653246.093298,
+      "high_npv": 11903016105.337677,
+      "range": 154362859.24437904
+    },
+    "converter_station": {
+      "name": "Converter Station Cost/MW",
+      "base_value": 1600000.0,
+      "low_value": 1200000.0,
+      "high_value": 2000000.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "connection_cost": {
+      "name": "Connection Cost/HH",
+      "base_value": 200.0,
+      "low_value": 150.0,
+      "high_value": 300.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11783031597.118828,
+      "high_npv": 11795668688.475525,
+      "range": 12637091.356697083
+    },
+    "env_externality": {
+      "name": "Environmental Externality",
+      "base_value": 10.0,
+      "low_value": 4.0,
+      "high_value": 23.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "sectoral_residential": {
+      "name": "Sectoral Split (Residential)",
+      "base_value": 0.52,
+      "low_value": 0.4,
+      "high_value": 0.65,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "lng_capex": {
+      "name": "LNG CAPEX per MW",
+      "base_value": 1200000.0,
+      "low_value": 900000.0,
+      "high_value": 1500000.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "lng_fuel_cost": {
+      "name": "LNG Fuel Cost",
+      "base_value": 70.0,
+      "low_value": 50.0,
+      "high_value": 100.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "lng_fuel_escalation": {
+      "name": "LNG Fuel Escalation",
+      "base_value": 0.015,
+      "low_value": 0.005,
+      "high_value": 0.025,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "lng_emission_factor": {
+      "name": "LNG Emission Factor",
+      "base_value": 0.4,
+      "low_value": 0.35,
+      "high_value": 0.45,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "floating_capex_premium": {
+      "name": "Floating Solar CAPEX Premium",
+      "base_value": 1.5,
+      "low_value": 1.3,
+      "high_value": 1.8,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "floating_solar_mw": {
+      "name": "Floating Solar MW",
+      "base_value": 195.0,
+      "low_value": 100.0,
+      "high_value": 250.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "nearshore_solar_mw": {
+      "name": "Near-Shore Solar MW",
+      "base_value": 104.0,
+      "low_value": 60.0,
+      "high_value": 150.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "nearshore_cable_cost": {
+      "name": "Near-Shore Cable Cost/MW",
+      "base_value": 250000.0,
+      "low_value": 200000.0,
+      "high_value": 350000.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "wte_capex": {
+      "name": "WTE CAPEX per kW",
+      "base_value": 8000.0,
+      "low_value": 6000.0,
+      "high_value": 12000.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11773997045.00547,
+      "high_npv": 11813737792.702236,
+      "range": 39740747.6967659
+    },
+    "deployment_ramp": {
+      "name": "Deployment Ramp",
+      "base_value": 80.0,
+      "low_value": 50.0,
+      "high_value": 120.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 12259120858.764313,
+      "high_npv": 11620412117.2197,
+      "range": 638708741.5446129
+    },
+    "male_max_re": {
+      "name": "Mal\u00e9 Max RE Share",
+      "base_value": 0.08,
+      "low_value": 0.04,
+      "high_value": 0.15,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11866603565.2553,
+      "high_npv": 11695257843.82743,
+      "range": 171345721.4278698
+    },
+    "battery_ratio": {
+      "name": "Battery Ratio",
+      "base_value": 3.0,
+      "low_value": 2.0,
+      "high_value": 4.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11550696791.453012,
+      "high_npv": 12023793290.022793,
+      "range": 473096498.56978035
+    },
+    "wind_capex": {
+      "name": "wind_capex",
+      "base_value": 3000,
+      "low_value": 2500,
+      "high_value": 4000,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "wind_capacity_factor": {
+      "name": "wind_capacity_factor",
+      "base_value": 0.25,
+      "low_value": 0.18,
+      "high_value": 0.32,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "wind_capacity_mw": {
+      "name": "wind_capacity_mw",
+      "base_value": 80,
+      "low_value": 40,
+      "high_value": 120,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "ev_adoption_midpoint": {
+      "name": "EV Adoption Midpoint",
+      "base_value": 2038.0,
+      "low_value": 2034.0,
+      "high_value": 2042.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "ev_motorcycle_premium": {
+      "name": "E-Motorcycle Premium",
+      "base_value": 800.0,
+      "low_value": 500.0,
+      "high_value": 1200.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "transport_health_damage": {
+      "name": "Transport PM2.5 Damage",
+      "base_value": 0.012,
+      "low_value": 0.006,
+      "high_value": 0.025,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "petrol_price": {
+      "name": "Petrol Price 2026",
+      "base_value": 1.1,
+      "low_value": 0.9,
+      "high_value": 1.4,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "demand_saturation": {
+      "name": "demand_saturation",
+      "base_value": 7000.0,
+      "low_value": 5000.0,
+      "high_value": 9000.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "male_growth_near": {
+      "name": "male_growth_near",
+      "base_value": 0.1,
+      "low_value": 0.08,
+      "high_value": 0.12,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "pv_degradation": {
+      "name": "pv_degradation",
+      "base_value": 0.005,
+      "low_value": 0.003,
+      "high_value": 0.008,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "idc_rate": {
+      "name": "idc_rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "lng_capacity_mw": {
+      "name": "lng_capacity_mw",
+      "base_value": 140.0,
+      "low_value": 100.0,
+      "high_value": 400.0,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    },
+    "subsidy_per_kwh": {
+      "name": "subsidy_per_kwh",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 11787243960.904392,
+      "low_npv": 11787243960.904392,
+      "high_npv": 11787243960.904392,
+      "range": 0.0
+    }
+  },
+  "islanded_green": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.12,
+      "base_npv": 12787353631.947453,
+      "low_npv": 19251808027.221333,
+      "high_npv": 7032598352.555708,
+      "range": 12219209674.665625
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 12787353631.947453,
+      "low_npv": 10745977617.338472,
+      "high_npv": 14828729646.556438,
+      "range": 4082752029.217966
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 12787353631.947453,
+      "low_npv": 11152199345.684313,
+      "high_npv": 16747709947.828445,
+      "range": 5595510602.144133
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.06,
+      "low_value": 0.04,
+      "high_value": 0.1,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1500.0,
+      "low_value": 900.0,
+      "high_value": 2200.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12299345738.3789,
+      "high_npv": 13356696174.444098,
+      "range": 1057350436.065197
+    },
+    "solar_cf": {
+      "name": "Solar Capacity Factor",
+      "base_value": 0.175,
+      "low_value": 0.15,
+      "high_value": 0.22,
+      "base_npv": 12787353631.947453,
+      "low_npv": 13255067763.423874,
+      "high_npv": 12167590420.353176,
+      "range": 1087477343.0706978
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 350.0,
+      "low_value": 200.0,
+      "high_value": 500.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12466961482.473202,
+      "high_npv": 13107745781.421703,
+      "range": 640784298.9485016
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 3000000.0,
+      "low_value": 2000000.0,
+      "high_value": 5000000.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 1.0,
+      "low_value": 0.5,
+      "high_value": 1.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 190.0,
+      "low_value": 0.0,
+      "high_value": 300.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 9559989965.81757,
+      "high_npv": 14655827333.391071,
+      "range": 5095837367.573502
+    },
+    "demand_growth": {
+      "name": "Demand Growth Rate",
+      "base_value": 0.05,
+      "low_value": 0.035,
+      "high_value": 0.065,
+      "base_npv": 12787353631.947453,
+      "low_npv": 10791264360.26075,
+      "high_npv": 15456057039.8921,
+      "range": 4664792679.63135
+    },
+    "outage_rate": {
+      "name": "Cable Outage Rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "idle_fleet_cost": {
+      "name": "Idle Fleet Annual Cost",
+      "base_value": 8.0,
+      "low_value": 5.0,
+      "high_value": 13.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "price_elasticity": {
+      "name": "Price Elasticity",
+      "base_value": -0.3,
+      "low_value": -0.5,
+      "high_value": -0.1,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "health_damage": {
+      "name": "Health Damage Cost",
+      "base_value": 40.0,
+      "low_value": 20.0,
+      "high_value": 80.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "fuel_efficiency": {
+      "name": "Fuel Efficiency",
+      "base_value": 3.3,
+      "low_value": 2.8,
+      "high_value": 3.8,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "base_demand": {
+      "name": "Base Demand 2026",
+      "base_value": 1200.0,
+      "low_value": 1050.0,
+      "high_value": 1350.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 11005608383.86348,
+      "high_npv": 14589077882.362293,
+      "range": 3583469498.4988136
+    },
+    "battery_hours": {
+      "name": "Battery Storage Hours",
+      "base_value": 4.0,
+      "low_value": 3.0,
+      "high_value": 6.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "climate_premium": {
+      "name": "Climate Adaptation Premium",
+      "base_value": 0.075,
+      "low_value": 0.05,
+      "high_value": 0.15,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12738603052.473358,
+      "high_npv": 12933605370.36974,
+      "range": 195002317.89638138
+    },
+    "converter_station": {
+      "name": "Converter Station Cost/MW",
+      "base_value": 1600000.0,
+      "low_value": 1200000.0,
+      "high_value": 2000000.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "connection_cost": {
+      "name": "Connection Cost/HH",
+      "base_value": 200.0,
+      "low_value": 150.0,
+      "high_value": 300.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12781877559.026217,
+      "high_npv": 12798305777.789925,
+      "range": 16428218.763708115
+    },
+    "env_externality": {
+      "name": "Environmental Externality",
+      "base_value": 10.0,
+      "low_value": 4.0,
+      "high_value": 23.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "sectoral_residential": {
+      "name": "Sectoral Split (Residential)",
+      "base_value": 0.52,
+      "low_value": 0.4,
+      "high_value": 0.65,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "lng_capex": {
+      "name": "LNG CAPEX per MW",
+      "base_value": 1200000.0,
+      "low_value": 900000.0,
+      "high_value": 1500000.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "lng_fuel_cost": {
+      "name": "LNG Fuel Cost",
+      "base_value": 70.0,
+      "low_value": 50.0,
+      "high_value": 100.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "lng_fuel_escalation": {
+      "name": "LNG Fuel Escalation",
+      "base_value": 0.015,
+      "low_value": 0.005,
+      "high_value": 0.025,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "lng_emission_factor": {
+      "name": "LNG Emission Factor",
+      "base_value": 0.4,
+      "low_value": 0.35,
+      "high_value": 0.45,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "floating_capex_premium": {
+      "name": "Floating Solar CAPEX Premium",
+      "base_value": 1.5,
+      "low_value": 1.3,
+      "high_value": 1.8,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "floating_solar_mw": {
+      "name": "Floating Solar MW",
+      "base_value": 195.0,
+      "low_value": 100.0,
+      "high_value": 250.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "nearshore_solar_mw": {
+      "name": "Near-Shore Solar MW",
+      "base_value": 104.0,
+      "low_value": 60.0,
+      "high_value": 150.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "nearshore_cable_cost": {
+      "name": "Near-Shore Cable Cost/MW",
+      "base_value": 250000.0,
+      "low_value": 200000.0,
+      "high_value": 350000.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "wte_capex": {
+      "name": "WTE CAPEX per kW",
+      "base_value": 8000.0,
+      "low_value": 6000.0,
+      "high_value": 12000.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12774106716.04853,
+      "high_npv": 12813847463.745296,
+      "range": 39740747.6967659
+    },
+    "deployment_ramp": {
+      "name": "Deployment Ramp",
+      "base_value": 80.0,
+      "low_value": 50.0,
+      "high_value": 120.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 13098702667.617867,
+      "high_npv": 12714545014.37355,
+      "range": 384157653.2443161
+    },
+    "male_max_re": {
+      "name": "Mal\u00e9 Max RE Share",
+      "base_value": 0.08,
+      "low_value": 0.04,
+      "high_value": 0.15,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12817206792.544819,
+      "high_npv": 12787353631.947453,
+      "range": 29853160.597366333
+    },
+    "battery_ratio": {
+      "name": "Battery Ratio",
+      "base_value": 3.0,
+      "low_value": 2.0,
+      "high_value": 4.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12486628675.4645,
+      "high_npv": 13088082120.400751,
+      "range": 601453444.9362507
+    },
+    "wind_capex": {
+      "name": "wind_capex",
+      "base_value": 3000,
+      "low_value": 2500,
+      "high_value": 4000,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "wind_capacity_factor": {
+      "name": "wind_capacity_factor",
+      "base_value": 0.25,
+      "low_value": 0.18,
+      "high_value": 0.32,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "wind_capacity_mw": {
+      "name": "wind_capacity_mw",
+      "base_value": 80,
+      "low_value": 40,
+      "high_value": 120,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "ev_adoption_midpoint": {
+      "name": "EV Adoption Midpoint",
+      "base_value": 2038.0,
+      "low_value": 2034.0,
+      "high_value": 2042.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "ev_motorcycle_premium": {
+      "name": "E-Motorcycle Premium",
+      "base_value": 800.0,
+      "low_value": 500.0,
+      "high_value": 1200.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "transport_health_damage": {
+      "name": "Transport PM2.5 Damage",
+      "base_value": 0.012,
+      "low_value": 0.006,
+      "high_value": 0.025,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "petrol_price": {
+      "name": "Petrol Price 2026",
+      "base_value": 1.1,
+      "low_value": 0.9,
+      "high_value": 1.4,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "demand_saturation": {
+      "name": "demand_saturation",
+      "base_value": 7000.0,
+      "low_value": 5000.0,
+      "high_value": 9000.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "male_growth_near": {
+      "name": "male_growth_near",
+      "base_value": 0.1,
+      "low_value": 0.08,
+      "high_value": 0.12,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "pv_degradation": {
+      "name": "pv_degradation",
+      "base_value": 0.005,
+      "low_value": 0.003,
+      "high_value": 0.008,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "idc_rate": {
+      "name": "idc_rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "lng_capacity_mw": {
+      "name": "lng_capacity_mw",
+      "base_value": 140.0,
+      "low_value": 100.0,
+      "high_value": 400.0,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    },
+    "subsidy_per_kwh": {
+      "name": "subsidy_per_kwh",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 12787353631.947453,
+      "low_npv": 12787353631.947453,
+      "high_npv": 12787353631.947453,
+      "range": 0.0
+    }
+  },
+  "nearshore_solar": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.12,
+      "base_npv": 11225472471.347704,
+      "low_npv": 16701084182.604069,
+      "high_npv": 6309821636.080888,
+      "range": 10391262546.523182
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 11225472471.347704,
+      "low_npv": 9512343234.055956,
+      "high_npv": 12938601708.63945,
+      "range": 3426258474.583494
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 11225472471.347704,
+      "low_npv": 9908877790.999882,
+      "high_npv": 14392567841.651081,
+      "range": 4483690050.651199
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.06,
+      "low_value": 0.04,
+      "high_value": 0.1,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1500.0,
+      "low_value": 900.0,
+      "high_value": 2200.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 10794455725.982338,
+      "high_npv": 11728325340.940632,
+      "range": 933869614.9582939
+    },
+    "solar_cf": {
+      "name": "Solar Capacity Factor",
+      "base_value": 0.175,
+      "low_value": 0.15,
+      "high_value": 0.22,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11754878039.29406,
+      "high_npv": 10451434262.95304,
+      "range": 1303443776.3410206
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 350.0,
+      "low_value": 200.0,
+      "high_value": 500.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 10946896477.201336,
+      "high_npv": 11504048465.494072,
+      "range": 557151988.292736
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 3000000.0,
+      "low_value": 2000000.0,
+      "high_value": 5000000.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 1.0,
+      "low_value": 0.5,
+      "high_value": 1.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 190.0,
+      "low_value": 0.0,
+      "high_value": 300.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 8273945237.631967,
+      "high_npv": 12934251396.1305,
+      "range": 4660306158.498534
+    },
+    "demand_growth": {
+      "name": "Demand Growth Rate",
+      "base_value": 0.05,
+      "low_value": 0.035,
+      "high_value": 0.065,
+      "base_npv": 11225472471.347704,
+      "low_npv": 9546365661.330551,
+      "high_npv": 13387625541.551098,
+      "range": 3841259880.2205467
+    },
+    "outage_rate": {
+      "name": "Cable Outage Rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "idle_fleet_cost": {
+      "name": "Idle Fleet Annual Cost",
+      "base_value": 8.0,
+      "low_value": 5.0,
+      "high_value": 13.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "price_elasticity": {
+      "name": "Price Elasticity",
+      "base_value": -0.3,
+      "low_value": -0.5,
+      "high_value": -0.1,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "health_damage": {
+      "name": "Health Damage Cost",
+      "base_value": 40.0,
+      "low_value": 20.0,
+      "high_value": 80.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "fuel_efficiency": {
+      "name": "Fuel Efficiency",
+      "base_value": 3.3,
+      "low_value": 2.8,
+      "high_value": 3.8,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "base_demand": {
+      "name": "Base Demand 2026",
+      "base_value": 1200.0,
+      "low_value": 1050.0,
+      "high_value": 1350.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 9560734289.228786,
+      "high_npv": 12904958347.83661,
+      "range": 3344224058.6078243
+    },
+    "battery_hours": {
+      "name": "Battery Storage Hours",
+      "base_value": 4.0,
+      "low_value": 3.0,
+      "high_value": 6.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "climate_premium": {
+      "name": "Climate Adaptation Premium",
+      "base_value": 0.075,
+      "low_value": 0.05,
+      "high_value": 0.15,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11182141794.033276,
+      "high_npv": 11355464503.29099,
+      "range": 173322709.25771523
+    },
+    "converter_station": {
+      "name": "Converter Station Cost/MW",
+      "base_value": 1600000.0,
+      "low_value": 1200000.0,
+      "high_value": 2000000.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "connection_cost": {
+      "name": "Connection Cost/HH",
+      "base_value": 200.0,
+      "low_value": 150.0,
+      "high_value": 300.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11221260107.562138,
+      "high_npv": 11233897198.918835,
+      "range": 12637091.356697083
+    },
+    "env_externality": {
+      "name": "Environmental Externality",
+      "base_value": 10.0,
+      "low_value": 4.0,
+      "high_value": 23.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "sectoral_residential": {
+      "name": "Sectoral Split (Residential)",
+      "base_value": 0.52,
+      "low_value": 0.4,
+      "high_value": 0.65,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "lng_capex": {
+      "name": "LNG CAPEX per MW",
+      "base_value": 1200000.0,
+      "low_value": 900000.0,
+      "high_value": 1500000.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "lng_fuel_cost": {
+      "name": "LNG Fuel Cost",
+      "base_value": 70.0,
+      "low_value": 50.0,
+      "high_value": 100.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "lng_fuel_escalation": {
+      "name": "LNG Fuel Escalation",
+      "base_value": 0.015,
+      "low_value": 0.005,
+      "high_value": 0.025,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "lng_emission_factor": {
+      "name": "LNG Emission Factor",
+      "base_value": 0.4,
+      "low_value": 0.35,
+      "high_value": 0.45,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "floating_capex_premium": {
+      "name": "Floating Solar CAPEX Premium",
+      "base_value": 1.5,
+      "low_value": 1.3,
+      "high_value": 1.8,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "floating_solar_mw": {
+      "name": "Floating Solar MW",
+      "base_value": 195.0,
+      "low_value": 100.0,
+      "high_value": 250.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "nearshore_solar_mw": {
+      "name": "Near-Shore Solar MW",
+      "base_value": 104.0,
+      "low_value": 60.0,
+      "high_value": 150.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11484033416.846159,
+      "high_npv": 10911788119.481785,
+      "range": 572245297.3643742
+    },
+    "nearshore_cable_cost": {
+      "name": "Near-Shore Cable Cost/MW",
+      "base_value": 250000.0,
+      "low_value": 200000.0,
+      "high_value": 350000.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11221582329.895027,
+      "high_npv": 11233252754.253056,
+      "range": 11670424.358028412
+    },
+    "wte_capex": {
+      "name": "WTE CAPEX per kW",
+      "base_value": 8000.0,
+      "low_value": 6000.0,
+      "high_value": 12000.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11212225555.448784,
+      "high_npv": 11251966303.145548,
+      "range": 39740747.69676399
+    },
+    "deployment_ramp": {
+      "name": "Deployment Ramp",
+      "base_value": 80.0,
+      "low_value": 50.0,
+      "high_value": 120.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11590426644.97542,
+      "high_npv": 11131843242.189564,
+      "range": 458583402.78585625
+    },
+    "male_max_re": {
+      "name": "Mal\u00e9 Max RE Share",
+      "base_value": 0.08,
+      "low_value": 0.04,
+      "high_value": 0.15,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "battery_ratio": {
+      "name": "Battery Ratio",
+      "base_value": 3.0,
+      "low_value": 2.0,
+      "high_value": 4.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 10959982351.125557,
+      "high_npv": 11490965369.313,
+      "range": 530983018.1874428
+    },
+    "wind_capex": {
+      "name": "wind_capex",
+      "base_value": 3000,
+      "low_value": 2500,
+      "high_value": 4000,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "wind_capacity_factor": {
+      "name": "wind_capacity_factor",
+      "base_value": 0.25,
+      "low_value": 0.18,
+      "high_value": 0.32,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "wind_capacity_mw": {
+      "name": "wind_capacity_mw",
+      "base_value": 80,
+      "low_value": 40,
+      "high_value": 120,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "ev_adoption_midpoint": {
+      "name": "EV Adoption Midpoint",
+      "base_value": 2038.0,
+      "low_value": 2034.0,
+      "high_value": 2042.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "ev_motorcycle_premium": {
+      "name": "E-Motorcycle Premium",
+      "base_value": 800.0,
+      "low_value": 500.0,
+      "high_value": 1200.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "transport_health_damage": {
+      "name": "Transport PM2.5 Damage",
+      "base_value": 0.012,
+      "low_value": 0.006,
+      "high_value": 0.025,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "petrol_price": {
+      "name": "Petrol Price 2026",
+      "base_value": 1.1,
+      "low_value": 0.9,
+      "high_value": 1.4,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "demand_saturation": {
+      "name": "demand_saturation",
+      "base_value": 7000.0,
+      "low_value": 5000.0,
+      "high_value": 9000.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "male_growth_near": {
+      "name": "male_growth_near",
+      "base_value": 0.1,
+      "low_value": 0.08,
+      "high_value": 0.12,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "pv_degradation": {
+      "name": "pv_degradation",
+      "base_value": 0.005,
+      "low_value": 0.003,
+      "high_value": 0.008,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "idc_rate": {
+      "name": "idc_rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "lng_capacity_mw": {
+      "name": "lng_capacity_mw",
+      "base_value": 140.0,
+      "low_value": 100.0,
+      "high_value": 400.0,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    },
+    "subsidy_per_kwh": {
+      "name": "subsidy_per_kwh",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 11225472471.347704,
+      "low_npv": 11225472471.347704,
+      "high_npv": 11225472471.347704,
+      "range": 0.0
+    }
+  },
+  "maximum_re": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.12,
+      "base_npv": 9604289000.620697,
+      "low_npv": 13840553677.739143,
+      "high_npv": 5734198775.686135,
+      "range": 8106354902.053008
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 9604289000.620697,
+      "low_npv": 8309601427.817658,
+      "high_npv": 10898976573.423733,
+      "range": 2589375145.6060743
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 9604289000.620697,
+      "low_npv": 8674999479.046465,
+      "high_npv": 11856502421.948391,
+      "range": 3181502942.901926
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.06,
+      "low_value": 0.04,
+      "high_value": 0.1,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1500.0,
+      "low_value": 900.0,
+      "high_value": 2200.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9085056498.43173,
+      "high_npv": 10210060253.174492,
+      "range": 1125003754.7427616
+    },
+    "solar_cf": {
+      "name": "Solar Capacity Factor",
+      "base_value": 0.175,
+      "low_value": 0.15,
+      "high_value": 0.22,
+      "base_npv": 9604289000.620697,
+      "low_npv": 10311413582.58474,
+      "high_npv": 8538795101.524001,
+      "range": 1772618481.0607386
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 350.0,
+      "low_value": 200.0,
+      "high_value": 500.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9272792262.08506,
+      "high_npv": 9935785739.156334,
+      "range": 662993477.0712738
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 3000000.0,
+      "low_value": 2000000.0,
+      "high_value": 5000000.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 1.0,
+      "low_value": 0.5,
+      "high_value": 1.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 190.0,
+      "low_value": 0.0,
+      "high_value": 300.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 7341086325.514386,
+      "high_npv": 10914564233.576982,
+      "range": 3573477908.0625963
+    },
+    "demand_growth": {
+      "name": "Demand Growth Rate",
+      "base_value": 0.05,
+      "low_value": 0.035,
+      "high_value": 0.065,
+      "base_npv": 9604289000.620697,
+      "low_npv": 7832486202.2846,
+      "high_npv": 11888039100.085089,
+      "range": 4055552897.8004885
+    },
+    "outage_rate": {
+      "name": "Cable Outage Rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "idle_fleet_cost": {
+      "name": "Idle Fleet Annual Cost",
+      "base_value": 8.0,
+      "low_value": 5.0,
+      "high_value": 13.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "price_elasticity": {
+      "name": "Price Elasticity",
+      "base_value": -0.3,
+      "low_value": -0.5,
+      "high_value": -0.1,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "health_damage": {
+      "name": "Health Damage Cost",
+      "base_value": 40.0,
+      "low_value": 20.0,
+      "high_value": 80.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "fuel_efficiency": {
+      "name": "Fuel Efficiency",
+      "base_value": 3.3,
+      "low_value": 2.8,
+      "high_value": 3.8,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "base_demand": {
+      "name": "Base Demand 2026",
+      "base_value": 1200.0,
+      "low_value": 1050.0,
+      "high_value": 1350.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 7944347662.758922,
+      "high_npv": 11297628432.821209,
+      "range": 3353280770.0622873
+    },
+    "battery_hours": {
+      "name": "Battery Storage Hours",
+      "base_value": 4.0,
+      "low_value": 3.0,
+      "high_value": 6.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "climate_premium": {
+      "name": "Climate Adaptation Premium",
+      "base_value": 0.075,
+      "low_value": 0.05,
+      "high_value": 0.15,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9547755303.538567,
+      "high_npv": 9773890091.867086,
+      "range": 226134788.32851982
+    },
+    "converter_station": {
+      "name": "Converter Station Cost/MW",
+      "base_value": 1600000.0,
+      "low_value": 1200000.0,
+      "high_value": 2000000.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "connection_cost": {
+      "name": "Connection Cost/HH",
+      "base_value": 200.0,
+      "low_value": 150.0,
+      "high_value": 300.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9600076636.83513,
+      "high_npv": 9612713728.191828,
+      "range": 12637091.356697083
+    },
+    "env_externality": {
+      "name": "Environmental Externality",
+      "base_value": 10.0,
+      "low_value": 4.0,
+      "high_value": 23.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "sectoral_residential": {
+      "name": "Sectoral Split (Residential)",
+      "base_value": 0.52,
+      "low_value": 0.4,
+      "high_value": 0.65,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "lng_capex": {
+      "name": "LNG CAPEX per MW",
+      "base_value": 1200000.0,
+      "low_value": 900000.0,
+      "high_value": 1500000.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "lng_fuel_cost": {
+      "name": "LNG Fuel Cost",
+      "base_value": 70.0,
+      "low_value": 50.0,
+      "high_value": 100.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "lng_fuel_escalation": {
+      "name": "LNG Fuel Escalation",
+      "base_value": 0.015,
+      "low_value": 0.005,
+      "high_value": 0.025,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "lng_emission_factor": {
+      "name": "LNG Emission Factor",
+      "base_value": 0.4,
+      "low_value": 0.35,
+      "high_value": 0.45,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "floating_capex_premium": {
+      "name": "Floating Solar CAPEX Premium",
+      "base_value": 1.5,
+      "low_value": 1.3,
+      "high_value": 1.8,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9578256976.145023,
+      "high_npv": 9643337037.334208,
+      "range": 65080061.18918419
+    },
+    "floating_solar_mw": {
+      "name": "Floating Solar MW",
+      "base_value": 195.0,
+      "low_value": 100.0,
+      "high_value": 250.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 10060830246.479519,
+      "high_npv": 9340950856.350193,
+      "range": 719879390.1293259
+    },
+    "nearshore_solar_mw": {
+      "name": "Near-Shore Solar MW",
+      "base_value": 104.0,
+      "low_value": 60.0,
+      "high_value": 150.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9886837449.452719,
+      "high_npv": 9318791931.982143,
+      "range": 568045517.4705753
+    },
+    "nearshore_cable_cost": {
+      "name": "Near-Shore Cable Cost/MW",
+      "base_value": 250000.0,
+      "low_value": 200000.0,
+      "high_value": 350000.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9600398859.16802,
+      "high_npv": 9612069283.526047,
+      "range": 11670424.358026505
+    },
+    "wte_capex": {
+      "name": "WTE CAPEX per kW",
+      "base_value": 8000.0,
+      "low_value": 6000.0,
+      "high_value": 12000.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9591042084.721775,
+      "high_npv": 9630782832.41854,
+      "range": 39740747.69676399
+    },
+    "deployment_ramp": {
+      "name": "Deployment Ramp",
+      "base_value": 80.0,
+      "low_value": 50.0,
+      "high_value": 120.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9866508866.514427,
+      "high_npv": 9513462776.725735,
+      "range": 353046089.7886925
+    },
+    "male_max_re": {
+      "name": "Mal\u00e9 Max RE Share",
+      "base_value": 0.08,
+      "low_value": 0.04,
+      "high_value": 0.15,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "battery_ratio": {
+      "name": "Battery Ratio",
+      "base_value": 3.0,
+      "low_value": 2.0,
+      "high_value": 4.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9286410332.306828,
+      "high_npv": 9922169931.644085,
+      "range": 635759599.3372574
+    },
+    "wind_capex": {
+      "name": "wind_capex",
+      "base_value": 3000,
+      "low_value": 2500,
+      "high_value": 4000,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "wind_capacity_factor": {
+      "name": "wind_capacity_factor",
+      "base_value": 0.25,
+      "low_value": 0.18,
+      "high_value": 0.32,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "wind_capacity_mw": {
+      "name": "wind_capacity_mw",
+      "base_value": 80,
+      "low_value": 40,
+      "high_value": 120,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "ev_adoption_midpoint": {
+      "name": "EV Adoption Midpoint",
+      "base_value": 2038.0,
+      "low_value": 2034.0,
+      "high_value": 2042.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "ev_motorcycle_premium": {
+      "name": "E-Motorcycle Premium",
+      "base_value": 800.0,
+      "low_value": 500.0,
+      "high_value": 1200.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "transport_health_damage": {
+      "name": "Transport PM2.5 Damage",
+      "base_value": 0.012,
+      "low_value": 0.006,
+      "high_value": 0.025,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "petrol_price": {
+      "name": "Petrol Price 2026",
+      "base_value": 1.1,
+      "low_value": 0.9,
+      "high_value": 1.4,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "demand_saturation": {
+      "name": "demand_saturation",
+      "base_value": 7000.0,
+      "low_value": 5000.0,
+      "high_value": 9000.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "male_growth_near": {
+      "name": "male_growth_near",
+      "base_value": 0.1,
+      "low_value": 0.08,
+      "high_value": 0.12,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "pv_degradation": {
+      "name": "pv_degradation",
+      "base_value": 0.005,
+      "low_value": 0.003,
+      "high_value": 0.008,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "idc_rate": {
+      "name": "idc_rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "lng_capacity_mw": {
+      "name": "lng_capacity_mw",
+      "base_value": 140.0,
+      "low_value": 100.0,
+      "high_value": 400.0,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    },
+    "subsidy_per_kwh": {
+      "name": "subsidy_per_kwh",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 9604289000.620697,
+      "low_npv": 9604289000.620697,
+      "high_npv": 9604289000.620697,
+      "range": 0.0
+    }
+  },
+  "lng_transition": {
+    "discount_rate": {
+      "name": "Discount Rate",
+      "base_value": 0.06,
+      "low_value": 0.03,
+      "high_value": 0.12,
+      "base_npv": 10128338902.773329,
+      "low_npv": 15425804795.305246,
+      "high_npv": 5587851793.548982,
+      "range": 9837953001.756264
+    },
+    "diesel_price": {
+      "name": "Diesel Price",
+      "base_value": 0.85,
+      "low_value": 0.6,
+      "high_value": 1.1,
+      "base_npv": 10128338902.773329,
+      "low_npv": 9009556270.179407,
+      "high_npv": 11247121535.367249,
+      "range": 2237565265.1878414
+    },
+    "diesel_escalation": {
+      "name": "Diesel Escalation",
+      "base_value": 0.02,
+      "low_value": 0.0,
+      "high_value": 0.05,
+      "base_npv": 10128338902.773329,
+      "low_npv": 9229413669.373535,
+      "high_npv": 12427161848.981768,
+      "range": 3197748179.6082325
+    },
+    "ppa_price": {
+      "name": "Import PPA Price",
+      "base_value": 0.06,
+      "low_value": 0.04,
+      "high_value": 0.1,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "solar_capex": {
+      "name": "Solar PV CAPEX",
+      "base_value": 1500.0,
+      "low_value": 900.0,
+      "high_value": 2200.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 9698712377.187103,
+      "high_npv": 10629569849.290592,
+      "range": 930857472.1034889
+    },
+    "solar_cf": {
+      "name": "Solar Capacity Factor",
+      "base_value": 0.175,
+      "low_value": 0.15,
+      "high_value": 0.22,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10634049099.561584,
+      "high_npv": 9480822837.193733,
+      "range": 1153226262.3678513
+    },
+    "battery_capex": {
+      "name": "Battery CAPEX",
+      "base_value": 350.0,
+      "low_value": 200.0,
+      "high_value": 500.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 9855686523.6995,
+      "high_npv": 10400991281.84716,
+      "range": 545304758.1476612
+    },
+    "cable_capex": {
+      "name": "Cable CAPEX",
+      "base_value": 3000000.0,
+      "low_value": 2000000.0,
+      "high_value": 5000000.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "gom_cost_share": {
+      "name": "GoM Cable Cost Share",
+      "base_value": 1.0,
+      "low_value": 0.5,
+      "high_value": 1.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "scc": {
+      "name": "Social Cost of Carbon",
+      "base_value": 190.0,
+      "low_value": 0.0,
+      "high_value": 300.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 7171698789.357601,
+      "high_npv": 11840077915.803486,
+      "range": 4668379126.445885
+    },
+    "demand_growth": {
+      "name": "Demand Growth Rate",
+      "base_value": 0.05,
+      "low_value": 0.035,
+      "high_value": 0.065,
+      "base_npv": 10128338902.773329,
+      "low_npv": 7488399310.887835,
+      "high_npv": 12821653423.452415,
+      "range": 5333254112.564581
+    },
+    "outage_rate": {
+      "name": "Cable Outage Rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "idle_fleet_cost": {
+      "name": "Idle Fleet Annual Cost",
+      "base_value": 8.0,
+      "low_value": 5.0,
+      "high_value": 13.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "price_elasticity": {
+      "name": "Price Elasticity",
+      "base_value": -0.3,
+      "low_value": -0.5,
+      "high_value": -0.1,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "health_damage": {
+      "name": "Health Damage Cost",
+      "base_value": 40.0,
+      "low_value": 20.0,
+      "high_value": 80.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "fuel_efficiency": {
+      "name": "Fuel Efficiency",
+      "base_value": 3.3,
+      "low_value": 2.8,
+      "high_value": 3.8,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "base_demand": {
+      "name": "Base Demand 2026",
+      "base_value": 1200.0,
+      "low_value": 1050.0,
+      "high_value": 1350.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 8290975441.55018,
+      "high_npv": 12061394559.896763,
+      "range": 3770419118.3465824
+    },
+    "battery_hours": {
+      "name": "Battery Storage Hours",
+      "base_value": 4.0,
+      "low_value": 3.0,
+      "high_value": 6.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "climate_premium": {
+      "name": "Climate Adaptation Premium",
+      "base_value": 0.075,
+      "low_value": 0.05,
+      "high_value": 0.15,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10081619585.724188,
+      "high_npv": 10268496853.920753,
+      "range": 186877268.19656563
+    },
+    "converter_station": {
+      "name": "Converter Station Cost/MW",
+      "base_value": 1600000.0,
+      "low_value": 1200000.0,
+      "high_value": 2000000.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "connection_cost": {
+      "name": "Connection Cost/HH",
+      "base_value": 200.0,
+      "low_value": 150.0,
+      "high_value": 300.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10124126538.987764,
+      "high_npv": 10136763630.344461,
+      "range": 12637091.356697083
+    },
+    "env_externality": {
+      "name": "Environmental Externality",
+      "base_value": 10.0,
+      "low_value": 4.0,
+      "high_value": 23.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "sectoral_residential": {
+      "name": "Sectoral Split (Residential)",
+      "base_value": 0.52,
+      "low_value": 0.4,
+      "high_value": 0.65,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "lng_capex": {
+      "name": "LNG CAPEX per MW",
+      "base_value": 1200000.0,
+      "low_value": 900000.0,
+      "high_value": 1500000.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10094600196.268427,
+      "high_npv": 10162077609.278233,
+      "range": 67477413.00980568
+    },
+    "lng_fuel_cost": {
+      "name": "LNG Fuel Cost",
+      "base_value": 70.0,
+      "low_value": 50.0,
+      "high_value": 100.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 9877497107.699848,
+      "high_npv": 10504601595.38355,
+      "range": 627104487.6837025
+    },
+    "lng_fuel_escalation": {
+      "name": "LNG Fuel Escalation",
+      "base_value": 0.015,
+      "low_value": 0.005,
+      "high_value": 0.025,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10008041853.873234,
+      "high_npv": 10271447749.222631,
+      "range": 263405895.34939766
+    },
+    "lng_emission_factor": {
+      "name": "LNG Emission Factor",
+      "base_value": 0.4,
+      "low_value": 0.35,
+      "high_value": 0.45,
+      "base_npv": 10128338902.773329,
+      "low_npv": 9999903125.806997,
+      "high_npv": 10256774679.73966,
+      "range": 256871553.93266296
+    },
+    "floating_capex_premium": {
+      "name": "Floating Solar CAPEX Premium",
+      "base_value": 1.5,
+      "low_value": 1.3,
+      "high_value": 1.8,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "floating_solar_mw": {
+      "name": "Floating Solar MW",
+      "base_value": 195.0,
+      "low_value": 100.0,
+      "high_value": 250.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "nearshore_solar_mw": {
+      "name": "Near-Shore Solar MW",
+      "base_value": 104.0,
+      "low_value": 60.0,
+      "high_value": 150.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "nearshore_cable_cost": {
+      "name": "Near-Shore Cable Cost/MW",
+      "base_value": 250000.0,
+      "low_value": 200000.0,
+      "high_value": 350000.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "wte_capex": {
+      "name": "WTE CAPEX per kW",
+      "base_value": 8000.0,
+      "low_value": 6000.0,
+      "high_value": 12000.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10115091986.874409,
+      "high_npv": 10154832734.571173,
+      "range": 39740747.69676399
+    },
+    "deployment_ramp": {
+      "name": "Deployment Ramp",
+      "base_value": 80.0,
+      "low_value": 50.0,
+      "high_value": 120.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10754028972.907515,
+      "high_npv": 9935490092.248497,
+      "range": 818538880.6590176
+    },
+    "male_max_re": {
+      "name": "Mal\u00e9 Max RE Share",
+      "base_value": 0.08,
+      "low_value": 0.04,
+      "high_value": 0.15,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10175337470.820576,
+      "high_npv": 10106566126.009672,
+      "range": 68771344.81090355
+    },
+    "battery_ratio": {
+      "name": "Battery Ratio",
+      "base_value": 3.0,
+      "low_value": 2.0,
+      "high_value": 4.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 9866420200.348934,
+      "high_npv": 10390255100.670368,
+      "range": 523834900.321434
+    },
+    "wind_capex": {
+      "name": "wind_capex",
+      "base_value": 3000,
+      "low_value": 2500,
+      "high_value": 4000,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "wind_capacity_factor": {
+      "name": "wind_capacity_factor",
+      "base_value": 0.25,
+      "low_value": 0.18,
+      "high_value": 0.32,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "wind_capacity_mw": {
+      "name": "wind_capacity_mw",
+      "base_value": 80,
+      "low_value": 40,
+      "high_value": 120,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "ev_adoption_midpoint": {
+      "name": "EV Adoption Midpoint",
+      "base_value": 2038.0,
+      "low_value": 2034.0,
+      "high_value": 2042.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "ev_motorcycle_premium": {
+      "name": "E-Motorcycle Premium",
+      "base_value": 800.0,
+      "low_value": 500.0,
+      "high_value": 1200.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "transport_health_damage": {
+      "name": "Transport PM2.5 Damage",
+      "base_value": 0.012,
+      "low_value": 0.006,
+      "high_value": 0.025,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "petrol_price": {
+      "name": "Petrol Price 2026",
+      "base_value": 1.1,
+      "low_value": 0.9,
+      "high_value": 1.4,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "demand_saturation": {
+      "name": "demand_saturation",
+      "base_value": 7000.0,
+      "low_value": 5000.0,
+      "high_value": 9000.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "male_growth_near": {
+      "name": "male_growth_near",
+      "base_value": 0.1,
+      "low_value": 0.08,
+      "high_value": 0.12,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "pv_degradation": {
+      "name": "pv_degradation",
+      "base_value": 0.005,
+      "low_value": 0.003,
+      "high_value": 0.008,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "idc_rate": {
+      "name": "idc_rate",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "lng_capacity_mw": {
+      "name": "lng_capacity_mw",
+      "base_value": 140.0,
+      "low_value": 100.0,
+      "high_value": 400.0,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    },
+    "subsidy_per_kwh": {
+      "name": "subsidy_per_kwh",
+      "base_value": 0.15,
+      "low_value": 0.1,
+      "high_value": 0.2,
+      "base_npv": 10128338902.773329,
+      "low_npv": 10128338902.773329,
+      "high_npv": 10128338902.773329,
+      "range": 0.0
+    }
+  },
+  "switching_values": {
+    "scenario_pairs": {
+      "maximum_re_vs_lng_transition": {
+        "label": "S6 Max RE vs S7 LNG",
+        "parameters": {
+          "discount_rate": {
+            "name": "Discount Rate",
+            "switching_value": 0.087238,
+            "base_value": 0.06,
+            "low_value": 0.03,
+            "high_value": 0.12,
+            "unit": "%",
+            "within_test_range": true,
+            "note": "within range"
+          },
+          "diesel_price": {
+            "name": "Diesel Price",
+            "switching_value": 1.594791,
+            "base_value": 0.85,
+            "low_value": 0.6,
+            "high_value": 1.1,
+            "unit": "USD/L",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "solar_cf": {
+            "name": "Solar Capacity Factor",
+            "switching_value": 0.115775,
+            "base_value": 0.175,
+            "low_value": 0.15,
+            "high_value": 0.22,
+            "unit": "ratio",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "scc": {
+            "name": "Social Cost of Carbon",
+            "switching_value": 46.411731,
+            "base_value": 190.0,
+            "low_value": 0.0,
+            "high_value": 300.0,
+            "unit": "USD/tCO2",
+            "within_test_range": true,
+            "note": "within range"
+          },
+          "demand_growth": {
+            "name": "Demand Growth Rate",
+            "switching_value": 0.037695,
+            "base_value": 0.05,
+            "low_value": 0.035,
+            "high_value": 0.065,
+            "unit": "%/yr",
+            "within_test_range": true,
+            "note": "within range"
+          },
+          "base_demand": {
+            "name": "Base Demand 2026",
+            "switching_value": 823.110723,
+            "base_value": 1200.0,
+            "low_value": 1050.0,
+            "high_value": 1350.0,
+            "unit": "GWh",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "lng_fuel_cost": {
+            "name": "LNG Fuel Cost",
+            "switching_value": 28.2167,
+            "base_value": 70.0,
+            "low_value": 50.0,
+            "high_value": 100.0,
+            "unit": "USD/MWh",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "lng_fuel_escalation": {
+            "name": "LNG Fuel Escalation",
+            "switching_value": -0.02479,
+            "base_value": 0.015,
+            "low_value": 0.005,
+            "high_value": 0.025,
+            "unit": "%/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "lng_emission_factor": {
+            "name": "LNG Emission Factor",
+            "switching_value": 0.195988,
+            "base_value": 0.4,
+            "low_value": 0.35,
+            "high_value": 0.45,
+            "unit": "kgCO2/kWh",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "floating_solar_mw": {
+            "name": "Floating Solar MW",
+            "switching_value": 85.804645,
+            "base_value": 195.0,
+            "low_value": 100.0,
+            "high_value": 250.0,
+            "unit": "MW",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "nearshore_solar_mw": {
+            "name": "Near-Shore Solar MW",
+            "switching_value": 20.970578,
+            "base_value": 104.0,
+            "low_value": 60.0,
+            "high_value": 150.0,
+            "unit": "MW",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "deployment_ramp": {
+            "name": "Deployment Ramp",
+            "switching_value": 158.805717,
+            "base_value": 80.0,
+            "low_value": 50.0,
+            "high_value": 120.0,
+            "unit": "MW/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          }
+        }
+      },
+      "full_integration_vs_national_grid": {
+        "label": "S2 Full Integration vs S3 National Grid",
+        "parameters": {
+          "diesel_price": {
+            "name": "Diesel Price",
+            "switching_value": 1.233497,
+            "base_value": 0.85,
+            "low_value": 0.6,
+            "high_value": 1.1,
+            "unit": "USD/L",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "diesel_escalation": {
+            "name": "Diesel Escalation",
+            "switching_value": 0.043347,
+            "base_value": 0.02,
+            "low_value": 0.0,
+            "high_value": 0.05,
+            "unit": "%/yr",
+            "within_test_range": true,
+            "note": "within range"
+          },
+          "ppa_price": {
+            "name": "Import PPA Price",
+            "switching_value": -0.011572,
+            "base_value": 0.06,
+            "low_value": 0.04,
+            "high_value": 0.1,
+            "unit": "USD/kWh",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "cable_capex": {
+            "name": "Cable CAPEX",
+            "switching_value": 794591.769364,
+            "base_value": 3000000.0,
+            "low_value": 2000000.0,
+            "high_value": 5000000.0,
+            "unit": "USD/km",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "gom_cost_share": {
+            "name": "GoM Cable Cost Share",
+            "switching_value": 0.240295,
+            "base_value": 1.0,
+            "low_value": 0.5,
+            "high_value": 1.0,
+            "unit": "%",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "scc": {
+            "name": "Social Cost of Carbon",
+            "switching_value": -66.868667,
+            "base_value": 190.0,
+            "low_value": 0.0,
+            "high_value": 300.0,
+            "unit": "USD/tCO2",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "price_elasticity": {
+            "name": "Price Elasticity",
+            "switching_value": 0.013358,
+            "base_value": -0.3,
+            "low_value": -0.5,
+            "high_value": -0.1,
+            "unit": "ratio",
+            "within_test_range": false,
+            "note": "outside test range"
+          }
+        }
+      },
+      "national_grid_vs_islanded_green": {
+        "label": "S3 National Grid vs S4 Islanded Green",
+        "parameters": {
+          "discount_rate": {
+            "name": "Discount Rate",
+            "switching_value": 0.142942,
+            "base_value": 0.06,
+            "low_value": 0.03,
+            "high_value": 0.12,
+            "unit": "%",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "diesel_escalation": {
+            "name": "Diesel Escalation",
+            "switching_value": -0.050282,
+            "base_value": 0.02,
+            "low_value": 0.0,
+            "high_value": 0.05,
+            "unit": "%/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "demand_growth": {
+            "name": "Demand Growth Rate",
+            "switching_value": 0.01544,
+            "base_value": 0.05,
+            "low_value": 0.035,
+            "high_value": 0.065,
+            "unit": "%/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          }
+        }
+      },
+      "maximum_re_vs_national_grid": {
+        "label": "S6 Max RE vs S3 National Grid",
+        "parameters": {
+          "discount_rate": {
+            "name": "Discount Rate",
+            "switching_value": 0.124891,
+            "base_value": 0.06,
+            "low_value": 0.03,
+            "high_value": 0.12,
+            "unit": "%",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "diesel_price": {
+            "name": "Diesel Price",
+            "switching_value": -0.116808,
+            "base_value": 0.85,
+            "low_value": 0.6,
+            "high_value": 1.1,
+            "unit": "USD/L",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "diesel_escalation": {
+            "name": "Diesel Escalation",
+            "switching_value": -0.04411,
+            "base_value": 0.02,
+            "low_value": 0.0,
+            "high_value": 0.05,
+            "unit": "%/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "scc": {
+            "name": "Social Cost of Carbon",
+            "switching_value": -248.737638,
+            "base_value": 190.0,
+            "low_value": 0.0,
+            "high_value": 300.0,
+            "unit": "USD/tCO2",
+            "within_test_range": false,
+            "note": "outside test range"
+          }
+        }
+      },
+      "nearshore_solar_vs_maximum_re": {
+        "label": "S5 Near-Shore vs S6 Max RE",
+        "parameters": {
+          "discount_rate": {
+            "name": "Discount Rate",
+            "switching_value": 0.123857,
+            "base_value": 0.06,
+            "low_value": 0.03,
+            "high_value": 0.12,
+            "unit": "%",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "diesel_price": {
+            "name": "Diesel Price",
+            "switching_value": -0.118584,
+            "base_value": 0.85,
+            "low_value": 0.6,
+            "high_value": 1.1,
+            "unit": "USD/L",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "diesel_escalation": {
+            "name": "Diesel Escalation",
+            "switching_value": -0.042248,
+            "base_value": 0.02,
+            "low_value": 0.0,
+            "high_value": 0.05,
+            "unit": "%/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "scc": {
+            "name": "Social Cost of Carbon",
+            "switching_value": -257.499447,
+            "base_value": 190.0,
+            "low_value": 0.0,
+            "high_value": 300.0,
+            "unit": "USD/tCO2",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "floating_solar_mw": {
+            "name": "Floating Solar MW",
+            "switching_value": -142.803143,
+            "base_value": 195.0,
+            "low_value": 100.0,
+            "high_value": 250.0,
+            "unit": "MW",
+            "within_test_range": false,
+            "note": "outside test range"
+          }
+        }
+      },
+      "bau_vs_full_integration": {
+        "label": "S1 BAU vs S2 Full Integration",
+        "parameters": {
+          "discount_rate": {
+            "name": "Discount Rate",
+            "switching_value": 0.113863,
+            "base_value": 0.06,
+            "low_value": 0.03,
+            "high_value": 0.12,
+            "unit": "%",
+            "within_test_range": true,
+            "note": "within range"
+          },
+          "diesel_price": {
+            "name": "Diesel Price",
+            "switching_value": 0.2417,
+            "base_value": 0.85,
+            "low_value": 0.6,
+            "high_value": 1.1,
+            "unit": "USD/L",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "diesel_escalation": {
+            "name": "Diesel Escalation",
+            "switching_value": -0.016053,
+            "base_value": 0.02,
+            "low_value": 0.0,
+            "high_value": 0.05,
+            "unit": "%/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          },
+          "demand_growth": {
+            "name": "Demand Growth Rate",
+            "switching_value": -0.00332,
+            "base_value": 0.05,
+            "low_value": 0.035,
+            "high_value": 0.065,
+            "unit": "%/yr",
+            "within_test_range": false,
+            "note": "outside test range"
+          }
+        }
+      }
+    },
+    "summary": [
+      {
+        "pair": "S6 Max RE vs S7 LNG",
+        "parameter": "Discount Rate",
+        "switching_value": 0.087238,
+        "base_value": 0.06,
+        "unit": "%"
+      },
+      {
+        "pair": "S6 Max RE vs S7 LNG",
+        "parameter": "Social Cost of Carbon",
+        "switching_value": 46.411731,
+        "base_value": 190.0,
+        "unit": "USD/tCO2"
+      },
+      {
+        "pair": "S6 Max RE vs S7 LNG",
+        "parameter": "Demand Growth Rate",
+        "switching_value": 0.037695,
+        "base_value": 0.05,
+        "unit": "%/yr"
+      },
+      {
+        "pair": "S2 Full Integration vs S3 National Grid",
+        "parameter": "Diesel Escalation",
+        "switching_value": 0.043347,
+        "base_value": 0.02,
+        "unit": "%/yr"
+      },
+      {
+        "pair": "S1 BAU vs S2 Full Integration",
+        "parameter": "Discount Rate",
+        "switching_value": 0.113863,
+        "base_value": 0.06,
+        "unit": "%"
+      }
+    ]
+  }
+}

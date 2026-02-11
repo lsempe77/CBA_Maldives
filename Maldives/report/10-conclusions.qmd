@@ -1,5 +1,3 @@
----
----
 
 ```{python}
 #| label: setup
@@ -112,7 +110,7 @@ The analytical work presented in this report provides the evidence base for poli
 
 **Detailed feasibility studies** should be commissioned for the three highest-priority investments: near-shore solar sites on uninhabited islands near Malé, the Gulhifalhu LNG terminal, and the India submarine cable route. These studies should move beyond the screening-level analysis presented here to include geotechnical surveys, detailed engineering design, environmental and social impact assessments, and commercial framework development. The near-shore solar feasibility studies are the most time-sensitive, as they lie on the critical path for Phase 2 deployment.
 
-**Pilot projects** can resolve key technology uncertainties at modest cost. A floating solar pilot of one to five megawatts in the Malé lagoon would test the marine engineering assumptions that underpin the Maximum RE scenario (S6), providing data on mooring systems, biofouling, corrosion, wave loading, and maintenance logistics in the Maldivian marine environment. The cost of such a pilot is negligible relative to the two hundred million dollar investment that it would de-risk.
+**Pilot projects** can resolve key technology uncertainties at modest cost. A floating solar pilot of one to five megawatts in the Malé lagoon would test the marine engineering assumptions that underpin the Maximum RE scenario (S6), providing data on mooring systems, biofouling, corrosion, wave loading, and maintenance logistics in the Maldivian marine environment. Similarly, a small wind pilot on an uninhabited atoll island would validate the capacity factor and structural resilience assumptions for the `{python} f"{param('Wind Capacity MW', category='Wind'):.0f}"`-megawatt wind component of S6, testing turbine performance in the Maldivian wind regime (mean speeds of 4.5–6.2 m/s, salt-laden marine atmosphere). The cost of such pilots is negligible relative to the investments they would de-risk.
 
 **Institutional strengthening** is essential for effective transition management. The establishment of an independent energy regulator with tariff-setting authority would depoliticise pricing decisions, provide regulatory certainty for private investors, and create the institutional capacity needed to manage the complex tariff restructuring that the transition requires. The regulator's mandate should encompass renewable energy procurement standards, grid connection rules, power purchase agreement frameworks, and consumer protection.
 

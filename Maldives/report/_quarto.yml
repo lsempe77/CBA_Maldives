@@ -100,5 +100,14 @@ format:
     fig-format: pdf
     keep-tex: false
 
+  docx:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    fig-width: 7
+    fig-height: 4.5
+    fig-dpi: 300
+    fig-format: png
+
 # Python kernel
 jupyter: python3

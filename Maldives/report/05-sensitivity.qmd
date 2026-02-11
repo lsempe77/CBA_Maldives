@@ -1,5 +1,4 @@
----
----
+
 
 ```{python}
 #| label: setup
@@ -155,32 +154,46 @@ Switching-value analysis takes a different approach to robustness testing by ask
 ```{python}
 #| label: switching-values
 switching = sensitivity.get("switching_values", {})
+scenario_pairs = switching.get("scenario_pairs", switching)  # handle both nesting levels
 ```
 
 ```{python}
 #| label: tbl-switching
 #| tbl-cap: "Key switching values — parameter thresholds at which scenario rankings change."
 
-if switching:
-    sw_rows = []
-    for pair_key, pair_data in switching.items():
-        if isinstance(pair_data, dict):
-            for param, sv_data in pair_data.items():
-                if isinstance(sv_data, dict) and "switching_value" in sv_data:
-                    sw_rows.append({
-                        "Scenario Pair": pair_key.replace("_vs_", " vs. ").replace("_", " ").title(),
-                        "Parameter": param.replace("_", " ").title(),
-                        "Base Value": sv_data.get("base_value", "—"),
-                        "Switching Value": sv_data.get("switching_value", "—"),
-                        "Change Required": f"{sv_data.get('pct_change', 0)*100:+.0f}%" if sv_data.get("pct_change") else "—",
-                    })
-    
-    if sw_rows:
-        sw_df = pd.DataFrame(sw_rows).head(20)
-        from IPython.display import Markdown
-        Markdown(sw_df.to_markdown(index=False))
-    else:
-        print("Switching values available but in different format. See Appendix A for full analysis.")
+sw_rows = []
+for pair_key, pair_data in scenario_pairs.items():
+    if not isinstance(pair_data, dict):
+        continue
+    pair_label = pair_data.get("label", pair_key.replace("_vs_", " vs ").replace("_", " ").title())
+    params = pair_data.get("parameters", pair_data)
+    for param_key, sv_data in params.items():
+        if not isinstance(sv_data, dict) or "switching_value" not in sv_data:
+            continue
+        # Only show parameters where switching is within testable range (most policy-relevant)
+        base = sv_data.get("base_value", 0)
+        sv = sv_data.get("switching_value", 0)
+        if base != 0:
+            pct = (sv - base) / abs(base) * 100
+        else:
+            pct = 0
+        sw_rows.append({
+            "Scenario Pair": pair_label,
+            "Parameter": sv_data.get("name", param_key.replace("_", " ").title()),
+            "Base Value": f"{base:,.2f}" if isinstance(base, float) and base < 100 else f"{base:,.0f}",
+            "Switching Value": f"{sv:,.2f}" if isinstance(sv, float) and abs(sv) < 100 else f"{sv:,.0f}",
+            "Unit": sv_data.get("unit", ""),
+            "Change": f"{pct:+.0f}%",
+            "In Range?": "✓" if sv_data.get("within_test_range") else "✗",
+        })
+
+if sw_rows:
+    sw_df = pd.DataFrame(sw_rows)
+    # Show most policy-relevant: within range first, then by smallest absolute change
+    sw_df["_abs_change"] = sw_df["Change"].str.replace("%","").str.replace("+","").astype(float).abs()
+    sw_df = sw_df.sort_values(["In Range?", "_abs_change"], ascending=[False, True]).drop(columns="_abs_change")
+    from IPython.display import display, Markdown
+    display(Markdown(sw_df.head(25).to_markdown(index=False)))
 else:
     print("Switching value analysis not available in outputs.")
 ```
@@ -201,19 +214,27 @@ horizons = {"20-year": multi_horizon.get("short", {}),
 
 fig = go.Figure()
 for h_label, h_data in horizons.items():
-    if isinstance(h_data, dict):
-        vals = []
-        for s in ALT_SCENARIOS:
-            s_data = h_data.get(s, {})
-            if isinstance(s_data, dict):
-                vals.append(s_data.get("npv_savings", s_data.get("npv", 0)) / 1e9)
-            else:
-                vals.append(0)
-        fig.add_trace(go.Bar(
-            name=h_label,
-            x=[SCENARIO_SHORT[s] for s in ALT_SCENARIOS],
-            y=vals,
-        ))
+    if not isinstance(h_data, dict):
+        continue
+    # Scenarios are nested under h_data["scenarios"]
+    h_scenarios = h_data.get("scenarios", h_data)
+    bau_cost = h_scenarios.get("bau", {}).get("pv_total_costs_million", 0)
+    
+    vals = []
+    for s in ALT_SCENARIOS:
+        s_data = h_scenarios.get(s, {})
+        if isinstance(s_data, dict):
+            # NPV savings = BAU cost − scenario cost (in $M), convert to $B
+            s_cost = s_data.get("pv_total_costs_million", 0)
+            savings = (bau_cost - s_cost) / 1e3  # $M → $B
+            vals.append(savings)
+        else:
+            vals.append(0)
+    fig.add_trace(go.Bar(
+        name=h_label,
+        x=[SCENARIO_SHORT[s] for s in ALT_SCENARIOS],
+        y=vals,
+    ))
 
 fig.update_layout(
     barmode="group",
@@ -235,18 +256,25 @@ The declining discount rate (DDR) sensitivity test addresses a methodological de
 #| label: fig-ddr
 #| fig-cap: "Impact of declining discount rates (DDR) on present value of total costs. DDR increases the PV of all scenarios but increases BAU (fuel-heavy) most."
 
-ddr = cba.get("declining_discount_rate", {})
-if ddr:
+ddr_raw = cba.get("declining_discount_rate", {})
+ddr_scenarios = ddr_raw.get("scenarios", {})
+ddr_schedule = ddr_raw.get("ddr_schedule", {})
+
+if ddr_scenarios:
     fig = go.Figure()
-    scenarios_in_ddr = [s for s in SCENARIO_IDS if s in ddr]
+    matched = [s for s in SCENARIO_IDS if s in ddr_scenarios]
     
-    if scenarios_in_ddr:
-        constant_vals = [cba["npv_results"][s]["pv_total_costs"] / 1e9 for s in scenarios_in_ddr]
-        ddr_vals = [ddr[s].get("pv_total_costs", 0) / 1e9 for s in scenarios_in_ddr]
-        labels = [SCENARIO_SHORT[s] for s in scenarios_in_ddr]
+    if matched:
+        constant_vals = [ddr_scenarios[s].get("pv_total_costs_constant", cba["npv_results"][s]["pv_total_costs"]) / 1e9 for s in matched]
+        ddr_vals = [ddr_scenarios[s]["pv_total_costs_ddr"] / 1e9 for s in matched]
+        labels = [SCENARIO_SHORT[s] for s in matched]
+        
+        r0 = ddr_schedule.get("years_0_30", 0.035) * 100
+        r1 = ddr_schedule.get("years_31_75", 0.030) * 100
+        r2 = ddr_schedule.get("years_76_125", 0.025) * 100
         
         fig.add_trace(go.Bar(name=f"Constant {cba['discount_rate']*100:.0f}%", x=labels, y=constant_vals, marker_color="#3498db"))
-        fig.add_trace(go.Bar(name=f"DDR ({cba['declining_discount_rate']['ddr_schedule']['years_0_30']*100:.1f}%→{cba['declining_discount_rate']['ddr_schedule']['years_31_75']*100:.1f}%→{cba['declining_discount_rate']['ddr_schedule']['years_76_125']*100:.1f}%)", x=labels, y=ddr_vals, marker_color="#e74c3c"))
+        fig.add_trace(go.Bar(name=f"DDR ({r0:.1f}%→{r1:.1f}%→{r2:.1f}%)", x=labels, y=ddr_vals, marker_color="#e74c3c"))
         
         fig.update_layout(
             barmode="group",
@@ -256,7 +284,7 @@ if ddr:
         )
         fig.show()
     else:
-        print("DDR data available but scenario keys don't match. See outputs for raw data.")
+        print("DDR scenario keys don't match SCENARIO_IDS. Available:", list(ddr_scenarios.keys()))
 else:
     print("Declining discount rate analysis not found in outputs.")
 ```

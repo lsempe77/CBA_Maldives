@@ -55,7 +55,7 @@ The Government of Maldives has recognised this imperative. The **Road Map for th
 
 This report applies standard cost-benefit analysis methodology — consistent with @adb_guidelines2017 and @boardman2018 — to evaluate seven electricity transition pathways for the Maldives. The analysis is designed to provide decision-makers with a rigorous, transparent, and comprehensive evidence base for comparing fundamentally different energy strategies.
 
-The analytical framework evaluates each scenario over a `{python} f"{cba['end_year'] - cba['base_year']}"` -year time horizon from `{python} f"{cba['base_year']}"` to `{python} f"{cba['end_year']}"`, applying a `{python} f"{cba['discount_rate']*100:.0f}"` per cent real social discount rate consistent with Asian Development Bank practice for small island developing states. Seven scenarios are assessed, spanning the full technology spectrum from continued diesel dependence through domestic solar-plus-battery systems, inter-island grid connections, submarine cable imports from India, near-shore and floating solar farms, and liquefied natural gas. Beyond direct financial costs and benefits, the analysis incorporates key externalities that a purely private-sector investment appraisal would ignore: carbon emissions are valued using the US EPA Social Cost of Carbon^[@epa_scc2023.], health damages from diesel combustion-related air pollution are monetised at $`{python} f"{param('Damage Cost per MWh Diesel'):.0f}"` per MWh following @parry2014, and environmental externalities including noise pollution, fuel spill risk, and biodiversity impacts are included at $`{python} f"{param('Noise Damage per MWh') + param('Fuel Spill Risk per MWh') + param('Biodiversity Impact per MWh'):.0f}"` per MWh^[Conservative aggregate estimate from the environmental economics literature; individual components: noise $`{python} f"{param('Noise Damage per MWh'):.0f}"`/MWh, fuel spill risk $`{python} f"{param('Fuel Spill Risk per MWh'):.0f}"`/MWh, biodiversity impacts $`{python} f"{param('Biodiversity Impact per MWh'):.0f}"`/MWh.].
+The analytical framework evaluates each scenario over a `{python} f"{cba['end_year'] - cba['base_year']}"` -year time horizon from `{python} f"{cba['base_year']}"` to `{python} f"{cba['end_year']}"`, applying a `{python} f"{cba['discount_rate']*100:.0f}"` per cent real social discount rate consistent with Asian Development Bank practice for small island developing states. Seven scenarios are assessed, spanning the full technology spectrum from continued diesel dependence through domestic solar-plus-battery systems, inter-island grid connections, submarine cable imports from India, near-shore and floating solar farms, wind energy, and liquefied natural gas. Beyond direct financial costs and benefits, the analysis incorporates key externalities that a purely private-sector investment appraisal would ignore: carbon emissions are valued using the US EPA Social Cost of Carbon^[@epa_scc2023.], health damages from diesel combustion-related air pollution are monetised at $`{python} f"{param('Damage Cost per MWh Diesel'):.0f}"` per MWh following @parry2014, and environmental externalities including noise pollution, fuel spill risk, and biodiversity impacts are included at $`{python} f"{param('Noise Damage per MWh') + param('Fuel Spill Risk per MWh') + param('Biodiversity Impact per MWh'):.0f}"` per MWh^[Conservative aggregate estimate from the environmental economics literature; individual components: noise $`{python} f"{param('Noise Damage per MWh'):.0f}"`/MWh, fuel spill risk $`{python} f"{param('Fuel Spill Risk per MWh'):.0f}"`/MWh, biodiversity impacts $`{python} f"{param('Biodiversity Impact per MWh'):.0f}"`/MWh.].
 
 The robustness of the findings is tested through an unusually comprehensive suite of sensitivity and uncertainty analyses. A `{python} f"{n_mc_params}"`-parameter Monte Carlo simulation runs `{python} f"{monte_carlo['n_iterations']:,}"` iterations with Iman-Conover rank correlations to propagate parametric uncertainty through the entire model. One-way sensitivity analysis identifies the parameters to which results are most sensitive, while switching-value analysis determines how far each parameter must change to reverse the scenario ranking. Multi-horizon analysis (20, 30, and 50 years) and declining discount rate sensitivity (following @hm_treasury2022 methodology, supported by @weitzman2001 and @drupp2018) test the stability of findings across alternative analytical frameworks.
 
@@ -68,21 +68,37 @@ The report also extends beyond traditional CBA in two important directions. A di
 #| fig-cap: "The Maldives archipelago spans 900 km north-south across 26 atolls. Each inhabited island operates an independent power system. Greater Malé (inset) concentrates 43% of the population and 57% of electricity demand."
 
 # Load island data for geographic overview
-islands = pd.read_csv(DATA_DIR / "islands_master.csv")
-n_inhabited = len(islands[islands["Population_2022"] > 0]) if "Population_2022" in islands.columns else 187
-total_pop = islands["Population_2022"].sum() if "Population_2022" in islands.columns else 515000
+islands_geo = pd.read_csv(DATA_DIR / "islands_master.csv")
+
+# Detect coordinate and population columns (handle different naming conventions)
+lon_col = next((c for c in islands_geo.columns if c in ("Longitude", "X_deg", "lon")), None)
+lat_col = next((c for c in islands_geo.columns if c in ("Latitude", "Y_deg", "lat")), None)
+pop_col = next((c for c in islands_geo.columns if c in ("Population_2022", "Pop", "Population")), None)
+
+n_inhabited = len(islands_geo[islands_geo[pop_col] > 0]) if pop_col else 187
+total_pop = islands_geo[pop_col].sum() if pop_col else 515000
 
 fig = go.Figure()
 
-if "Longitude" in islands.columns and "Latitude" in islands.columns:
-    pop_col = "Population_2022" if "Population_2022" in islands.columns else None
+if lon_col and lat_col:
+    # Build hover text: Island Name (Atoll) — Pop: X,XXX
+    name_col = next((c for c in islands_geo.columns if c in ("Island_Name_EN", "Island_Name", "Name")), None)
+    hover_text = islands_geo[name_col] if name_col else islands_geo.index.astype(str)
+    if pop_col:
+        hover_text = hover_text + " — Pop: " + islands_geo[pop_col].apply(lambda x: f"{x:,.0f}")
+    
+    # Scale marker size by population (log-ish)
+    if pop_col:
+        marker_size = islands_geo[pop_col].clip(lower=100).apply(lambda x: max(3, min(25, x / 3000)))
+    else:
+        marker_size = 5
     
     fig.add_trace(go.Scattergeo(
-        lon=islands["Longitude"],
-        lat=islands["Latitude"],
-        text=islands.get("Island_Name_EN", islands.index),
+        lon=islands_geo[lon_col],
+        lat=islands_geo[lat_col],
+        text=hover_text,
         marker=dict(
-            size=islands[pop_col].clip(lower=100).apply(lambda x: max(3, min(25, x/3000))) if pop_col else 5,
+            size=marker_size,
             color=SCENARIO_COLORS["national_grid"],
             opacity=0.7,
             line=dict(width=0.5, color="white"),
@@ -91,7 +107,7 @@ if "Longitude" in islands.columns and "Latitude" in islands.columns:
     ))
     
     fig.update_geos(
-        center=dict(lon=73.5, lat=3.5),
+        center=dict(lon=73.3, lat=3.2),
         projection_scale=25,
         showland=True, landcolor="#f0ebe3",
         showocean=True, oceancolor="#d4e6f1",
@@ -100,7 +116,7 @@ if "Longitude" in islands.columns and "Latitude" in islands.columns:
     )
     fig.update_layout(
         height=700,
-        title="Maldives Archipelago — 26 Atolls, 187 Inhabited Islands",
+        title=f"Maldives Archipelago — 26 Atolls, {n_inhabited} Inhabited Islands",
         geo=dict(bgcolor="white"),
         margin=dict(l=0, r=0, t=50, b=0),
     )

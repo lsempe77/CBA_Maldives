@@ -1,5 +1,4 @@
----
----
+
 
 ```{python}
 #| label: setup
@@ -167,14 +166,23 @@ if tariff_impacts:
         fig = go.Figure()
         for sid in scenarios_with_tariff:
             td = tariff_impacts[sid]
-            if isinstance(td, dict):
-                change = td.get("tariff_change_pct", td.get("pct_change", 0))
-                fig.add_trace(go.Bar(
-                    x=[SCENARIO_SHORT[sid]],
-                    y=[change * 100 if abs(change) < 1 else change],
-                    marker_color=SCENARIO_COLORS[sid],
-                    showlegend=False,
-                ))
+            if isinstance(td, list):
+                # Average change_pct across quintiles/geographies
+                pcts = [row.get("change_pct", 0) for row in td if isinstance(row, dict)]
+                change = sum(pcts) / len(pcts) if pcts else 0
+            elif isinstance(td, dict):
+                change = td.get("tariff_change_pct", td.get("change_pct", 0))
+            else:
+                change = 0
+            # change_pct is already in percentage points (e.g. -52 = -52%)
+            fig.add_trace(go.Bar(
+                x=[SCENARIO_SHORT[sid]],
+                y=[change],
+                marker_color=SCENARIO_COLORS[sid],
+                showlegend=False,
+                text=[f"{change:+.0f}%"],
+                textposition="outside",
+            ))
         
         fig.add_hline(y=0, line_dash="dash", line_color="gray")
         fig.update_layout(

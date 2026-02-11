@@ -40,6 +40,7 @@ class GenerationMix:
     import_gwh: float = 0.0       # India cable import (S2 Full Integration only)
     lng_gwh: float = 0.0          # MR-03: LNG generation (S7 LNG Transition only)
     wte_gwh: float = 0.0          # R6: Waste-to-energy baseload
+    wind_gwh: float = 0.0          # Wind generation (S6 Maximum RE only)
     
     # Capacity (MW)
     diesel_capacity_mw: float = 0.0
@@ -48,7 +49,7 @@ class GenerationMix:
     
     @property
     def total_generation_gwh(self) -> float:
-        return self.diesel_gwh + self.solar_gwh + self.import_gwh + self.lng_gwh + self.wte_gwh
+        return self.diesel_gwh + self.solar_gwh + self.import_gwh + self.lng_gwh + self.wte_gwh + self.wind_gwh
     
     @property
     def diesel_share(self) -> float:
@@ -58,10 +59,10 @@ class GenerationMix:
     
     @property
     def re_share(self) -> float:
-        """RE share includes solar + WTE (both renewable)."""
+        """RE share includes solar + WTE + wind (all renewable)."""
         if self.total_generation_gwh == 0:
             return 0.0
-        return (self.solar_gwh + self.wte_gwh) / self.total_generation_gwh
+        return (self.solar_gwh + self.wte_gwh + self.wind_gwh) / self.total_generation_gwh
     
     @property
     def import_share(self) -> float:
@@ -86,6 +87,7 @@ class GenerationMix:
             "import_gwh": self.import_gwh,
             "lng_gwh": self.lng_gwh,
             "wte_gwh": self.wte_gwh,
+            "wind_gwh": self.wind_gwh,
             "diesel_capacity_mw": self.diesel_capacity_mw,
             "solar_capacity_mw": self.solar_capacity_mw,
             "battery_capacity_mwh": self.battery_capacity_mwh,

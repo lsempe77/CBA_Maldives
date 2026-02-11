@@ -1,6 +1,5 @@
 ---
-title: "Energy Transition Pathways for the Maldives"
-subtitle: "A Cost-Benefit Analysis of Seven Electricity Scenarios, 2026–2056"
+title: "About This Report"
 ---
 
 ```{python}
@@ -9,8 +8,6 @@ import sys
 sys.path.insert(0, ".")
 from _common import *
 ```
-
-## About This Report {.unnumbered}
 
 The Republic of Maldives faces a defining energy challenge. With **`{python} f"{baseline['diesel_share']*100:.0f}"`% of electricity generated from imported diesel**^[Government of Maldives, *Road Map for the Energy Sector 2024–2033* [-@gom_roadmap2024]; confirmed by @reglobal2023 and @irena_roadmap_maldives2015.], the country is exposed to volatile global fuel prices, high per-unit generation costs, and a carbon footprint incompatible with its climate leadership ambitions. This report presents a  **cost-benefit analysis (CBA)** of seven alternative electricity transition pathways over `{python} f"{cba['end_year'] - cba['base_year']}"` years (`{python} f"{cba['base_year']}"` – `{python} f"{cba['end_year']}"`  ).
 
@@ -53,3 +50,7 @@ fig = bar_scenario_comparison(
 fig.update_layout(height=400)
 fig.show()
 ```
+
+### Statement on the use of AI tools {.unnumbered}
+
+This report was produced with the assistance of large language models (LLMs), specifically GitHub Copilot (powered by Claude, Anthropic). LLMs were used to support code development, literature synthesis, drafting of narrative text, and formatting of the Quarto book. All model parameters, analytical and provided assistance with text editing during manuscript preparation. All LLM-generated text was reviewed, revised, and approved by the author, who takes full responsibility for the accuracy and integrity of the final content. LLMs did not generate substantive intellectual contributions, interpret findings, or make analytical decisions — these remained under direct human control throughout the research process.
