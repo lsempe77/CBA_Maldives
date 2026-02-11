@@ -69,10 +69,10 @@ A critical test of any energy model is whether its input parameters are consiste
 roadmap_data = [
     {"Category": "Demand", "Data Point": "Total demand (2022)", "Roadmap Value": "~1,050 GWh", "Model Value": f"{param('Base Demand 2026'):,.0f} GWh (2026)", "Match": "✅", "Note": "Model starts at 2026; 1,050 × 1.05⁴ ≈ 1,276 ≈ 1,200 GWh"},
     {"Category": "Demand", "Data Point": "Outer island growth", "Roadmap Value": "9%/yr (guesthouse boom)", "Model Value": f"{param('Outer Growth Near Term')*100:.0f}%/yr", "Match": "✅", "Note": "Updated from 7% to match Roadmap"},
-    {"Category": "Demand", "Data Point": "Malé peak demand", "Roadmap Value": "107 MW (PNG)", "Model Value": f"{param('Base Peak Demand MW'):.0f} MW (national)", "Match": "✅", "Note": "Model includes outer islands; Malé = ~53%"},
+    {"Category": "Demand", "Data Point": "Malé peak demand", "Roadmap Value": "107 MW (PNG)", "Model Value": f"{param('Base Peak 2026'):.0f} MW (national)", "Match": "✅", "Note": "Model includes outer islands; Malé = ~53%"},
     {"Category": "Supply", "Data Point": "Diesel genset fleet", "Roadmap Value": "320 MW installed", "Model Value": "Computed from demand", "Match": "✅", "Note": "Fleet sized to demand + reserve margin"},
-    {"Category": "Supply", "Data Point": "Fuel efficiency (outer)", "Roadmap Value": "0.42 L/kWh (2.38 kWh/L)", "Model Value": f"{param('Fuel Efficiency kWh per L'):.1f} kWh/L", "Match": "✅", "Note": "National average higher; outer islands less efficient"},
-    {"Category": "Solar", "Data Point": "Existing PV installed", "Roadmap Value": "68.5 MW (as of 2023)", "Model Value": f"{param('Existing Solar MW'):.0f} MW", "Match": "✅", "Note": "Direct match"},
+    {"Category": "Supply", "Data Point": "Fuel efficiency (outer)", "Roadmap Value": "0.42 L/kWh (2.38 kWh/L)", "Model Value": f"{param('Fuel Efficiency', category='Fuel'):.1f} kWh/L", "Match": "✅", "Note": "National average higher; outer islands less efficient"},
+    {"Category": "Solar", "Data Point": "Existing PV installed", "Roadmap Value": "68.5 MW (as of 2023)", "Model Value": f"{param('Solar PV Capacity', category='Current System'):.0f} MW", "Match": "✅", "Note": "Direct match"},
     {"Category": "Solar", "Data Point": "Malé rooftop potential", "Roadmap Value": "34 MWp (Table 8)", "Model Value": f"{param('Male Rooftop Solar Potential'):.0f} MWp", "Match": "✅", "Note": "4 MW ASSURE + 5 MW addl rooftop + 25 MW commercial"},
     {"Category": "Solar", "Data Point": "Near-shore solar", "Roadmap Value": "Thilafushi/Gulhifalhu sites", "Model Value": f"{param('Near-Shore Solar MW'):.0f} MW", "Match": "✅", "Note": "Model adds Funadhoo & Dhoonidhoo"},
     {"Category": "Solar", "Data Point": "Floating solar", "Roadmap Value": "145 MW (ADB est.)", "Model Value": f"{param('Floating Solar MW'):.0f} MW", "Match": "⚠️", "Note": "Model uses GoM Roadmap target (195 MW > ADB 145 MW)"},
@@ -81,13 +81,13 @@ roadmap_data = [
     {"Category": "WTE", "Data Point": "WTE operational year", "Roadmap Value": "End 2024 (operational)", "Model Value": f"{param('WTE Online Year'):.0f}", "Match": "✅", "Note": "Updated from 2029 to 2025"},
     {"Category": "LNG", "Data Point": "LNG capacity", "Roadmap Value": "140 MW (Gulhifalhu)", "Model Value": f"{param('LNG Plant Capacity MW'):.0f} MW", "Match": "✅", "Note": "Direct match"},
     {"Category": "Grid", "Data Point": "Malé grid losses", "Roadmap Value": "8%", "Model Value": "8%", "Match": "✅", "Note": "Segmented: Malé 8%, Outer 12%"},
-    {"Category": "Grid", "Data Point": "Outer island grid losses", "Roadmap Value": "12%", "Model Value": f"{param('Distribution Loss Factor')*100:.0f}%", "Match": "✅", "Note": "National weighted average ≈ 11%"},
+    {"Category": "Grid", "Data Point": "Outer island grid losses", "Roadmap Value": "12%", "Model Value": f"{param('Distribution Loss', category='Losses')*100:.0f}%", "Match": "✅", "Note": "National weighted average ≈ 11%"},
     {"Category": "Grid", "Data Point": "Interconnection (near Malé)", "Roadmap Value": "14 km submarine cable", "Model Value": "14 km", "Match": "✅", "Note": "Malé–Hulhumalé–Villimalé–Thilafushi"},
     {"Category": "Cost", "Data Point": "Solar PV CAPEX", "Roadmap Value": "$1,100–1,800/kW (SIDS)", "Model Value": f"${param('CAPEX 2026', category='Solar'):,.0f}/kW", "Match": "✅", "Note": "Midpoint of SIDS range"},
     {"Category": "Cost", "Data Point": "Battery CAPEX", "Roadmap Value": "$250–450/kWh", "Model Value": f"${param('CAPEX 2026', category='Battery'):,.0f}/kWh", "Match": "✅", "Note": "Midpoint of range"},
     {"Category": "Cost", "Data Point": "Deployment pipeline", "Roadmap Value": "424 MW over 5yr (~85 MW/yr)", "Model Value": f"{param('Deployment Ramp MW per Year'):.0f} MW/yr", "Match": "✅", "Note": "Model uses 80 MW/yr (conservative)"},
-    {"Category": "Fiscal", "Data Point": "Annual electricity subsidy", "Roadmap Value": "MVR 3B (~$200M/yr)", "Model Value": f"${param('Subsidy per kWh')*1200:.0f}M/yr", "Match": "✅", "Note": "$0.15/kWh × 1,200 GWh ≈ $180M (close match)"},
-    {"Category": "RE Target", "Data Point": "2028 RE target", "Roadmap Value": "33% of consumption", "Model Value": f"{param('Domestic RE Target')*100:.0f}% (2050 target)", "Match": "⚠️", "Note": "Model targets 50% by 2050; Roadmap targets 33% by 2028"},
+    {"Category": "Fiscal", "Data Point": "Annual electricity subsidy", "Roadmap Value": "MVR 3B (~$200M/yr)", "Model Value": f"${param('Current Subsidy per kWh', category='Macro')*1200:.0f}M/yr", "Match": "✅", "Note": "$0.15/kWh × 1,200 GWh ≈ $180M (close match)"},
+    {"Category": "RE Target", "Data Point": "2028 RE target", "Roadmap Value": "33% of consumption", "Model Value": f"{param('Domestic RE Target 2050', category='RE Deployment')*100:.0f}% (2050 target)", "Match": "⚠️", "Note": "Model targets 50% by 2050; Roadmap targets 33% by 2028"},
 ]
 
 df_rm = pd.DataFrame(roadmap_data)

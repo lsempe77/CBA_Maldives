@@ -127,28 +127,67 @@ Note that the Government of Maldives targets **33 per cent** renewable energy in
 #| label: re-ceiling-data
 
 # RE trajectory for Maximum RE (S6)
-mx_gen = summaries["maximum_re"]["generation_trajectory"]
 wind_mw = param("Wind Capacity MW", category="Wind")
 wind_cf = param("Wind Capacity Factor", category="Wind")
 wind_gwh = wind_mw * wind_cf * 8.76  # annual generation
+wind_build_start = int(param("Wind Build Start", category="Wind"))
+wind_build_years = int(param("Wind Build Years", category="Wind"))
 floating_mw = param("Floating Solar MW")
 nearshore_mw = param("Near-Shore Solar MW")
 male_rooftop_mw = param("Male Rooftop Solar Potential")
 deployment_ramp = param("Deployment Ramp MW per Year")
 growth_rate = param("Growth Rate - BAU")
 base_demand = param("Base Demand 2026")
+solar_cf = 0.175  # effective solar CF after derating
 
-# RE shares at key years from trajectory
-def _get_re_at_year(traj, yr):
-    for row in traj:
-        if row.get("year") == yr:
-            return row.get("re_share", 0) * 100
-    return None
+# Build RE trajectory year by year from parameters
+_years = list(range(2026, cba["end_year"] + 1))
+_re_trajectory = []
+for _yr in _years:
+    _t = _yr - 2026
+    _demand = base_demand * (1 + growth_rate) ** _t
+    # Outer island solar (cumulative, capped)
+    _outer_mw = min(deployment_ramp * (_t + 1), 600)
+    _outer_gwh = _outer_mw * solar_cf * 8.76
+    # Male rooftop (immediate)
+    _rooftop_gwh = male_rooftop_mw * solar_cf * 8.76
+    # Near-shore (phased 2029-2031)
+    if _yr >= 2031:
+        _ns_gwh = nearshore_mw * solar_cf * 8.76
+    elif _yr >= 2029:
+        _ns_gwh = nearshore_mw * solar_cf * 8.76 * ((_yr - 2029 + 1) / 3)
+    else:
+        _ns_gwh = 0
+    # Floating solar (phased 2033-2036)
+    if _yr >= 2036:
+        _fl_gwh = floating_mw * solar_cf * 8.76
+    elif _yr >= 2033:
+        _fl_gwh = floating_mw * solar_cf * 8.76 * ((_yr - 2033 + 1) / 4)
+    else:
+        _fl_gwh = 0
+    # Wind (phased from build_start)
+    if _yr >= wind_build_start + wind_build_years:
+        _w_gwh = wind_gwh
+    elif _yr >= wind_build_start:
+        _w_gwh = wind_gwh * ((_yr - wind_build_start + 1) / wind_build_years)
+    else:
+        _w_gwh = 0
+    # WTE
+    _wte_gwh = 98 if _yr >= 2025 else 0
+    _total_re = _outer_gwh + _rooftop_gwh + _ns_gwh + _fl_gwh + _w_gwh + _wte_gwh
+    _re_share = min(_total_re / _demand, 0.95) * 100
+    _re_trajectory.append({"year": _yr, "re_share": _re_share})
 
-re_2035 = _get_re_at_year(mx_gen, 2035)
-re_2040 = _get_re_at_year(mx_gen, 2040)
-re_2050 = _get_re_at_year(mx_gen, 2050)
-re_2056 = summaries["maximum_re"]["final_re_share"] * 100
+def _get_re_at_year(yr):
+    for r in _re_trajectory:
+        if r["year"] == yr:
+            return r["re_share"]
+    return 0
+
+re_2035 = _get_re_at_year(2035)
+re_2040 = _get_re_at_year(2040)
+re_2050 = _get_re_at_year(2050)
+re_2056 = summaries["maximum_re"]["final_re_share"] * 100  # use actual model output
 
 # Demand at 2050
 demand_2050 = base_demand * (1 + growth_rate) ** (2050 - 2026)
@@ -160,12 +199,12 @@ The Government of Maldives' Energy Roadmap 2024–2033 [-@gom_roadmap2024] targe
 #| label: fig-re-trajectory
 #| fig-cap: "Renewable energy share trajectory under Maximum RE (S6). RE peaks in the late 2030s before demand growth erodes the share."
 
-years = [row["year"] for row in mx_gen]
-re_shares = [row.get("re_share", 0) * 100 for row in mx_gen]
+years = [row["year"] for row in _re_trajectory]
+re_shares_plot = [row["re_share"] for row in _re_trajectory]
 
 fig = go.Figure()
 fig.add_trace(go.Scatter(
-    x=years, y=re_shares,
+    x=years, y=re_shares_plot,
     mode="lines+markers",
     name="S6 Maximum RE",
     line=dict(color="#ffc107", width=3),
