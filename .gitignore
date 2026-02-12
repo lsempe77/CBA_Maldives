@@ -21,6 +21,10 @@ desktop.ini
 .quarto/
 *_files/
 
+# Quarto build output
+_book/
+_freeze/
+
 # Large data files
 *.tif
 *.tiff

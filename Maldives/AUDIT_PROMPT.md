@@ -1,9 +1,11 @@
-# COMPREHENSIVE AUDIT — Maldives Energy CBA Model (v2)
+# COMPREHENSIVE AUDIT v2 — Maldives Energy CBA Model
 
 > **Date:** 10 February 2026  
-> **Scope:** Full-depth professional audit — economic methodology, code correctness, parameter validity, wiring integrity, and structural soundness  
-> **Designed for:** Multi-agent execution (7 independent audit workstreams)  
-> **Prior audit:** `AUDIT_PROMPT_v1.md` / `AUDIT_REPORT_v1.md` — 30 findings, all fixed. This v2 audit is a clean-sheet re-examination.
+> **Scope:** Full-depth, clean-sheet professional audit — economic methodology, code correctness, parameter validity, wiring integrity, structural soundness, numerical reproducibility, and publication readiness  
+> **Designed for:** Multi-agent execution (9 independent audit workstreams)  
+> **Audit philosophy:** **ZERO TRUST.** This is a clean-sheet re-examination. Prior audits exist (`AUDIT_REPORT_v1.md`, `AUDIT_REPORT_v3.md`) but their conclusions are NOT assumed correct. Every aspect of the model is re-examined from first principles. Prior fixes may have introduced new bugs, may have been incomplete, or may have been wrong. Do not read prior audit reports before completing your own workstream — they are reference material for the cross-workstream integration check only.
+>
+> The goal is a **publication-quality** audit that an independent reviewer could trust as the definitive assessment of this model's correctness, regardless of what prior reviews found.
 
 ---
 
@@ -13,544 +15,791 @@
 
 A **social Cost-Benefit Analysis (CBA)** of energy transition pathways for the Maldives, comparing 7 scenarios over 2026–2056:
 
-| Code | Scenario | Key Technology |
-|------|----------|---------------|
-| S1 | BAU (Status Quo) | ~94% diesel + ~6% existing solar (68.5 MW), no new investment |
-| S2 | Full Integration | 700 km India–Maldives HVDC submarine cable + domestic RE |
-| S3 | National Grid | Inter-island submarine cables + aggressive RE ramp |
-| S4 | Islanded Green | Per-island solar+battery mini-grids (no interconnection) |
-| S5 | Near-Shore Solar | Solar farms on uninhabited islands + cable to inhabited |
-| S6 | Maximum RE | Floating solar (195 MW) + near-shore + ground-mount |
-| S7 | LNG Transition | 140 MW LNG plant at Gulhifalhu + RE complement |
+| Code | Scenario | Key Technology | Key CAPEX |
+|------|----------|---------------|-----------|
+| S1 | BAU (Status Quo) | ~93% diesel + ~7% existing solar (68.5 MW), no new investment | Diesel replacement only |
+| S2 | Full Integration | 700 km India–Maldives HVDC submarine cable + domestic RE | ~$2.5B cable + RE ramp |
+| S3 | National Grid | Inter-island submarine cables + aggressive RE ramp | Inter-island cables + RE |
+| S4 | Islanded Green | Per-island solar+battery mini-grids (no interconnection) | Distributed mini-grids |
+| S5 | Near-Shore Solar | Solar farms on uninhabited islands + cable to inhabited | 104 MW near-shore + cables |
+| S6 | Maximum RE | Floating solar (195 MW) + near-shore + ground-mount | Floating + near-shore + ground |
+| S7 | LNG Transition | 140 MW LNG plant at Gulhifalhu + RE complement | LNG plant + RE ramp |
 
-The model produces NPV, BCR, IRR, LCOE, emission trajectories, distributional impacts, sensitivity analysis, Monte Carlo simulation, and multi-criteria analysis for all 7 scenarios.
+The model produces NPV, BCR, IRR, LCOE, emission trajectories, distributional impacts, sensitivity analysis (39 params), Monte Carlo simulation (1,000 iterations), multi-criteria analysis (8 criteria × 7 scenarios), financing analysis, and transport supplementary analysis.
 
 ### Architecture
 
 ```
-parameters.csv (405 rows)
+parameters.csv (~420 parameter rows, 8 columns)
     │
     ▼
-config.py (23 dataclasses, ~2,000 lines)
+config.py (23 dataclasses, ~2,130 lines)
     │  load_parameters_from_csv() → get_config()
     ▼
-┌─────────────────────────────────────────────────┐
-│  demand.py → costs.py → emissions.py            │
-│  dispatch.py (hourly simulation)                 │
-│  least_cost.py (176-island LCOE engine)          │
-│  network.py (inter-island distances, MST)        │
-│                                                  │
-│  scenarios/                                      │
-│    status_quo.py  one_grid.py                    │
-│    green_transition.py  islanded_green.py        │
-│    nearshore_solar.py  maximum_re.py             │
-│    lng_transition.py                             │
-│    __init__.py (BaseScenario, GenerationMix)     │
-│                                                  │
-│  cba/                                            │
-│    npv_calculator.py (NPV, BCR, IRR, salvage)    │
-│    sensitivity.py (38-param engine, MC)           │
-│    mca_analysis.py (8-criteria weighted scoring)  │
-│                                                  │
-│  Runners:                                        │
-│    run_cba.py  run_sensitivity.py                │
-│    run_monte_carlo.py  run_multi_horizon.py      │
-│                                                  │
-│  Supplementary:                                  │
-│    financing_analysis.py  distributional_analysis │
-│    transport_analysis.py  sanity_checks.py       │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│  demand.py → costs.py → emissions.py                 │
+│  dispatch.py (hourly simulation)                      │
+│  least_cost.py (183-island LCOE engine)               │
+│  network.py (inter-island distances, MST)             │
+│                                                       │
+│  scenarios/                                           │
+│    __init__.py (BaseScenario, GenerationMix,           │
+│                 AnnualCosts, AnnualBenefits)           │
+│    status_quo.py  one_grid.py                         │
+│    green_transition.py  islanded_green.py             │
+│    nearshore_solar.py  maximum_re.py                  │
+│    lng_transition.py                                  │
+│                                                       │
+│  cba/                                                 │
+│    npv_calculator.py (NPV, BCR, IRR, salvage, DDR)    │
+│    sensitivity.py (39-param engine, MC)                │
+│    mca_analysis.py (8-criteria weighted scoring)       │
+│                                                       │
+│  Runners:                                             │
+│    run_cba.py  run_sensitivity.py                     │
+│    run_monte_carlo.py  run_multi_horizon.py           │
+│                                                       │
+│  Supplementary:                                       │
+│    financing_analysis.py  distributional_analysis.py  │
+│    transport_analysis.py  sanity_checks.py            │
+└──────────────────────────────────────────────────────┘
     │
     ▼
 outputs/*.json → report/REPORT...qmd
 ```
 
-### Current Model Outputs (post-v1 audit fixes)
+### Current Model Outputs (as of audit date)
 
-| Scenario | PV Total Cost ($B) | LCOE ($/kWh) | BCR | IRR | NPV Savings ($B) |
-|----------|--------------------|--------------|-----|-----|-------------------|
+| Scenario | PV Total Cost ($B) | LCOE ($/kWh) | BCR | IRR | NPV Savings vs BAU ($B) |
+|----------|--------------------|--------------|-----|-----|------------------------|
 | S1 BAU | 15.68 | 0.437 | — | — | — |
-| S2 Full Integration | 9.35 | 0.211 | 2.70 | 16.3% | 9.28 |
-| S3 National Grid | 9.22 | 0.293 | 11.89 | 33.9% | 10.19 |
-| S4 Islanded Green | 10.00 | 0.318 | 8.61 | 27.7% | 9.32 |
-| S5 Near-Shore Solar | 8.78 | 0.280 | 10.73 | 33.4% | 10.96 |
-| S6 Maximum RE | 8.23 | 0.262 | 9.53 | 33.2% | 11.98 |
-| S7 LNG Transition | 6.29 | 0.200 | 9.07 | 44.8% | 14.34 |
+| S2 Full Integration | 9.29 | 0.210 | 4.06 | 16.3% | 6.39 |
+| S3 National Grid | 9.22 | 0.293 | 7.32 | 33.9% | 6.46 |
+| S4 Islanded Green | 10.00 | 0.318 | 5.54 | 27.7% | 5.68 |
+| S5 Near-Shore Solar | 8.78 | 0.279 | 6.69 | 33.4% | 6.90 |
+| S6 Maximum RE | 8.23 | 0.262 | 5.98 | 33.2% | 7.44 |
+| S7 LNG Transition | 7.83 | 0.218 | 7.06 | 41.4% | 7.85 |
+
+**Ranking by NPV savings:** S7 > S6 > S5 > S3 > S2 > S4 > S1
 
 ### Codebase Size
 
-- **29 Python files** (excl. perplexity_lookup.py), **~16,400 lines**
-- **405 rows** in parameters.csv
-- **23 dataclasses** in config.py with ~300+ fields
-- **38 sensitivity parameters**, 1,000 MC iterations
-- **47 automated sanity checks**
+- **30 Python files**, **~15,900 lines** total
+- **~420 parameter rows** in parameters.csv (8 columns: Category, Parameter, Value, Low, High, Unit, Source, Notes)
+- **23 dataclasses** in config.py with ~320+ fields
+- **39 sensitivity parameters** (35 core + 4 conditional transport), 1,000 MC iterations
+- **48 automated sanity checks** (all currently passing)
 
 ---
 
-## 2. Audit Design — Seven Workstreams
+## 2. Audit Design — Nine Workstreams
 
-This audit is designed to be executed as **7 independent workstreams**, each producing its own findings report. Each workstream can be assigned to a separate subagent.
+This audit uses **9 independent workstreams**, each examining a distinct dimension of the model. Each workstream is self-contained and should be executed without reference to the others.
 
 ### Workstream Overview
 
 | # | Workstream | Focus | Key Files | What It Should Catch |
 |---|-----------|-------|-----------|---------------------|
-| **A** | **Economic Methodology & CBA Framework** | Is the CBA structurally sound as economics? | All scenario files, npv_calculator.py, run_cba.py, CBA_METHODOLOGY.md | Wrong counterfactual, missing cost/benefit categories, incorrect discounting logic, BCR/IRR definition errors, appraisal framework violations |
-| **B** | **Parameter Validity & Empirical Grounding** | Are the ~200 key parameters defensible? | parameters.csv, config.py, literature_benchmarks.md | Outdated sources, implausible values, missing uncertainty ranges, geographic mismatches, citation quality |
-| **C** | **Code Correctness & Equation Fidelity** | Does every equation in code match its mathematical specification? | costs.py, demand.py, emissions.py, dispatch.py, npv_calculator.py, sensitivity.py | Unit mismatches, sign errors, off-by-one, wrong formula implementation, numerical instability |
-| **D** | **Config Wiring & Data Pipeline Integrity** | Does every parameter flow correctly from CSV → config → consumption? | parameters.csv, config.py, all consuming .py files | Broken wiring, stale defaults masking CSV, hardcoded values, dead params, silent exception swallowing |
-| **E** | **Scenario Consistency & Comparative Logic** | Are the 7 scenarios internally consistent and the comparisons fair? | All 7 scenario files, scenarios/__init__.py | Different base assumptions across scenarios, missing cost/benefit categories in some but not all, unfair comparisons, double-counting |
-| **F** | **Sensitivity, Monte Carlo & Robustness** | Is the uncertainty analysis methodologically sound? | sensitivity.py, run_sensitivity.py, run_monte_carlo.py, run_multi_horizon.py | Parameter ranges too narrow/wide, missing correlations, distribution assumptions, 3-path sync issues, switching value logic |
-| **G** | **Supplementary Modules & Outputs** | Are the supporting analyses (distributional, financing, transport, MCA) correct? | distributional_analysis.py, financing_analysis.py, transport_analysis.py, mca_analysis.py, sanity_checks.py | Microdata handling errors, grant element formula, MCA weight/polarity issues, transport S-curve problems |
+| **A** | **Economic Methodology & CBA Framework** | Is the CBA structurally sound as economics? | npv_calculator.py, scenarios/__init__.py, run_cba.py | Wrong counterfactual, missing cost/benefit categories, discounting errors, BCR/IRR definition errors, welfare measurement gaps, standing issues, double-counting |
+| **B** | **Parameter Validity & Empirical Grounding** | Are the ~420 parameters defensible? | parameters.csv, config.py, literature_benchmarks.md | Outdated sources, wrong values, fabricated citations, missing uncertainty ranges, geographic mismatches, internal inconsistencies |
+| **C** | **Code Correctness & Equation Fidelity** | Does every equation in code match its mathematical specification? | costs.py, demand.py, emissions.py, dispatch.py, npv_calculator.py, sensitivity.py | Unit mismatches, sign errors, off-by-one, wrong formula, vintage/cohort bugs, numerical instability, edge cases |
+| **D** | **Config Wiring & Data Pipeline Integrity** | Does every parameter flow correctly from CSV → config → code? | parameters.csv, config.py, all consuming .py | Broken wiring, stale defaults masking CSV, hardcoded values, dead params, silent exception swallowing, type coercion errors |
+| **E** | **Scenario Consistency & Comparative Logic** | Are the 7 scenarios internally consistent and comparisons fair? | All 7 scenario files, scenarios/__init__.py | Different base assumptions, missing cost/benefit categories, config key mismatches, generation imbalance, unfair comparisons, deployment infeasibility |
+| **F** | **Sensitivity, Monte Carlo & Robustness** | Is the uncertainty analysis methodologically sound? | sensitivity.py, run_sensitivity.py, run_monte_carlo.py, run_multi_horizon.py | Parameter path desync, ranges too narrow/wide, missing correlations, non-convergence, missing scenarios, switching value errors |
+| **G** | **Supplementary Modules & Outputs** | Are the supporting analyses correct? | distributional, financing, transport, mca, sanity_checks | Microdata handling errors, grant element formula, MCA polarity/weight issues, transport S-curve problems, sanity check coverage |
+| **H** | **Numerical Stability & Reproducibility** | Is the model deterministic, stable, and reproducible? | All model code, outputs/*.json | Floating-point edge cases, IRR non-convergence, random seed, platform dependence, data loading errors |
+| **I** | **Publication Readiness & Output Integrity** | Do outputs match code, and report match outputs? | outputs/*.json, run_cba.py, REPORT.qmd | JSON output gaps, report hardcoded values, documentation inconsistencies, claim verification, plausibility checks |
 
 ---
 
 ## 3. Workstream A — Economic Methodology & CBA Framework
 
 ### Objective
-Assess whether this CBA follows established social cost-benefit analysis principles (Boardman et al. 2018 *Cost-Benefit Analysis: Concepts and Practice*; ADB 2017 *Guidelines for the Economic Analysis of Projects*; HM Treasury 2026 *Green Book*).
+Assess CBA structural soundness against Boardman et al. (2018), ADB (2017), HM Treasury (2026), and IRENA (2019).
 
 ### What to Read
-1. `model/cba/npv_calculator.py` — the entire NPV/BCR/IRR/salvage engine
-2. `model/scenarios/__init__.py` — `AnnualCosts`, `AnnualBenefits`, `GenerationMix` dataclasses
-3. `model/run_cba.py` — how scenarios are run and compared
-4. `Maldives/CBA_METHODOLOGY.md` — the existing equation catalogue (cross-check code against it)
-5. `Maldives/SCENARIO_GUIDE.md` — scenario definitions and design rationale
+1. `model/cba/npv_calculator.py` — full NPV/BCR/IRR/salvage/DDR engine
+2. `model/scenarios/__init__.py` — `AnnualCosts`, `AnnualBenefits`, `GenerationMix`, `BaseScenario`
+3. `model/run_cba.py` — scenario execution and comparison
+4. `CBA_METHODOLOGY.md` — equation catalogue
+5. `SCENARIO_GUIDE.md` — design rationale
 
-### Questions to Answer
+### A1. Counterfactual Design
+- **BAU diesel replacement CAPEX:** Does S1 include the cost of replacing aging diesel generators (20-year life)? Generators installed 2006–2026 would need replacement 2026–2046. If BAU omits replacement CAPEX, all alternatives are artificially advantaged. Verify `status_quo.py` includes diesel CAPEX additions.
+- **BAU frozen technology:** Does BAU assume zero technological progress? Zero policy change? Is this the right "most likely without project" or a straw-man?
+- **BAU demand ceiling:** At 5%/yr for 30 years, demand reaches 5,188 GWh (2056). For 515,000 people, this is ~10,000 kWh/capita — approaching OECD average. Is there a saturation mechanism? Does the Malé three-phase trajectory provide this? Does the outer-island trajectory have one?
+- **BAU grid losses:** Does BAU include grid losses that worsen over time (aging infrastructure without investment)?
+- **BAU environmental baseline:** Does BAU include the cost of environmental damage from diesel (SCC, health)? If yes, this inflates the BAU cost baseline, making all alternatives look better. In strict CBA, the counterfactual should NOT include externalities unless they are already being paid. Verify whether BAU includes `emission_costs` and `health_benefits` — it should include emission externality costs but NOT health benefits (those are benefits of the alternative, not costs of the status quo).
 
-#### A1. Counterfactual Design
-- Is the BAU (S1) a credible "without project" scenario? Does it assume zero investment (including zero replacement of retiring diesel generators), or does it include necessary reinvestment to maintain current service levels?
-- Is the BAU demand growth trajectory realistic? 5% compound for 30 years means 4.3× demand by 2056 — is this plausible for a 515k-population SIDS?
-- Does the BAU correctly include diesel replacement CAPEX (generators have 20-year life), or does it only count fuel + O&M? If no replacement CAPEX, all alternatives look artificially better.
+### A2. Cost-Benefit Accounting
+- **Subsidy avoidance:** The model includes `fiscal_subsidy_savings` as a benefit ($0.15/kWh × diesel displaced). Subsidies are fiscal transfers, not economic costs (Boardman Ch. 4). Verify: is subsidy included or excluded from `AnnualBenefits.total`? Is it included in BCR/NPV? If included, this is double-counting with avoided fuel cost (the subsidy IS part of the fuel cost to government). Check both the `total` property and any `total_with_fiscal` variant.
+- **Environmental externalities:** The model monetises environmental damage at $10/MWh (noise $5 + spill $3 + biodiversity $2). Verify: (a) is this properly discounted in the NPV calculation or just accumulated undiscounted? (b) is it included in BCR and IRR, or only NPV? (c) is there overlap with emission benefits (SCC covers climate damage — does the $10/MWh environmental damage also include climate components? If so, double-counting).
+- **Fuel savings definition:** `fuel_savings = BAU_fuel − scenario_fuel`. But BAU fuel cost includes the subsidy component. If BAU pays $0.85/L and the subsidy makes it $1.00/L to government, which price is used? Verify economic (resource) cost, not financial cost.
+- **Standing:** Whose costs and benefits count? (Boardman Ch. 2). Is this a national standing (only Maldives residents) or global standing (including India's costs for S2 cable)? The answer affects whether India's infrastructure costs should be included.
+- **Double discounting risk:** Environmental benefits use SCC which has its own internal discount rate (EPA uses 2%). The CBA then discounts these at 6%. Is this double discounting? Check whether the SCC is a present-value-equivalent or a year-specific damage.
+- **Benefit stream completeness:** Enumerate every benefit stream the model calculates. Then check: is each one (a) correctly discounted, (b) included in PV total benefits, (c) included in BCR numerator, (d) included in IRR cash flow? A common bug is calculating a benefit but forgetting to wire it into the NPV/BCR/IRR aggregation. (Cross-reference with E5 for per-scenario verification.)
 
-#### A2. Cost-Benefit Accounting
-- **Completeness:** Are all relevant cost and benefit categories included? Check against ADB (2017) Table 6.1:
-  - Costs: CAPEX, O&M, fuel, replacement, connection, supply security, environmental damage
-  - Benefits: avoided fuel, avoided O&M, avoided environmental damage, health, reliability, subsidy savings, carbon
-- **Transfer payments:** Are subsidies, taxes, and tariffs correctly excluded from the economic (social) analysis? The model includes "subsidy avoidance" as a benefit — is this double-counting with the avoided cost of diesel? (The subsidy is a fiscal transfer, not an economic cost.)
-- **Consumer surplus:** Does the model account for consumer surplus changes from price changes (via price elasticity)? Or is welfare measured only on the producer/cost side?
-- **Residual value:** Is salvage value calculated correctly at the terminal year? Does it use economic depreciation or accounting depreciation?
+### A3. Discounting
+- **DDR implementation:** The model includes a Declining Discount Rate (DDR) sensitivity path using HM Treasury Green Book rates (3.5%→ 3.0%→2.5%). But the model’s base rate is 6%, not 3.5%. Verify: does the DDR path use HM Treasury rates directly (replacing the 6% base), or does it scale the base rate downward proportionally? If it replaces 6% with 3.5%, that’s a 42% reduction in discount rate — enormous and potentially inappropriate for a developing-country CBA.
+- **Base year convention:** What year is t=0? If 2026 is the base year, costs in 2026 should have DF=1.0, costs in 2027 should have DF=1/(1.06). Verify this is implemented correctly — off-by-one here compounds over 30 years.
+- **Constant vs. declining prices:** Are all costs in constant 2026 USD? If fuel escalates at 2%/yr real, this is already in real terms. But if some costs are in nominal terms and others in real terms, the discounting framework breaks.
+- **Discount rate sensitivity:** The model uses 6%. ADB recommends 9–12% for developing countries. At 12%, long-run benefits (years 20–30) are discounted 5× more than at 6%. Does the sensitivity analysis test discount rate at 9% and 12%?
 
-#### A3. Discounting
-- The base discount rate is 6%. Is this appropriate for a SIDS? ADB recommends 9-12% for developing countries. HM Treasury uses 3.5%. What is the opportunity cost of capital in the Maldives?
-- The DDR schedule (3.5% → 3.0% → 2.5%) is from HM Treasury — is it appropriate for a Maldives context? Should it be applied to the 6% rate (i.e., 6% → 5% → 4%) rather than replacing it?
-- Is the discount factor formula `1/(1+r)^t` applied with t=0 for the base year (costs at base year undiscounted)?
+### A4. Incremental Analysis
+- **BCR definition:** BCR = PV(total benefits) / PV(total costs) OR BCR = PV(net benefits) / PV(investment costs)? The former includes fuel savings in benefits; the latter treats fuel savings as reduced costs. Both are valid but give different numbers. Which does the model use? Verify consistency with ADB (2017) definition.
+- **IRR cash flow content:** Which benefit streams are included in the IRR calculation? Check line by line — is it only fuel savings, or does it also include emission/health/reliability/environmental benefits? Missing streams understate IRR; including transfers (subsidy) overstates it.
+- **IRR sign convention:** Benefits should be positive in the IRR cash flow, CAPEX/costs negative. Verify this is correct. A sign error here would produce nonsensical IRR values.
+- **Switching value plausibility:** `run_sensitivity.py` computes switching values (parameter value where two scenarios tie). Verify: (a) linear interpolation is appropriate (NPV is often nonlinear in parameters), (b) switching values are within physically plausible ranges.
 
-#### A4. Incremental Analysis
-- Is the incremental analysis (scenario minus BAU) correctly structured? Specifically:
-  - BCR = PV(incremental benefits) / PV(incremental costs)? What is in the numerator vs denominator?
-  - Are "benefits" defined as avoided BAU costs + external benefits (health, carbon, reliability)?
-  - Are "costs" the CAPEX + incremental O&M of the alternative?
-- Is the IRR calculated on the incremental cash flow (not the absolute)?
+### A5. Structural Concerns
+- **S2 cost-sharing:** At 100% GoM financing, the India cable has BCR 4.06. If India pays 50%, GoM BCR roughly doubles. The model should present BCR under multiple cost-sharing assumptions (0%/50%/70% India share). Does `run_cba.py` do this?
+- **Technology lock-in:** The model treats each scenario as a single 30-year commitment. But in reality, S3 (National Grid) can evolve toward S2 (Full Integration) if circumstances change. Is this option value captured anywhere? (See SOTA assessment G2 — real options.)
+- **Sunk cost treatment:** S1 BAU includes the existing 68.5 MW of solar. This is a sunk cost. Do alternatives also include this as sunk (not re-costed)?
+- **Replacement cycles:** Solar (30yr), battery (15yr), diesel (20yr). Over a 30-year horizon, batteries need one replacement. Is this replacement CAPEX included in all scenarios? Is battery replacement at year 15 costed at the year-15 price (with decline) or the year-0 price?
+- **Terminal year treatment:** Year 2056 is the final year. Is generation in 2056 included in cumulative calculations? Is salvage value computed at end of 2056 or beginning of 2057?
 
-#### A5. Key Structural Concerns
-- **S2 (India cable) cost-sharing:** The model assumes 100% GoM financing of a $2.5B cable. Is this realistic? If India pays 70%, the BCR changes fundamentally. How is this handled?
-- **Subsidy avoidance as benefit:** `$0.15/kWh × diesel_reduction_GWh` — this is the fiscal subsidy currently paid by GoM. But if diesel is eliminated, the subsidy disappears regardless. Is this a real benefit or a transfer? In economic CBA, transfers are excluded. Only include if the alternative scenario retains a subsidy mechanism.
-- **Health benefits:** $40/MWh applied to ALL diesel reduction. But health damages are highly location-specific — Malé (65,000/km²) is very different from an outer atoll (50/km²). Is a single national average defensible?
-- **Reliability benefits:** SAIDI-based formula — does it correctly value the willingness-to-pay for reliability, or does it just monetise outage hours at average tariff?
-
-#### A6. Perspective and Scope
-- Is this an economic CBA (social perspective, shadow prices) or a financial CBA (private investor perspective)? The discount rate (6%) and inclusion of externalities suggest economic — but is this consistently applied?
-- Are traded goods (fuel, equipment) valued at border prices or domestic prices? For a 100%-fuel-importing country like Maldives, does this matter?
-- Is there a standard conversion factor or shadow exchange rate applied?
-
-### Severity Classification
-- 🔴 **CRITICAL:** Would change the sign of NPV, reverse scenario rankings, or violate fundamental CBA principles
-- 🟡 **MODERATE:** Could change BCR by >10%, misrepresent a benefit/cost category, or deviate from best practice
-- 🔵 **LOW:** Minor methodological refinements, documentation gaps
+### A6. Welfare Measurement
+- **No consumer surplus:** The model measures costs and externalities but not consumer surplus changes. If RE lowers electricity prices, consumer surplus increases. For a 30-year analysis where prices may change significantly, this is a meaningful omission. Quantify: if RE LCOE is $0.20/kWh vs. BAU $0.44/kWh, and demand is 2,000 GWh, the consumer surplus triangle ≈ ½ × ΔP × ΔQ ≈ $120M/yr. Over 30 years discounted, this could be $1B+.
+- **No producer surplus:** STELCO's profitability under different scenarios. Does the model include stranded asset losses for STELCO's diesel fleet?
+- **Distributional weighting:** Does the NPV apply distributional weights (higher weight for benefits to poor households)? Boardman (2018) Ch. 17 recommends this. The distributional analysis module exists but is it integrated into the NPV calculation?
 
 ---
 
 ## 4. Workstream B — Parameter Validity & Empirical Grounding
 
 ### Objective
-Verify that every key parameter in the model is (a) plausible, (b) sourced from a credible reference, (c) appropriate for the Maldives context, and (d) has reasonable uncertainty bounds.
+Verify every key parameter is (a) plausible, (b) sourced from a credible recent reference, (c) appropriate for Maldives, (d) has reasonable uncertainty bounds, and (e) matches what the cited source actually says.
 
 ### What to Read
-1. `model/parameters.csv` — all 405 rows, especially the Source and Notes columns
-2. `model/config.py` — dataclass defaults and CSV loading logic
-3. `Maldives/literature_benchmarks.md` — existing literature comparison
-4. `Maldives/data/addiitonal_maldives_cba_parameters_sources.md` — additional sources
+1. `model/parameters.csv` — all ~420 parameter rows
+2. `model/config.py` — dataclass defaults
+3. `Maldives/literature_benchmarks.md`
+4. `Maldives/data/addiitonal_maldives_cba_parameters_sources.md`
+5. `Maldives/data/maldives_cba_parameters_sources_batch2.md`
 
-### Parameters to Scrutinise (Priority Order)
+### B1. Source Verification (Spot-Check Top 30 Parameters)
+For the **top 30 most impactful parameters** (those that appear in sensitivity analysis), verify that the **cited source actually says what the model claims**:
+- Read the source (or abstract). Does it give the exact value used?
+- Is the value for the correct geography (Maldives, SIDS, global)?
+- Is the value for the correct year (2020+ unless canonical)?
+- Is the value in the correct units (convert if needed)?
+- Is it the central estimate, or a bound?
 
-#### B1. Demand Parameters (high leverage — compound over 30 years)
-| Parameter | Current Value | Question |
-|-----------|--------------|----------|
-| `base_demand_gwh` | 1,200 | Is this utility-only? Does it match IRENA (2022), Island Electricity Data Book (2018)? What was actual 2024/2025 demand? |
-| `demand_growth_rate` (BAU) | 5.0% | IRENA CAGR 5.1% was historical. IMF projects GDP growth ~5-6%. But demand elasticity to GDP in SIDS is typically 0.8-1.2, and population growth is <2%. Is 5% sustained for 30 years defensible? |
-| `load_factor` | 0.68 | From 2018 Island Electricity Data Book. Has it changed? Urban vs rural? |
-| `price_elasticity` | -0.3 | From Wolfram et al. (2012) and Burke et al. (2015). These are global estimates — Maldives-specific data? |
+Priority parameters for source verification:
+| Parameter | Value | Cited Source | Verify |
+|-----------|-------|-------------|--------|
+| `solar_pv_capex` | $1,500/kW | AIIB Maldives Solar (2021) | Is $1,500 what AIIB actually quotes? Has it been updated? |
+| `battery_capex_kwh` | $350/kWh | BNEF 2025 | Is $350 the BNEF figure for island systems, or is it lower? |
+| `health_damage_cost_per_mwh` | $40/MWh | Parry et al. (2014) | Does the IMF WP give $40/MWh specifically, or is this derived? |
+| `social_cost_carbon` | $51/tCO₂ | EPA IWG 2023 | Is $51 the 3% or 2% discount rate figure? Which scenario? |
+| `diesel_emission_factor` | 0.72 kg/kWh | IPCC 2006 | Does IPCC give 0.72 for diesel generators specifically? |
+| `cable_capex_per_km` | $3.0M/km | Multiple (8 refs) | Do the 8 references support $3.0M/km for Indian Ocean depths? |
+| `discount_rate` | 6% | ADB SIDS standard | Does ADB actually recommend 6% for SIDS, or is it higher? |
+| `base_demand_gwh` | 1,200 GWh | IRENA 2022 × growth | What was actual 2024/2025 demand? Is 1,200 GWh correct for 2026? |
+| `demand_growth_rate` | 5% | IRENA CAGR | Was IRENA's 5.1% for 2010–2020? Is it appropriate to extrapolate? |
+| `Diesel Price 2026` | $0.85/L | Average Maldives import | What was actual 2024/2025 import price? |
 
-#### B2. Technology Cost Parameters (drive LCOE and NPV)
-| Parameter | Current Value | Question |
-|-----------|--------------|----------|
-| `solar_pv_capex` | $1,500/kW | From AIIB Maldives Solar (2021). But global utility-scale is now $400-600/kW. Is $1,500 still right for SIDS island installation in 2026? IRENA RPGC 2024 shows $800-1,200 for off-grid SIDS. |
-| `solar_capex_decline_rate` | 4%/yr | Exogenous decline. Historical has been 7-10%/yr globally. Is 4% conservative enough, or too conservative? |
-| `battery_capex_kwh` | $350/kWh | BNEF 2025 global average is ~$140/kWh for utility-scale Li-ion. Island premium justifies some uplift, but 2.5×? IRENA (2024) shows $200-300 for island systems. |
-| `battery_capex_decline_rate` | 6%/yr | Reasonable per BNEF trajectory. |
-| `cable_capex_per_km` | $3.0M/km | For 700km HVDC. NordLink was €1.6B/623km = €2.6M/km. NorNed was ~$3.1M/km. Deep-water Indian Ocean may be higher. Cross-check against CIGRÉ TB 610. |
-| `diesel_fuel_price_usd_per_litre` | $1.00/L | This is the import price. What is the 2025 actual? IMF WEO projections? Sensitivity range? |
-| `diesel_fuel_escalation_rate` | 2%/yr | Real escalation. IEA WEO 2024 projects real oil prices rising 0-2%/yr to 2050. Defensible. |
+### B2. Temporal Validity
+- Flag every parameter source older than 2020 that is NOT a canonical standard (IPCC 2006, IEC 61215).
+- For technology costs (solar, battery, cable), sources from 2021 may be significantly outdated by 2026. IRENA RPGC 2024 and BNEF 2025 should be the primary references.
+- For demand data, the base is Island Electricity Data Book 2018. That is 8 years old. Has demand data been updated?
 
-#### B3. Economic Parameters
-| Parameter | Current Value | Question |
-|-----------|--------------|----------|
-| `discount_rate` | 6% | See A3 above. ADB typical for Pacific SIDS is 10%. Philippines uses 15%. Is 6% justified? |
-| `social_cost_carbon` | $50/tonne | EPA 2024 central estimate. But SIDS often argue for higher SCC due to existential climate risk. Stern-Stiglitz Commission recommends $50-100. |
-| `scc_annual_growth` | 2%/yr | Consistent with Nordhaus DICE model. |
-| `health_damage_cost_per_mwh` | $40/MWh | From Parry et al. (2014). Is this a Maldives-specific estimate or a global average? Population density varies 100× between Malé and outer atolls. |
+### B3. Maldives-Specificity Scoring
+Rate each parameter on a 3-point scale:
+- **M** (Maldives-specific): Value comes from Maldives data/studies
+- **S** (SIDS-generic): Value from SIDS literature but not Maldives-specific
+- **G** (Global): Value from global average or non-SIDS context
 
-#### B4. Geographic Appropriateness
-- How many parameters are derived from **global averages** vs **Maldives-specific data**? Flag any parameter where a Maldives-specific value exists but a global value is used.
-- Are solar resource assumptions (GHI, temperature) validated against the Global Solar Atlas data in `data/geotiff/`?
-- Is the 11% distribution loss (World Bank WDI) a Maldives-specific value or a global average? STELCO annual reports may have actual losses.
+Flag any parameter rated **G** where a **M** or **S** value is available.
 
-#### B5. Uncertainty Ranges
-- For each parameter with Low/High values in the CSV: are the ranges symmetric? If so, is that justified?
-- Are any parameters missing Low/High values entirely? These cannot be included in sensitivity/MC analysis.
-- Are the ranges wide enough? A common error is making ranges too narrow (±10% when ±50% is realistic), which makes results appear more robust than they are.
+### B4. Uncertainty Range Adequacy
+For each of the 39 sensitivity parameters:
+- Is the Low/High range derived from the source or assumed?
+- Is the range symmetric? If so, is asymmetry warranted? (e.g., solar CAPEX has more room to fall than rise → asymmetric Low wider than High)
+- Common problems: ±10% when ±50% is realistic; ±50% when ±10% is the actual empirical variation
+- Special attention: discount rate (Low 3%, High 12%?), SCC (Low $51, High $190 — but could be higher under Stern), fuel price (±50% volatility is historical)
 
-### Method
-- For each parameter category, check the Source column against the actual reference. Verify the value matches what the source says.
-- Flag any source older than 2020 (except canonical standards like IPCC 2006, IEC 61215).
-- Flag any source marked "assumed", "estimated", "illustrative", or similar.
-- Cross-check against IRENA RPGC 2024, IEA WEO 2024, BNEF 2025, Lazard LCOE/LCOS 2024.
+### B5. Internal Consistency Between Parameters
+Check that related parameters are consistent:
+- `base_demand_gwh` (1,200 GWh) ÷ `base_peak_demand_mw` (200 MW) = 6,000 hours. At 8,760 hrs/yr, LF = 0.685. Does this match `load_factor` (0.68)?
+- `diesel_fuel_price` ($0.85/L) × `diesel_fuel_efficiency` (3.3 kWh/L) = $0.258/kWh fuel cost. Combined with O&M, does BAU LCOE come out to ~$0.44/kWh?
+- `solar_pv_capex` ($1,500/kW) / `solar_lifetime` (30 yr) = $50/kW/yr. At 17.5% CF → 1,533 kWh/kW/yr. Levelised CAPEX = $32.6/MWh. Plus O&M ($10/kW/yr = $6.5/MWh). Total ~$39/MWh solar LCOE. Does this match the model's solar LCOE?
+- `cable_capex_total` should equal `cable_length × cable_capex_per_km + converters + landing + IDC + grid`. Verify the calculation.
+
+### B6. Recently Added Parameters
+Check whether any parameters appear to have been added as patches rather than being part of the original design. Signs of patch parameters:
+- Source column says "estimated", "assumed", or cites a very broad source
+- Low/High bounds are round numbers suggesting guesswork (e.g., exactly ±50%)
+- Parameter is only used in one place (may have been added to fix a specific issue)
+- Parameter duplicates or overlaps with an existing parameter
+
+Specific parameters to scrutinise:
+- Reliability parameters (SAIDI, SAIFI) — are these sourced from Maldives data or generic?
+- Exchange rate (MVR/USD) — is it used anywhere in the model, or is it dead?
+- GDP growth rate — is it used for financing analysis? Does it match IMF projections?
+- MCA scores for individual scenarios — are these evidence-based or subjective?
+- WTE emission factor bounds — is zero a plausible lower bound for waste-to-energy?
 
 ---
 
 ## 5. Workstream C — Code Correctness & Equation Fidelity
 
 ### Objective
-Verify that every mathematical formula implemented in Python correctly matches its intended equation, with correct units, signs, and edge-case handling.
+Verify every mathematical formula matches its intended equation with correct units, signs, and edge-case handling.
 
 ### What to Read
-Every `.py` file in `model/` and `model/cba/` and `model/scenarios/`. Cross-reference against `CBA_METHODOLOGY.md` (equation catalogue).
+Every `.py` file in `model/` and `model/cba/` and `model/scenarios/`. Cross-reference against `CBA_METHODOLOGY.md`.
 
-### Systematic Checks
+### C1. Demand Module (`demand.py`)
+- **Compound growth:** $D(t) = D_0 \times (1+g)^{t-t_0}$
+  - Verify exponent uses `t - base_year`, not `t - 1`
+  - Verify units are GWh throughout
+  - Does growth apply BEFORE or AFTER sectoral split?
+- **Malé three-phase trajectory:**
+  - Phase 1 (near-term): verify taper rate
+  - Phase 2 (post-peak): verify deceleration
+  - Phase 3 (long-run floor): verify it's applied
+  - Does Malé share + outer share = 1.0 for every year?
+- **Price elasticity:**
+  - $\Delta D = \varepsilon \times (\Delta P / P) \times D$
+  - Verify sign: ε = −0.3, price decrease → demand increase (positive ΔD for negative ΔP)
+  - Applied only to S2 (Full Integration)? Verify this is intentional.
+- **Sectoral split:**
+  - `residential_share + commercial_share + public_share == 1.0`?
+  - Is this enforced at load time or just assumed?
 
-#### C1. Demand Module (`demand.py`, ~362 lines)
-- Compound growth: $D(t) = D_0 \times (1+g)^{t-t_0}$ — verify exponent base, units (GWh)
-- Malé demand share trajectory: three-phase model — verify the piecewise function, transition points, and that shares sum correctly with outer islands
-- Price elasticity: $\Delta D = \varepsilon \times (\Delta P / P) \times D$ — verify sign convention (negative elasticity + price decrease = demand increase), verify $\Delta P$ calculation
-- Sectoral split: verify `residential_share + commercial_share + public_share == 1.0` is enforced
-- Peak demand: $P = D \times 10^3 / (8760 \times LF)$ — verify GWh→MW conversion, units
+### C2. Cost Module (`costs.py`)
+- **Solar CAPEX with decline + climate:**
+  $C(t) = C_0 \times (1-d)^{t-t_0} \times (1 + \alpha_{climate})$
+  - Verify: is there a method that computes year-specific solar CAPEX? Or is CAPEX only calculated at base year?
+  - Verify: climate premium is applied ONCE (not compounded with learning curves)
+  - Verify: CAPEX decline compounds from the correct base year
+  - Verify: units are $/kW throughout
+- **Vintage-based degradation (CRITICAL — most complex formula):**
+  - Sum over cohorts: $G_{total}(t) = \sum_{v} MW_v \times CF \times 8760 \times (1 - k_t \Delta T) \times (1 - d_{deg})^{t-v}$
+  - Where $v$ is the installation year of each cohort
+  - Verify: each cohort degrades from ITS install year, not from the base year
+  - Verify: the OPEX calculation — if OPEX is per-kW, the denominator when converting from total to per-kW must be correct (should be `/ 1000` to convert MW to kW, NOT `/ (mw * 1000)` which would make per-kW OPEX inversely proportional to fleet size)
+  - Verify: total solar generation across vintages matches expectations (rough check: 100 MW × 0.175 CF × 8760 = 153 GWh)
+- **Battery LCOE in least_cost.py:**
+  - The `_discounted_lcoe()` function calculates technology LCOE for per-island screening
+  - Verify: does the battery LCOE calculation include generation degradation in its denominator? Or does it use undegraded generation (which would understate battery LCOE)?
+  - Conceptual question: the generation degradation is a SOLAR effect (PV panel degradation). When computing battery LCOE as part of a solar+battery system, the denominator should use the DEGRADED solar generation. Verify this is the case.
+- **Diesel two-part fuel curve:**
+  $F_{litres} = C_{kW} \times a + G_{kWh} \times b$
+  - Verify $a = 0.08145$ L/kW (idle consumption) and $b = 0.246$ L/kWh (proportional)
+  - Verify units: result should be in litres per hour (or per year if annualised)
+  - At min load 40%: fuel = (a + b × 0.4 × rated) × rated. Verify this matches dispatch.py
+- **T&D loss gross-up:**
+  - Multiplicative: $G_{gross} = G_{net} / \prod(1 - loss_i)$
+  - Year-dependent: Malé share changes over time → weighted average loss changes
+  - Verify the weighting is correct: higher Malé share → lower loss (Malé has better grid)
+  - Verify HVDC cable loss (4%) is applied only to S2 (cable import scenarios)
+- **Learning curves (Wright's Law) in costs.py:**
+  - $C(t) = C_0 \times (Q(t)/Q_0)^{-\alpha}$
+  - Verify: solar learning rate 20%, battery 18% per doubling
+  - Verify: $\alpha = \ln(1/(1-LR))/\ln(2)$ — solar α=0.322, battery α=0.286
+  - Verify: cumulative deployment Q(t) grows correctly (global + Maldives?)
+  - Are exogenous and endogenous (learning curve) cost trajectories both available and correctly toggled?
 
-#### C2. Cost Module (`costs.py`, ~881 lines)
-- **Solar CAPEX with decline:**  
-  $C(t) = C_0 \times (1-d)^{t-t_0} \times (1 + \alpha_{climate})$  
-  Verify: (a) base year is correct, (b) decline compounds from correct year, (c) climate premium is multiplicative not additive, (d) units are $/kW
-- **Learning curves (Wright's Law):**  
-  $C(t) = C_0 \times (Q(t)/Q_0)^{-\alpha}$, where $\alpha = \ln(1/(1-LR))/\ln(2)$  
-  Verify: (a) cumulative deployment $Q(t)$ grows correctly, (b) learning rate applied correctly, (c) both solar and battery curves exist
-- **Solar generation:**  
-  $G = MW \times 10^3 \times CF \times 8760 \times (1 - k_t \times (T_{cell} - 25)) \times (1 - d_{deg})^{age}$  
-  Where $T_{cell} = T_{amb} + 25.6 \times GHI_{kW/m^2}$  
-  Verify: (a) MW→kW conversion, (b) GHI units (kWh/m²/day → kW/m²), (c) degradation compounds from install year per vintage, (d) units come out as kWh or MWh consistently
-- **Diesel fuel cost:**  
-  Two-part curve: $F_{litres} = C_{kW} \times a + G_{kWh} \times b$  
-  Verify: (a) idle consumption coefficient $a$ units, (b) proportional coefficient $b$ units, (c) result in litres
-- **T&D loss gross-up:**  
-  $G_{gross} = G_{net} / \prod_{i}(1 - loss_i)$  
-  Verify: (a) multiplicative not additive, (b) distribution + HVDC cable losses applied correctly, (c) weighted loss function uses correct Malé/outer shares
-- **Cable CAPEX:**  
-  $Total = (submarine + converters + landing) \times (1 + IDC) + grid$  
-  Verify: (a) each component correct, (b) IDC applied before grid integration, (c) total matches expected ~$2.1-2.5B range
-- **LCOE:**  
-  $LCOE = \frac{\sum_t \frac{Cost_t}{(1+r)^t}}{\sum_t \frac{Gen_t}{(1+r)^t}}$  
-  Verify: (a) costs include CAPEX + fuel + O&M, (b) generation includes degradation, (c) discount rate matches CBA rate
+### C3. Emissions Module (`emissions.py`)
+- **Unit chain:** GWh × 10⁶ kWh/GWh × EF (kg/kWh) / 10³ (kg/tonne) = tonnes CO₂
+  - Verify: no 1000× error (v1 found one in lifecycle emissions)
+  - Verify: LNG emission factor (0.40 kgCO₂/kWh) is distinct from diesel (0.72)
+- **SCC with growth:**
+  $SCC(t) = SCC_0 \times (1 + g_{SCC})^{t-t_0}$
+  - At 2%/yr growth: SCC(2056) = $51 × 1.02³⁰ = $92.5/tCO₂
+  - Verify: is this applied to the emission REDUCTION (scenario vs BAU), not absolute emissions?
+- **India grid emission factor decline:**
+  - Starting EF 0.70, declining 2%/yr: EF(2056) = 0.70 × 0.98³⁰ = 0.38 kgCO₂/kWh
+  - Verify: this makes India imports increasingly clean over time (correct trend)
+  - Verify: this is applied only to S2
 
-#### C3. Emissions Module (`emissions.py`, ~276 lines)
-- $E_{diesel} = G_{diesel,GWh} \times 10^6 \times EF_{kg/kWh} / 10^3$ — verify GWh→kWh→tonnes conversion chain
-- $E_{solar,lifecycle} = G_{solar,GWh} \times 10^6 \times EF_{lifecycle,kg/kWh} / 10^3$ — same check (v1 found a 1000× error here)
-- SCC monetisation: $Benefit_t = (E_{BAU,t} - E_{alt,t}) \times SCC_t$ — verify sign, verify SCC in $/tonne and emissions in tonnes
-- India grid EF: verify declining trajectory matches config, correct units
+### C4. Dispatch Module (`dispatch.py`)
+- **Battery SOC tracking:**
+  - Charge: $SOC_{t+1} = SOC_t + P_{charge} \times \eta_{charge}$, capped at capacity
+  - Discharge: $SOC_{t+1} = SOC_t - P_{discharge} / \eta_{discharge}$, floored at $(1-DoD) \times capacity$
+  - Verify: round-trip efficiency 88% is correctly split (√0.88 each way, or asymmetric?)
+  - Verify: self-discharge rate is applied hourly
+- **Diesel minimum load:**
+  - 40% minimum when generator is ON
+  - Can the generator be OFF (when solar + battery meet 100% of demand)?
+  - Verify: when generator is ON at min load, excess generation is curtailed (not stored)
+- **Solar output per hour:**
+  - GHI profile from `data/supplementary/GHI_hourly.csv`
+  - Temperature profile from `data/supplementary/Temperature_hourly.csv`
+  - Cell temperature: $T_{cell} = T_{amb} + 25.6 \times GHI_{kW/m²}$
+  - Verify: GHI units match between hourly file and formula (kWh/m²/day vs kW/m²)
+- **LPSP calculation:**
+  - $LPSP = \sum \text{unmet\_hours} / 8760$
+  - Verify: unmet energy (kWh not served) would be more informative than unmet hours
 
-#### C4. Dispatch Module (`dispatch.py`, ~408 lines)
-- Hourly PV-diesel-battery simulation — verify:
-  - Battery SOC tracking: charge limited by capacity and efficiency, discharge limited by DoD and SOC
-  - Diesel min-load constraint (40%): generator runs at minimum even when not needed
-  - Curtailment: excess PV beyond demand + battery headroom
-  - LPSP: hours with unmet demand / total hours
-  - Fuel consumption: two-part curve per hour (not just per year)
-  - Self-discharge: verify rate and accumulation
-  - Battery cycling: verify counting is per full equivalent cycle
+### C5. NPV Calculator (`npv_calculator.py`)
+- **Discount factor at base year:**
+  - $DF(t_0) = 1.0$ (costs at base year are undiscounted)
+  - Verify: is year 0 the base year or year 1?
+- **DDR implementation (CRITICAL):** (Cross-reference A3 for economic assessment of DDR appropriateness.)
+  - HM Treasury schedule: 3.5% for years 0–30, 3.0% for years 31–75, 2.5% for 76+
+  - For this model (30-year horizon), only the 3.5% step applies
+  - Verify: the DDR discount factor is a CUMULATIVE PRODUCT, not a simple rate substitution
+  - $DF_{DDR}(t) = \prod_{s=1}^{t} \frac{1}{1+r(s)}$ where $r(s)$ depends on the step
+  - But wait: if the project is only 30 years, does the DDR ever kick in? Only in multi-horizon (50yr)?
+- **Salvage value:**
+  - $SV_{asset} = \frac{remaining\_life}{total\_life} \times original\_cost$
+  - Discounted at terminal year: $SV_{total} = \sum_{assets} SV_{asset} \times DF(T)$
+  - Verify: battery installed at year 15 has 0 years remaining at year 30 (exact lifetime match — no salvage)
+  - Verify: solar installed at year 0 has 0 years remaining at year 30 (exact match — no salvage)
+  - Verify: solar installed at year 5 has 5 years remaining at year 30 → salvage = 5/30 × cost
+  - What about diesel generators? Are they included in salvage?
+- **IRR bisection:**
+  - Verify: the cash flow used for IRR — which benefit streams are included? Are ALL benefit streams (fuel, emission, health, reliability, environmental) present, or only a subset?
+  - Verify: convergence tolerance is appropriate (±0.01% or better)
+  - Verify: search bounds [-50%, +200%] are wide enough for all scenarios
+  - Verify: what happens when IRR doesn't converge? Is there a fallback (e.g., `numpy_financial.irr`)?
 
-#### C5. NPV Calculator (`npv_calculator.py`, ~820 lines)
-- Discount factor: $DF_t = 1/(1+r)^{t-t_0}$ — verify base year treatment (DF at t₀ = 1.0)
-- Declining discount rate: step function at years 30 and 75 — verify cumulative product of discount factors, not just rate substitution
-- Salvage value: $SV = (remaining\_life / total\_life) \times original\_cost \times DF_{terminal}$ — verify for each asset type (solar, battery, diesel, cable)
-- IRR bisection: verify convergence criteria, search bounds, max iterations, and that it solves the correct equation (NPV of incremental cash flow = 0)
-
-#### C6. Sensitivity Engine (`sensitivity.py`, ~992 lines)
-- Verify `_modify_config()` creates a deep copy (not shallow) — mutation of the copy should not affect the original
-- Verify all 38 parameters are modified in both `_modify_config()` and `_modify_config_inplace()`
-- Verify that cable_capex_total is recomputed when cable_capex_per_km changes (v1 found this was missing)
-- Verify demand growth rates are scaled proportionally, not replaced with flat values
-
-### Edge Cases to Test Mentally
-- What happens when solar_mw = 0? (S1 BAU in early years)
-- What happens when diesel_gwh = 0? (S2/S6 in late years)
-- What happens when discount_rate = 0? (should not divide by zero)
-- What happens at year 2056 exactly? (is it included or excluded from the sum?)
+### C6. Sensitivity Engine (`sensitivity.py`)
+- **Config deep copy:** Verify `_modify_config()` uses `copy.deepcopy()` — not `dataclasses.replace()` which is shallow
+- **Growth rate modification:** Are growth rates scaled proportionally (base ± X%) or replaced with absolute values? Proportional is correct.
+- **Cable CAPEX recomputation:** When `cable_capex_per_km` changes in sensitivity, is `cable_capex_total` recalculated?
+- **Transport parameters:** Are all 4 transport parameters (`ev_adoption_rate`, `ev_premium_pct`, `ev_electricity_kwh_per_km`, `transport_health_benefit_per_km`) included in the sensitivity engine? Are they in all 3 modification paths (`_modify_config`, `_define_parameters`, parameter list)?
 
 ---
 
 ## 6. Workstream D — Config Wiring & Data Pipeline Integrity
 
 ### Objective
-Verify that every parameter flows correctly through the pipeline: `parameters.csv` → `load_parameters_from_csv()` → dataclass field → `get_config()` → consuming module. No breaks, no stale defaults, no silent failures.
+Verify the complete parameter pipeline from CSV to consumption.
 
 ### What to Read
 1. `model/parameters.csv` — every row
-2. `model/config.py` — every dataclass, every field, the entire `load_parameters_from_csv()` function
-3. Every consuming `.py` file — every `config.xxx.yyy` access
+2. `model/config.py` — every dataclass, `load_parameters_from_csv()`, `get_config()`
+3. All consuming `.py` files
 
-### Systematic Checks
+### D1. Category Validation
+- Does `load_parameters_from_csv()` validate that expected CSV categories are present?
+- If a category is missing or misspelled in the CSV, does the loading fail loudly or silently use defaults?
+- List all unique `Category` values in parameters.csv. Are they consistent (no typos, no duplicates with different spellings)?
+- Is there any validation at load time that critical parameters were successfully loaded? Or could a corrupt/truncated CSV produce a config with all-default values silently?
 
-#### D1. CSV → Config Loading
-For each row in `parameters.csv`:
-1. Is the Parameter name matched in `load_parameters_from_csv()`?
-2. Is it assigned to the correct dataclass and field?
-3. Is the parsing correct (float vs int vs string)?
-4. Is there error handling? If parsing fails, does it silently use the default or raise?
-5. Is the CSV `Value` column consistent with the dataclass default? (They should match — the default is a safety net, not the source of truth.)
+### D2. Dead Parameter Census (Systematic)
+For EVERY field in EVERY dataclass in config.py:
+1. Search for `config.xxx.field_name` across all `.py` files
+2. If not found, is it used indirectly (e.g., `getattr(config.xxx, param_name)`)?
+3. If genuinely unused, list it as dead code
 
-#### D2. Dead Parameters
-For each dataclass field in `config.py`:
-1. Is it actually used by any consuming module? Search for `config.xxx.field_name` across all `.py` files.
-2. If not used, is it documented as "informational only" or is it genuinely dead code?
-3. List all dead parameters.
+Known suspects (verify each): `maintenance_vessel_annual`, `who_mortality_rate_per_gwh`, `initial_re_share_outer`, `battery_discharge_gwh`. Are there more?
 
-#### D3. Hardcoded Value Sweep
-Search every `.py` file (excluding config.py and parameters.csv) for numeric literals that should be parameters. Pay special attention to:
-- Dollar amounts (anything with 3+ digits)
-- Percentages (0.xx patterns)
-- Years (2026, 2030, 2031, 2050, 2056)
-- Capacity values (MW, kW, GWh)
-- Any `getattr(obj, field, numeric_default)` pattern
-- Any `.get(key, numeric_default)` pattern
+### D3. Hardcoded Value Sweep (Expanded)
+Search EVERY `.py` file for:
+- **Dollar amounts:** `\d{3,}` (3+ digit numbers) that look like costs
+- **Percentages:** `0\.\d{2,}` patterns that look like rates
+- **Years:** `20[2-5]\d` patterns that should come from config
+- **Capacity:** values followed by MW, kW, GWh comments
+- **getattr with fallback:** `getattr\(.*,\s*\d+` patterns
+- **.get with default:** `\.get\(.*,\s*\d+` patterns
 
-#### D4. Silent Failure Patterns
-Search for:
-- `except Exception:` or `except:` (bare except)
-- `try/except` blocks in config loading that could swallow CSV parsing errors
-- Default parameter values in function signatures that contain domain-specific numbers
+Known exceptions: mathematical constants (8760, 1000, 1e6, 100, 365, 12, 24, π)
+
+### D4. CSV↔Config Field Alignment
+Generate two lists:
+1. All `Parameter` values in parameters.csv
+2. All field names across all 23 dataclasses
+
+Flag:
+- CSV rows that have NO matching field in any dataclass
+- Config fields that have NO matching CSV row AND no clear derivation
+- Fields where the CSV `Value` column does NOT match the dataclass default
+
+### D5. Silent Failure Patterns
+Search for patterns that could mask loading errors:
+- `except Exception:` or `except:` (bare except) — these swallow ALL errors including CSV parsing failures
+- `try/except` blocks in config loading that catch too broadly
+- `getattr(obj, field, numeric_default)` — if the attribute is missing, a hardcoded fallback silently takes over
+- `.get(key, numeric_default)` in dictionary lookups that mask missing CSV rows
+- Default parameter values in function signatures with domain-specific numbers
 - `if hasattr(config, 'field'):` patterns that silently skip missing fields
 
-#### D5. Cross-Check: Config Fields vs CSV Rows
-Generate two lists:
-1. All unique `Parameter` values in `parameters.csv`
-2. All field names across all dataclasses in `config.py`
-Flag: (a) CSV rows with no matching config field, (b) config fields with no matching CSV row (and no clear derivation logic).
+For every `except` block found: what specific exception should it catch instead? Is there logging of the caught error?
+
+### D6. Config Field Type Safety
+- Are all numeric fields in dataclasses typed as `float` (not `str`)? Could a CSV parsing error leave a string in a numeric field?
+- Are there any `int` fields that should be `float` (or vice versa)?
+- Is `load_parameters_from_csv()` using `float()` conversion consistently?
 
 ---
 
 ## 7. Workstream E — Scenario Consistency & Comparative Logic
 
 ### Objective
-Verify that the 7 scenarios are internally consistent with each other and that the CBA comparison is methodologically fair.
+Verify 7 scenarios are internally consistent and comparisons are fair.
 
 ### What to Read
-All 8 files in `model/scenarios/`:
-- `__init__.py` (base classes)
-- `status_quo.py`, `one_grid.py`, `green_transition.py`, `islanded_green.py`
-- `nearshore_solar.py`, `maximum_re.py`, `lng_transition.py`
+1. All 7 scenario files in `model/scenarios/` + `model/scenarios/__init__.py`
+2. `model/run_cba.py` — scenario execution and comparison
+3. `model/costs.py` — cost calculation functions called by scenarios
+4. `SCENARIO_GUIDE.md` — design rationale for each scenario
 
-Plus `model/run_cba.py` (how they're compared).
+### E1. Common Assumptions
+Every scenario must use identical:
+- Base year (2026), end year (2056)
+- Discount rate (6%)
+- Base demand (1,200 GWh)
+- Diesel emission factor (0.72 kgCO₂/kWh)
+- SCC ($51/t + 2%/yr)
+- Climate adaptation premium (7.5%)
+- Health damage ($40/MWh)
 
-### Systematic Checks
+**Test:** Read each scenario's `__init__` or `calculate_annual_data` method. Do they all call `get_config()` once and use the same config object?
 
-#### E1. Common Assumptions (must be identical across all 7)
-| Assumption | Should Be | Check |
-|------------|-----------|-------|
-| Base year | 2026 | Same in all scenarios? |
-| End year | 2056 | Same in all scenarios? |
-| Discount rate | 6% | Applied identically? |
-| Base demand (2026) | 1,200 GWh | Same starting point? |
-| Emission factor (diesel) | 0.72 kg/kWh | Same in all? |
-| SCC | $50/t + 2%/yr growth | Same in all? |
-| Climate adaptation premium | 7.5% | Applied to same asset types? |
-| Health damage | $40/MWh | Applied to same baseline? |
+### E2. Generation Balance Identity (Year by Year)
+For each scenario and year: $Demand_{gross} = G_{diesel} + G_{solar} + G_{import} + G_{LNG} + G_{WTE} + G_{curtailed}$
+- Run the model and extract year-by-year generation mix from outputs
+- Verify the identity holds (tolerance: ±0.1 GWh per year)
+- Check specifically at boundary years: 2026 (start), 2031 (LNG online in S7), 2040 (mid), 2056 (end)
 
-#### E2. Generation Balance
-For each scenario and each year, verify: $D_{gross} = G_{diesel} + G_{solar} + G_{import} + G_{LNG} + G_{WTE}$  
-- No double-counting (same GWh counted in two categories)
-- No gaps (demand not met without being flagged as unmet)
-- WTE present in S2–S7, absent from S1
-- Import (cable) present only in S2
-- LNG present only in S7
+### E3. Config Key Lookups Per Scenario
+Each scenario uses a config key to look up its growth rate and other parameters. Verify for EVERY scenario:
+- What config key does it use for demand growth? (e.g., `"status_quo"`, `"green_transition"`, `"lng_transition"`)
+- Does the key match the scenario's identity? (A past bug had S7 LNG using S3’s growth rate key)
+- Does the growth rate retrieved match the expected value?
+- Are there ANY other config lookups (not just growth rate) that could use wrong keys?
+- Specifically check: `_scenario_growth_rate()`, `_init_demand_projector()`, and any comment/docstring that says one scenario name but the code references another
 
-#### E3. Cost Completeness
-For each scenario, verify these cost categories are either included or explicitly excluded with justification:
+### E4. Cost Completeness Matrix
+Verify each cost category is present where expected:
 
-| Cost Category | S1 | S2 | S3 | S4 | S5 | S6 | S7 |
-|--------------|----|----|----|----|----|----|-----|
-| Diesel CAPEX (replacement) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Cost | S1 | S2 | S3 | S4 | S5 | S6 | S7 |
+|------|----|----|----|----|----|----|-----|
+| Diesel replacement CAPEX | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Diesel fuel | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Diesel O&M | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Solar CAPEX | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Solar O&M | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Battery CAPEX | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Battery replacement | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Battery O&M | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Cable CAPEX | — | ✓ | ✓ | — | ✓ | ✓ | — |
-| Cable O&M | — | ✓ | ✓ | — | ✓ | ✓ | — |
-| Import electricity cost | — | ✓ | — | — | — | — | — |
+| Battery CAPEX + replacement | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| HVDC cable | — | ✓ | — | — | — | — | — |
+| Inter-island cables | — | — | ✓ | — | ✓ | ✓ | — |
+| Near-shore cables | — | — | — | — | ✓ | ✓ | — |
+| Import electricity (PPA) | — | ✓ | — | — | — | — | — |
 | LNG plant CAPEX | — | — | — | — | — | — | ✓ |
 | LNG fuel | — | — | — | — | — | — | ✓ |
-| WTE CAPEX/OPEX | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| WTE | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Connection cost | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Grid integration | — | ✓ | ✓ | — | ✓ | ✓ | — |
-| Supply security (idle fleet) | — | ✓ | — | — | — | — | — |
+| Floating solar premium | — | — | — | — | — | ✓ | — |
 
-#### E4. Benefit Completeness
-Same check for benefits:
+### E5. Benefit Completeness
+(Cross-reference A2 for economic correctness of benefit definitions; this section verifies per-scenario implementation.)
+Verify each benefit stream exists and uses correct BAU baseline:
+- **Fuel savings:** (BAU fuel − scenario fuel). Does this include LNG fuel for S7? Or is LNG fuel a separate field?
+- **Emission benefit:** (BAU emissions − scenario emissions) × SCC(t). Verify sign and units.
+- **Health benefit:** diesel_gwh_reduction × $40/MWh. What exactly is “diesel_gwh_reduction” calculated against? Is it the BAU diesel GWh, or the scenario’s own prior-year diesel?
+- **Reliability benefit:** SAIDI-based. Is there a cable availability discount for S2 (HVDC cable can fail)?
+- **Environmental benefit:** $10/MWh. Verify: is this calculated, discounted, and included in NPV/BCR/IRR? Or calculated but not wired into the aggregation?
+- **Subsidy avoidance:** Is it included or excluded from the economic NPV? It should be EXCLUDED (fiscal transfer). Verify.
+- **Connection benefit:** New connections × WTP. Present in S2–S7?
 
-| Benefit Category | How Calculated | Applied to Which Scenarios? |
-|-----------------|----------------|---------------------------|
-| Avoided fuel cost | BAU fuel − Alt fuel | S2–S7 |
-| Carbon benefit | (BAU emissions − Alt emissions) × SCC | S2–S7 |
-| Health benefit | Diesel reduction × $40/MWh | S2–S7 |
-| Reliability benefit | SAIDI-based formula | S2–S7 |
-| Subsidy avoidance | Diesel reduction × $0.15/kWh | S2–S7 |
-| Connection benefit | New connections × WTP | S2–S7 |
+### E6. Deployment Schedules
+For each scenario, extract the RE deployment trajectory (MW solar by year, MW battery by year):
+- Is the ramp-up physically plausible? (Historical SIDS maximum ~20 MW/yr)
+- Do any scenarios deploy faster than the local construction workforce can support?
+- Is there a lag between CAPEX spending and generation (construction period)?
 
-Verify each is calculated against the **same BAU baseline**.
-
-#### E5. Deployment Schedule Plausibility
-- S2: 700 km HVDC cable built in what timeframe? Is this physically feasible?
-- S3: Inter-island cables + RE ramp — what MW/year? Maximum historical deployment rate for comparison?
-- S4: 176 islands each getting mini-grids — logistics, shipping, installation workforce?
-- S5/S6: Near-shore and floating solar — what is the Maldives' experience with these technologies?
-- S7: 140 MW LNG plant by 2031 — feasible timeline? Has Gulhifalhu been approved?
-
-#### E6. Scenario Rankings
-- Does the ranking (S7 > S6 > S5 > S3 > S2 > S4 > S1 by NPV savings) make intuitive sense?
-- Why does S7 (LNG, a fossil fuel) dominate S6 (maximum RE)? Is this because LNG costs are too low, RE costs are too high, or carbon pricing is too low?
-- Is the model sensitive to the carbon price assumption? At what SCC does S6 overtake S7?
+### E7. Scenario Interaction / Independence
+- S5 (Near-Shore) and S6 (Maximum RE) both include near-shore solar. If implemented sequentially, S5 is a subset of S6. Is this handled? Or are they independent alternatives?
+- S3 (National Grid) and S4 (Islanded Green) represent opposite ends of a centralisation spectrum. Can the model represent hybrid approaches?
 
 ---
 
 ## 8. Workstream F — Sensitivity, Monte Carlo & Robustness
 
 ### Objective
-Verify that the uncertainty analysis is methodologically sound and that all three config-modification paths are synchronised.
+Verify uncertainty analysis is methodologically sound.
 
 ### What to Read
-1. `model/cba/sensitivity.py` — the engine (~992 lines)
-2. `model/run_sensitivity.py` — the runner (~662 lines)
-3. `model/run_monte_carlo.py` — MC simulation (~376 lines)
-4. `model/run_multi_horizon.py` — multi-horizon (~375 lines)
+1. `model/cba/sensitivity.py` (~1,011 lines)
+2. `model/run_sensitivity.py` (~697 lines)
+3. `model/run_monte_carlo.py` (~385 lines)
+4. `model/run_multi_horizon.py` (~375 lines)
 
-### Systematic Checks
+### F1. Three-Path Synchronisation
+The 39 sensitivity parameters must be handled identically in:
+- `sensitivity.py:_modify_config()` — for one-way sensitivity
+- `sensitivity.py:_modify_config_inplace()` — for Monte Carlo
+- `run_sensitivity.py:modify_config()` — for the runner
 
-#### F1. Three-Path Synchronisation
-There are three code paths that modify config for sensitivity/MC. They **must** handle the same 38 parameters identically:
+**Test:** For each of the 39 parameters, verify all 3 paths handle it with the same transformation.
 
-| Path | Function | Used By |
-|------|----------|---------|
-| Path 1 | `sensitivity.py:_modify_config()` | Class-based one-way sensitivity |
-| Path 2 | `sensitivity.py:_modify_config_inplace()` | Monte Carlo simulation |
-| Path 3 | `run_sensitivity.py:modify_config()` | Runner-based sensitivity (produces JSON) |
+### F2. Parameter Range Validation
+For each of the 39 sensitivity parameters, check:
+- Do Low/High match `parameters.csv` Low/High columns?
+- Are ranges symmetric? If so, is asymmetry warranted?
+- Are any ranges implausibly narrow (<±5%)?
+- Are any ranges implausibly wide (>±80%)?
 
-For each of the 38 parameters, verify:
-- All 3 paths handle it (no missing `elif` branches)
-- All 3 paths apply the **same transformation** (especially for growth rates — proportional scaling, not flat replacement)
-- Cable CAPEX total is recomputed in all 3 paths when `cable_capex` changes
-- No path mutates the base config when it shouldn't
+### F3. Monte Carlo Design
+- **Distribution:** Triangular (Low/Base/High)? Uniform (Low/High)? Verify which is used.
+- **Correlations:** Are parameters sampled independently? Key correlated pairs:
+  - Solar CAPEX ↔ Battery CAPEX (both decline with RE deployment)
+  - Oil price ↔ LNG price (commodity correlation)
+  - Demand growth ↔ GDP growth
+  - Solar CAPEX ↔ Solar decline rate
+- **Convergence:** With 1,000 iterations, does the mean NPV stabilise? Check: is standard error of mean < 1% of mean?
+- **Random seed:** Is it fixed for reproducibility? If not, results change between runs.
 
-#### F2. Parameter Ranges
-For each of the 38 sensitivity parameters:
-- Do Low/High values come from `parameters.csv` or are they hardcoded in `_define_parameters()`?
-- Are the ranges symmetric? If asymmetric, is there justification?
-- Are any ranges too narrow (±5%) making results appear artificially robust?
-- Are any ranges too wide (±90%) making results appear artificially uncertain?
-- Cross-check critical ranges: discount rate (3-12%), solar CAPEX (±30%), fuel price (±50%), demand growth (±40%)
+### F4. Switching Value Analysis
+- Linear interpolation between Low/High: is NPV approximately linear in the parameter?
+- For nonlinear parameters (discount rate, demand growth), linear interpolation may miss the true switching value
+- Are switching values reported for all relevant scenario pairs?
 
-#### F3. Monte Carlo Design
-- Distribution: are parameters sampled uniformly or normally? Uniform between Low/High is standard for CBA sensitivity but may not capture tail risks.
-- Correlations: are parameters sampled independently? In reality, solar CAPEX and battery CAPEX are correlated (both decline with RE deployment). Oil price and LNG price are correlated. Is independent sampling biasing the results?
-- Iterations: 1,000 iterations — is this enough for convergence? Check: does the mean NPV stabilise by iteration 500?
-- Seed: is the random seed fixed for reproducibility?
+### F5. Multi-Horizon Analysis
+- 20/30/50-year horizons: verify salvage value recalculated for each
+- All 7 scenarios included in all 3 horizons?
+- At 20-year horizon, many investments haven't been fully amortised — does this affect the ranking?
+- Do any scenarios switch ranking between horizons? (This is important information)
 
-#### F4. Switching Value Analysis
-- `calculate_switching_values()` in `run_sensitivity.py` — does it correctly find the parameter value at which two scenarios have equal NPV?
-- Is the linear interpolation between Low and High values appropriate, or could the NPV function be non-linear in the parameter?
-- Are all 6 scenario pairs sensible comparisons?
-
-#### F5. Multi-Horizon Analysis
-- Does the 20/30/50-year analysis change which scenario is optimal?
-- Is the salvage value recalculated for each horizon?
-- Are all 7 scenarios included? (v1 found only 4 were included — verify the fix)
+### F6. Sensitivity of Rankings
+Beyond one-way sensitivity of NPV, check:
+- Does the S7>S6 ranking reverse under high SCC ($190/tCO₂)?
+- Does the S7>S6 ranking reverse under low discount rate (3.5%)?
+- Does the S2 ranking improve under India cost-sharing (50%)?
+- What single parameter change would most change the ranking?
 
 ---
 
 ## 9. Workstream G — Supplementary Modules & Outputs
 
 ### Objective
-Verify the correctness of supporting analyses that complement the core CBA.
+Verify correctness of supporting analyses.
 
-### G1. Distributional Analysis (`distributional_analysis.py`, ~1,099 lines)
-- **Data source:** HIES 2019 microdata — is the sample size adequate (4,817 HH)? Are weights applied?
-- **Energy burden:** electricity expenditure / household income — is this the right metric? Should it be total energy (including transport fuel)?
-- **Energy poverty:** threshold at 10% of income — is this the standard for SIDS? UK uses 10% but developing countries often use different thresholds.
-- **Quintile construction:** by per-capita income or total household income? Are quintile boundaries correct?
-- **Tariff impact simulation:** how does it translate LCOE changes into tariff changes? Is there a passthrough assumption?
-- **Gender analysis:** head of household gender — is this a meaningful proxy for gender equity in the Maldives context?
-- **Suits index:** verify formula and sign convention (negative = progressive, positive = regressive)
+### What to Read
+1. `model/distributional_analysis.py` — HIES 2019 microdata analysis
+2. `model/financing_analysis.py` — grant element, WACC, debt service
+3. `model/transport_analysis.py` — EV adoption S-curve
+4. `model/cba/mca_analysis.py` — multi-criteria analysis
+5. `model/sanity_checks.py` — automated benchmark checks
+6. `data/hies2019/` — source microdata for distributional analysis
 
-### G2. Financing Analysis (`financing_analysis.py`, ~498 lines)
-- **Grant element:** OECD-DAC/IMF formula — verify against the standard definition
-  $GE = 1 - \frac{PV(\text{debt service})}{Face Value}$ discounted at commercial rate
-- **WACC calculation:** verify weights (ADB share × ADB rate + commercial share × commercial rate)
-- **ADB terms:** 1% interest, 40-year maturity, 10-year grace — are these current ADB SIDS terms?
-- **Debt service schedule:** verify equal principal amortisation after grace period
-- **Fiscal burden:** debt service as % of GDP — is the GDP denominator growing?
+### G1. Distributional Analysis (`distributional_analysis.py`)
+- **Survey weights:** HIES 2019 uses sampling weights (`wgt` column). Verify: are ALL summary statistics (means, medians, shares, totals) computed using survey weights? Or are some computed as unweighted counts/averages? Unweighted statistics on survey data are biased.
+- **Gender analysis:** If gender of household head is used, verify: is the gender share computed as weighted share (`wgt.sum()` for gender group / total `wgt.sum()`), or as unweighted count ratio? The latter would be incorrect for survey data.
+- **Energy poverty threshold:** 10% of income — is this the right threshold for Maldives? International standard varies (10% UK, 6% France, 2× median share Germany)
+- **Quintile construction:** By per-capita income or household income?
+- **Tariff impact:** How does the model translate LCOE reductions into tariff reductions? Is there a passthrough assumption?
+- **Missing data handling:** How are households with zero income or zero electricity expenditure treated?
 
-### G3. Transport Analysis (`transport_analysis.py`, ~410 lines)
-- **Logistic S-curve:** $S(t) = S_0 + (S_{max} - S_0)/(1 + e^{-k(t-t_{mid})})$ — verify parameters, verify overflow protection
-- **Fleet projection:** 131,000 vehicles growing at what rate? 92% motorcycles — source?
-- **EV electricity demand:** verify kWh/km × annual km × fleet size — units check
-- **CO₂ displacement:** ICE emissions − grid emissions for EV charging — verify both sides
-- **Health benefits:** PM2.5 + NOx + noise per vehicle-km — are damage factors Maldives-specific or global?
-- **This is a standalone supplementary module** — verify it does NOT feed back into the main CBA NPV
+### G2. Financing Analysis (`financing_analysis.py`)
+- **Fiscal burden denominator:** `peak_pct_gdp` divides peak debt service by GDP. Is the GDP denominator a FIXED base-year value, or does it grow over time at a GDP growth rate? If fixed, this overstates fiscal burden for years 20+ because GDP will have grown significantly. If growing, verify the growth rate source and that it’s wired from parameters.csv.
+- **Grant element formula:**
+  $GE = 1 - \frac{PV(\text{debt service})}{\text{Face Value}}$
+  discounted at commercial rate (11.55%)
+  - Verify: ADB terms (1%, 40yr, 10yr grace) give GE = 82.8%
+  - Calculate manually: PV of 40-year annuity at 1% discounted at 11.55% ≈ 17.2% of face value → GE = 82.8% ✓
+- **WACC:** Verify weights and rates are correct
+- **Debt service beyond model horizon:** The model runs 30 years (2026–2056) but ADB loan is 40 years. How is this handled?
 
-### G4. Multi-Criteria Analysis (`mca_analysis.py`, ~513 lines)
-- **Weights:** do all weight profiles sum to 1.0?
-- **Normalisation:** min-max across scenarios — verify direction (higher-is-better vs lower-is-better for each criterion)
-- **Polarity:** `fiscal_burden` should be "lower is better" — is it correctly inverted?
-- **Criteria list:** 8 criteria — are they independent (no double-counting NPV + LCOE which are related)?
-- **Sensitivity to weights:** does the ranking change significantly with different weight profiles?
+### G3. Transport Analysis (`transport_analysis.py`)
+- **S-curve parameters:** Verify the 3 scenarios (Low/Medium/High) have distinct adoption rates
+- **Grid emissions for EV charging:** Are these calculated from the SCENARIO's generation mix (which includes RE) or from BAU (all diesel)?
+- **Double-counting check:** Transport health benefits (PM2.5, NOx, noise) are NOT included in the main CBA NPV — verify this isolation
+- **Fleet projection:** 131,000 vehicles growing at what rate? Source?
+- **Motorcycle dominance (92%):** Motorcycles have very different EV economics than cars. Are EV premiums and kWh/km calibrated for motorcycles?
 
-### G5. Sanity Checks (`sanity_checks.py`, ~631 lines)
-- Do the 47 checks cover the right things?
-- Are the expected ranges sourced or arbitrary?
-- Are there important checks missing? (e.g., demand at 2056, solar capacity at 2056, diesel share at 2056)
-- Do any checks use hardcoded values instead of config?
+### G4. MCA (`mca_analysis.py`)
+- **Weight validation:** Do MCA weights sum to 1.0? Is this enforced at load time or just assumed? If weights come from parameters.csv, what happens if they don’t sum correctly due to a typo?
+- **Normalisation direction:** For each of the 8 criteria, verify polarity:
+  - NPV: higher = better ✓
+  - LCOE: lower = better → inverted? ✓
+  - Emissions: lower = better → inverted? ✓
+  - Health: higher avoided = better ✓
+  - Fiscal burden: lower = better → inverted? ✓
+  - Feasibility: higher = better ✓
+  - Equity: higher = better ✓
+  - Climate resilience: higher = better ✓
+- **MCA-NPV independence:** MCA includes NPV as a criterion. But NPV already incorporates most other criteria (emissions via SCC, health via damage cost). Is this double-counting?
+- **MCA score sources:** Are the MCA scores for ALL 7 scenarios present in parameters.csv? Are any scenarios missing scores (which would cause the MCA to fail or use defaults)?
+
+### G5. Sanity Checks (`sanity_checks.py`)
+- **Coverage:** Do the 48 checks cover:
+  - BAU LCOE in plausible range ($0.30–0.60/kWh for SIDS)?
+  - RE scenario LCOE in plausible range ($0.15–0.35/kWh)?
+  - BCR > 0 for all RE scenarios?
+  - Total demand 2056 in plausible range?
+  - Diesel share 2050 in expected range per scenario?
+  - Total emissions cumulative in expected range?
+  - NPV savings positive for all RE vs BAU?
+- **Hardcoded ranges:** Are the expected ranges sourced or arbitrary? If arbitrary, they may be too wide (never fail) or too narrow (false alarms)
+- **Missing checks:** Verify generation balance (demand = supply), cost summation (CAPEX + OPEX + fuel = total), and temporal monotonicity (RE share should increase over time in all scenarios)
 
 ---
 
-## 10. Output Format
+## 10. Workstream H — Numerical Stability & Reproducibility
 
-Each workstream produces a standalone findings report structured as:
+### Objective
+Verify that model outputs are deterministic, numerically stable, and reproducible across environments.
+
+### H1. Determinism
+- Run `run_cba.py` twice in succession. Do `cba_results.json` outputs match exactly?
+- Is there any source of randomness in the main CBA pipeline? (Random should only be in Monte Carlo)
+- Check for dictionary iteration order dependence (Python 3.7+ guarantees insertion order, but verify)
+
+### H2. Monte Carlo Reproducibility
+- Does `run_monte_carlo.py` use a fixed random seed?
+- If the seed is fixed, do results match exactly across runs?
+- If not, flag as a reproducibility issue
+
+### H3. Floating-Point Edge Cases
+- **Very large/small numbers:** Total costs are ~$15B = 1.5e10. Discount factors at year 30 at 6% = 0.174. Product = 2.6e9. Are there any calculations where large and small numbers are added (catastrophic cancellation)?
+- **Division by zero:** What happens in scenarios where `diesel_gwh = 0` (no diesel remaining)? Or `solar_mw = 0` (early BAU years)?
+- **Negative values:** Can any intermediate calculation go negative when it shouldn't? (e.g., salvage value for fully depreciated assets, emission reduction when emissions increase)
+- **Overflow:** Compound growth at 5%/yr for 30 years = 4.32×. At 10%/yr = 17.45×. No overflow risk. But LNG scenario compound costs? Verify.
+
+### H4. Convergence Diagnostics
+- **IRR bisection:** How many iterations does it take to converge for each scenario? Is there a scenario where it fails to converge? What's the fallback?
+- **Least-cost engine:** The 183-island LCOE calculation — does it converge? Are there islands where no technology meets demand?
+- **Monte Carlo:** Plot (mentally) the running mean of NPV vs. iteration count. Does it stabilise by iteration 500?
+
+### H5. Platform Independence
+- Does the model use any Windows-specific paths (backslashes)?
+- Does it depend on any non-standard Python libraries beyond those in `requirements.txt`?
+- Would it produce the same results on Linux/macOS?
+- Read `requirements.txt`: are version pins appropriate?
+
+### H6. Data Pipeline Integrity
+- Is `islands_master.csv` (183 islands) loaded correctly? No truncation?
+- Are hourly CSV files (`GHI_hourly.csv`, `Temperature_hourly.csv`) 8,760 rows (non-leap year)?
+- Is HIES microdata (`hies2019/`) complete? No missing values in key fields?
+- Are population data (`Census_2022_P5.xlsx`) loaded correctly?
+
+---
+
+## 11. Workstream I — Publication Readiness & Output Integrity
+
+### Objective
+Verify that model outputs (JSON files) match what the code produces, that the Quarto report accurately represents the outputs, and that all claims in documentation are supported.
+
+### I1. JSON Output Integrity
+- Load `outputs/cba_results.json`: do the values match the table in §1 above?
+- Load `outputs/scenario_summaries.json`: are all 7 scenarios present with complete annual data?
+- Load `outputs/sensitivity_results.json`: are all 39 parameters present for all 7 scenarios?
+- Load `outputs/monte_carlo_results.json`: are there 1,000 iterations with complete data?
+- Load `outputs/mca_results.json`: are all 8 criteria × 7 scenarios present?
+- Load `outputs/distributional_results.json`: are all quintiles + gender analysis present?
+- Load `outputs/financing_analysis.json`: is grant element, WACC, debt service present?
+- Load `outputs/transport_results.json`: are all 3 EV scenarios present?
+- Load `outputs/learning_curve_results.json`: are exogenous and endogenous curves present?
+- Load `outputs/climate_scenario_results.json`: are RCP 4.5 and 8.5 present?
+- Load `outputs/multi_horizon_results.json`: are 20/30/50 year results present?
+
+### I2. Report-to-Output Traceability
+For every number stated in the Quarto report (`report/REPORT_Maldives_Energy_CBA.qmd`):
+- Is it read programmatically from an output JSON file, or hardcoded?
+- If hardcoded, flag as a zero-tolerance violation (see copilot-instructions.md §⛔)
+- If programmatic, does the rendering match the JSON value?
+
+### I3. Documentation Consistency
+Verify these documents are consistent with each other and the code:
+- `CBA_METHODOLOGY.md` equation numbers match code implementation
+- `SCENARIO_GUIDE.md` scenario descriptions match scenario code
+- `IMPROVEMENT_PLAN.md` task statuses match reality
+- `SOTA_CBA_ASSESSMENT.md` feature checklist matches actual model capabilities
+- `AUDIT_REPORT.md` / `AUDIT_REPORT_v1.md` — if any findings were marked "fixed", verify the fix is actually in the code
+
+### I4. Output Plausibility Checks
+Beyond sanity_checks.py, verify:
+- **LCOE ordering:** BAU > Islanded Green > National Grid > Near-Shore > Max RE > LNG ≈ Full Integration. Does this make economic sense? (Islanded Green is expensive due to per-island battery redundancy; Full Integration benefits from Indian grid import at low cost.)
+- **BCR consistency:** Higher BCR should correlate with lower PV total costs (since benefits are similar across RE scenarios). Verify.
+- **IRR plausibility:** IRR of 41.4% for S7 and 16.3% for S2. S7's high IRR reflects low CAPEX + high fuel savings. S2's low IRR reflects massive CAPEX. Are these reasonable?
+- **Emissions totals:** BAU cumulative ~66 MtCO₂ over 30 years. At 1,200 GWh growing at 5%/yr, average demand ~2,600 GWh/yr. At 0.72 kgCO₂/kWh = 1.87 MtCO₂/yr average. Over 30 years = 56 Mt. But with compound growth, the integral is higher. Does 66 Mt check out?
+- **S7 superiority:** S7 (LNG) ranks #1 by NPV savings despite being a fossil fuel. This is because LNG is cheap ($0.50/L) with lower emission factor (0.40 vs 0.72). At what carbon price does S6 (Maximum RE) overtake S7?
+
+### I5. Claim Verification
+Specific claims in documentation that should be verified against code/outputs:
+- "Model satisfies 100% of ADB (2017), Boardman (2018), and IRENA (2019) requirements" — is this supportable?
+- "183-island spatial resolution" — count islands in `islands_master.csv`
+- "39 sensitivity parameters" — count in `sensitivity.py`
+- "48 sanity checks pass" — run and confirm
+- "Grant element 82.8%" — verify calculation
+- "S7 costs are ~$7.8B" — verify by running the model and checking S7 total cost output
+
+---
+
+## 12. Cross-Workstream Integrity Checks
+
+After all 9 workstreams complete:
+
+### 12.1 No Contradictions
+- E.g., Workstream B says solar CAPEX is correctly sourced, but Workstream C finds it's applied wrong
+- Workstream A says subsidy is correctly excluded, but Workstream G finds MCA still uses it
+
+### 12.2 Coverage Completeness
+Every `.py` file audited by at least one workstream:
+
+| File | Workstreams |
+|------|------------|
+| config.py | D |
+| parameters.csv | B, D |
+| demand.py | C, E |
+| costs.py | B, C, E |
+| emissions.py | C, E |
+| dispatch.py | C, H |
+| scenarios/__init__.py | A, C, E |
+| status_quo.py | E |
+| one_grid.py | E |
+| green_transition.py | E |
+| islanded_green.py | E |
+| nearshore_solar.py | E |
+| maximum_re.py | E |
+| lng_transition.py | E |
+| cba/__init__.py | A, E |
+| npv_calculator.py | A, C, H |
+| sensitivity.py | C, F |
+| mca_analysis.py | G |
+| run_cba.py | A, E, I |
+| run_sensitivity.py | F |
+| run_monte_carlo.py | F, H |
+| run_multi_horizon.py | F |
+| financing_analysis.py | G |
+| distributional_analysis.py | G |
+| transport_analysis.py | G |
+| sanity_checks.py | G, I |
+| least_cost.py | C, E |
+| network.py | C |
+| grid_vs_standalone.py | C |
+
+### 12.3 Cumulative Impact Assessment
+If all findings were fixed simultaneously:
+- Would the scenario ranking change?
+- Would any NPV change sign?
+- What is the estimated magnitude of changes?
+
+### 12.4 Regression Risk
+Do any proposed fixes risk breaking other parts of the model? Identify dependencies between findings.
+
+---
+
+## 13. Severity Classification
+
+- 🔴 **CRITICAL:** Would change the sign of NPV, reverse scenario rankings, violate fundamental CBA principles, or produce mathematically incorrect outputs
+- 🟡 **MODERATE:** Could change BCR by >10%, misrepresent a benefit/cost category, deviate from best practice, or create hard-to-detect errors under specific conditions
+- 🔵 **LOW:** Minor methodological refinements, documentation gaps, code quality improvements, cosmetic issues
+
+---
+
+## 14. Output Format
+
+Each workstream produces a standalone findings report:
 
 ```markdown
-## Workstream [A-G]: [Title]
+## Workstream [A-I]: [Title]
 
 ### Executive Summary
-- X CRITICAL findings, Y MODERATE, Z LOW
-- Top concern: [one-sentence summary of the most important finding]
+- X CRITICAL, Y MODERATE, Z LOW
+- Top concern: [one-sentence summary]
 
 ### Findings
 
 #### 🔴 CRITICAL — [ID]: [Title]
 **File(s):** [file paths with line numbers]
-**Issue:** [clear description]
-**Evidence:** [code snippet or calculation showing the problem]
-**Impact:** [quantified where possible — what changes in the output?]
-**Recommendation:** [specific fix]
+**Issue:** [clear description with evidence]
+**Impact:** [quantified — what changes in NPV/BCR/LCOE/ranking?]
+**Recommendation:** [specific code change]
 
 #### 🟡 MODERATE — [ID]: [Title]
 [same structure]
@@ -559,7 +808,7 @@ Each workstream produces a standalone findings report structured as:
 [same structure]
 
 ### Verified Correct
-[List of things explicitly checked and confirmed correct — this is as important as the findings]
+[List of things explicitly checked and confirmed correct]
 
 ### Summary Table
 | ID | Severity | File | Impact | Fix Effort |
@@ -567,122 +816,156 @@ Each workstream produces a standalone findings report structured as:
 ```
 
 ### Finding ID Format
-- `A-CR-01`, `A-CR-02` for Workstream A criticals
-- `B-MR-01` for Workstream B moderates
-- `G-LW-03` for Workstream G lows
+- `A-CR-01` for Workstream A critical #1
+- `H-MO-03` for Workstream H moderate #3
+- `I-LO-02` for Workstream I low #2
 
 ---
 
-## 11. Cross-Workstream Integrity Checks
-
-After all 7 workstreams complete, a final integration check should verify:
-
-1. **No contradictions** between workstream findings (e.g., Workstream B says a parameter is correct but Workstream C finds it's used wrong)
-2. **Coverage completeness** — every `.py` file has been read by at least one workstream
-3. **Impact assessment** — rank all CRITICAL findings by quantified impact on model outputs
-4. **Fix sequencing** — which fixes should be applied first (dependencies)
-5. **Cumulative impact** — if all fixes were applied simultaneously, what is the estimated change in NPV rankings?
-
----
-
-## 12. Reference Standards
-
-Auditors should benchmark against:
+## 15. Reference Standards
 
 | Standard | Use |
 |----------|-----|
-| Boardman, Greenberg, Vining & Weimer (2018) *Cost-Benefit Analysis: Concepts and Practice*, 5th ed. | CBA framework, discounting, standing |
-| ADB (2017) *Guidelines for the Economic Analysis of Projects* | Developing country CBA, EIRR thresholds, shadow pricing |
+| Boardman, Greenberg, Vining & Weimer (2018) *CBA: Concepts and Practice*, 5th ed. | CBA framework, discounting, standing, welfare |
+| ADB (2017) *Guidelines for the Economic Analysis of Projects* | EIRR thresholds, shadow pricing, developing country CBA |
 | HM Treasury (2026) *The Green Book* | Declining discount rates, intergenerational equity |
 | IRENA (2024) *Renewable Power Generation Costs* | Technology cost benchmarks |
-| IEA (2024) *World Energy Outlook* | Fuel price projections, demand trajectories |
+| IEA (2024) *World Energy Outlook* | Fuel price projections, demand |
+| BNEF (2025) *New Energy Outlook* | Battery cost trajectories |
 | IPCC (2006, 2019) *Guidelines for GHG Inventories* | Emission factors |
-| Drupp, Freeman, Groom & Nesje (2018) *AEJ: Economic Policy* 10(4) | Expert survey on discount rates |
-| Parry, Heine, Lis & Li (2014) IMF WP/14/199 | Health damage costs of fossil fuels |
-| CIGRÉ Technical Brochures 610, 852 | Submarine cable costs and lifetime |
 | Lazard (2024) *LCOE* and *LCOS* | Technology cost cross-checks |
+| CIGRÉ TB 610, 852 | Submarine cable costs |
+| Parry et al. (2014) IMF WP/14/199 | Health damage costs |
+| Drupp et al. (2018) AEJ: Economic Policy 10(4) | Expert survey on discount rates |
+| EPA IWG (2023) | Social cost of carbon |
+| Dixit & Pindyck (1994) | Real options framework |
+| Morgan & Henrion (2006) | Uncertainty characterisation |
+| Suits (1977) | Suits index for progressivity |
 
 ---
 
-## 13. Files to Audit (Complete List)
+## 16. High-Risk Areas Requiring Extra Scrutiny
+
+Based on the complexity profile of the codebase, these areas have the highest probability of containing errors:
+
+### 16.1 Scenario Growth Rate Keys
+Each scenario looks up its demand growth rate using a string key. If the key is wrong, the scenario silently uses another scenario's growth rate. **For every scenario (S1–S7)**, trace the growth rate from config key → config dictionary → actual value used. Confirm each scenario uses its own rate.
+
+### 16.2 Vintage/Cohort Solar Calculations
+The vintage-based solar generation code in `costs.py` is the most mathematically complex part of the model. Every cohort has its own installation year, degradation trajectory, and OPEX calculation. Errors in the degradation base year, the cohort iteration, or the per-kW conversion denominator would silently corrupt all scenario costs. Audit this function line-by-line.
+
+### 16.3 Benefit Stream Aggregation
+The NPV calculator aggregates multiple benefit streams (fuel savings, emission benefits, health benefits, reliability, environmental, subsidy avoidance, connection benefits). **For each stream:** (1) Is it calculated? (2) Is it discounted? (3) Is it included in `total`? (4) Is it included in the IRR cash flow? A benefit that is calculated but not aggregated is a silent omission.
+
+### 16.4 Config Field Presence
+If code accesses a config attribute that doesn't exist (e.g., `cfg.technology.new_field`), Python raises `AttributeError` — unless the code uses `getattr(cfg, 'field', fallback)` or `hasattr()` to silently fall back. Search for these patterns and assess whether the fallback masks a missing CSV→config wiring.
+
+### 16.5 LNG-Specific Fields
+S7 (LNG) introduced new cost fields (`fuel_lng`, LNG CAPEX/OPEX). These fields must propagate through the entire chain: `costs.py` → `AnnualCosts` dataclass → `__init__.py` → `npv_calculator.py`. If any link is missing, LNG costs are silently zero.
+
+### 16.6 Fiscal vs Economic NPV Separation
+Subsidy avoidance is a fiscal transfer, not an economic benefit. It should appear in a separate `total_with_fiscal` aggregate but NOT in the primary economic `total`. Verify this separation is correctly implemented.
+
+### 16.7 Year Boundary Transitions
+The model spans 2026–2056 with critical transition years:
+- **2026:** Base year. Are initial CAPEX investments correctly placed here?
+- **2031:** LNG plant comes online (S7), submarine cable operational (S2). Are costs and generation correctly phased?
+- **2041:** Battery replacement year (15-year lifetime from 2026). Is replacement CAPEX added?
+- **2056:** Terminal year. Is salvage value calculated correctly for assets with remaining life?
+
+Verify that transitions at each boundary produce expected discontinuities in cost/generation profiles.
+
+---
+
+## 17. Files to Audit (Complete List)
 
 ### Core Model (audit every line)
-| File | Lines | Workstreams |
-|------|-------|------------|
-| `model/config.py` | 1,978 | D |
-| `model/parameters.csv` | 405 rows | B, D |
+| File | ~Lines | Workstreams |
+|------|--------|------------|
+| `model/config.py` | 2,130 | D |
+| `model/parameters.csv` | ~420 rows | B, D |
 | `model/demand.py` | 362 | C, E |
-| `model/costs.py` | 881 | B, C, E |
-| `model/emissions.py` | 276 | C, E |
-| `model/dispatch.py` | 408 | C |
-| `model/scenarios/__init__.py` | 560 | A, C, E |
+| `model/costs.py` | 909 | B, C, E |
+| `model/emissions.py` | 272 | C, E |
+| `model/dispatch.py` | 408 | C, H |
+| `model/scenarios/__init__.py` | 570 | A, C, E |
 | `model/scenarios/status_quo.py` | 197 | E |
 | `model/scenarios/one_grid.py` | 416 | E |
 | `model/scenarios/green_transition.py` | 373 | E |
 | `model/scenarios/islanded_green.py` | 317 | E |
 | `model/scenarios/nearshore_solar.py` | 361 | E |
 | `model/scenarios/maximum_re.py` | 406 | E |
-| `model/scenarios/lng_transition.py` | 445 | E |
-| `model/cba/npv_calculator.py` | 820 | A, C |
-| `model/cba/sensitivity.py` | 992 | C, F |
+| `model/scenarios/lng_transition.py` | 444 | E |
+| `model/cba/__init__.py` | ~35 | A, E |
+| `model/cba/npv_calculator.py` | 881 | A, C, H |
+| `model/cba/sensitivity.py` | 1,011 | C, F |
 | `model/cba/mca_analysis.py` | 513 | G |
-| `model/run_cba.py` | 1,238 | A, E |
-| `model/run_sensitivity.py` | 662 | F |
-| `model/run_monte_carlo.py` | 376 | F |
+| `model/run_cba.py` | 1,284 | A, E, I |
+| `model/run_sensitivity.py` | 667 | F |
+| `model/run_monte_carlo.py` | 385 | F, H |
 | `model/run_multi_horizon.py` | 375 | F |
 
 ### Supplementary (audit for correctness)
-| File | Lines | Workstreams |
-|------|-------|------------|
-| `model/financing_analysis.py` | 498 | G |
-| `model/distributional_analysis.py` | 1,099 | G |
+| File | ~Lines | Workstreams |
+|------|--------|------------|
+| `model/financing_analysis.py` | 507 | G |
+| `model/distributional_analysis.py` | 1,185 | G |
 | `model/transport_analysis.py` | 410 | G |
-| `model/sanity_checks.py` | 631 | G |
-| `model/least_cost.py` | 912 | C, E |
+| `model/sanity_checks.py` | 631 | G, I |
+| `model/least_cost.py` | 914 | C, E |
 | `model/network.py` | 509 | C |
 | `model/grid_vs_standalone.py` | 279 | C |
 
 ### Reference Documents (read for context, do not audit)
 | File | Purpose |
 |------|---------|
-| `CBA_METHODOLOGY.md` | Equation catalogue — cross-check code against this |
+| `CBA_METHODOLOGY.md` | Equation catalogue — cross-check code |
 | `SCENARIO_GUIDE.md` | Scenario design rationale |
-| `IMPROVEMENT_PLAN.md` | Decision log with verified parameter sources |
-| `literature_benchmarks.md` | 10-paper SIDS CBA literature review |
-| `AUDIT_REPORT_v1.md` | Prior audit — 30 findings, all fixed |
-| `SOTA_CBA_ASSESSMENT.md` | State-of-the-art gap analysis |
-| `real_options_analysis.md` | Real options framing for cable investment |
+| `IMPROVEMENT_PLAN.md` | Decision log |
+| `literature_benchmarks.md` | 10-paper SIDS CBA review |
+| `AUDIT_REPORT_v3.md` | Prior audit — reference only, do not assume conclusions are correct |
+| `SOTA_CBA_ASSESSMENT.md` | Gap analysis |
+| `real_options_analysis.md` | Real options framing |
 
 ### Do NOT Audit
 - `_archive/` — historical code, read-only
 - `perplexity_lookup.py` — standalone utility
-- `data/` files — data inputs, not model logic
-- `report/` — Quarto report, separate audit
-- `.md` files (as code) — documentation only
+- `data/` files — data inputs, not model logic (but verify they load correctly in H6)
+- `report/` — Quarto report (verify in I2 only for hardcoded values)
+- `.md` files as code — documentation only
 
 ---
 
-## 14. Execution Instructions
+## 18. Execution Instructions
 
 ### For the Orchestrating Agent
 
-1. **Launch 7 subagents**, one per workstream (A through G).
-2. Each subagent receives:
-   - This full audit prompt (for context)
-   - Its specific workstream section (for focus)
-   - Access to read all files listed in §13
-3. Each subagent returns a structured findings report per §10.
-4. After all 7 complete, run the cross-workstream integrity check (§11).
-5. Compile into a single `AUDIT_REPORT.md` with:
-   - Executive summary (total findings by severity)
-   - Per-workstream findings (grouped)
-   - Cross-workstream checks
-   - Priority fix list (top 10 by impact)
-   - Appendix: verified-correct items
+1. **Launch 9 subagents**, one per workstream (A through I).
+2. Each subagent receives this full audit prompt + its specific workstream section.
+3. Each subagent must work **independently** — do not share findings between workstreams during execution.
+4. Each subagent returns structured findings per §14.
+5. After all 9 complete, run cross-workstream checks (§12).
+6. Compile into `AUDIT_REPORT_v4.md`.
 
 ### Quality Standards
-- **Every finding must have evidence** — a code snippet, a calculation, or a specific line reference
-- **Every finding must have a quantified impact estimate** where possible (e.g., "changes NPV by ~$X00M", "changes LCOE by ~X¢/kWh", "reverses S6 vs S7 ranking")
-- **Every finding must have a specific, actionable recommendation** — not just "fix this" but "change line X from Y to Z"
-- **False positives are acceptable** (better to flag and confirm correct than to miss a bug) but should be minimised through careful analysis
-- **The prior v1 audit found and fixed 30 issues** — this v2 audit should assume those fixes are in place but may verify them. Focus effort on **new findings** and **deeper analysis** that v1 didn't cover (especially economic methodology, parameter validity, and big-picture concerns).
+- **Every finding must have evidence** — code snippet, calculation, or line reference
+- **Every finding must have a quantified impact estimate** where possible
+- **Every finding must have a specific, actionable recommendation**
+- **Zero trust** — do NOT assume any part of the code is correct because it "looks reasonable" or because documentation says it was verified. Read the actual code and verify independently.
+- **Cross-cutting integration issues** are highest priority — individual functions may be correct in isolation but interact incorrectly
+- **Trace end-to-end** — for critical calculations (NPV, LCOE, IRR, emissions), trace from `parameters.csv` → `config.py` → consuming module → output JSON. Every link in the chain must be verified.
+
+### Priority Focus Areas
+These areas are inherently high-risk due to their complexity and the severity of errors they could harbour:
+1. **Growth rate key lookups** — string-based config lookups are fragile; a typo is invisible
+2. **Vintage/cohort calculations** — the most mathematically complex code; denominator errors compound over 30 years
+3. **Benefit stream aggregation** — a benefit that is calculated but not included in the total is a silent omission worth potentially billions in NPV
+4. **Config field wiring** — every `parameters.csv` row must reach the code that uses it; breaks in the chain mean the model silently uses defaults
+5. **JSON output completeness** — do the output JSONs capture everything the model computes? Or are some results computed and discarded?
+6. **Year boundary effects** — transitions at 2026/2031/2041/2056 are where phasing errors hide
+7. **Unit consistency** — kW↔MW, kWh↔GWh, $/kW↔$M, per-year↔per-period mismatches compound silently
+8. **Sign conventions** — benefits should be positive, costs negative (or vice versa) — inconsistent signs cause subtraction instead of addition
+
+---
+
+*End of AUDIT_PROMPT_v2.md — 10 February 2026*
