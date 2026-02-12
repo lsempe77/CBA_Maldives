@@ -43,7 +43,7 @@ best_savings = get_incremental(best_sid)["npv_savings"] / 1e9
 worst_savings = get_incremental(worst_sid)["npv_savings"] / 1e9
 ```
 
-Every alternative saves `{python} f"${worst_savings:,.1f}"` to `{python} f"${best_savings:,.1f}"` billion in present value over `{python} f"{cba['end_year'] - cba['base_year']}"` years. `{python} SCENARIO_LABELS[best_sid]` leads; even `{python} SCENARIO_LABELS[worst_sid]}` — the least advantageous — delivers substantial benefits. The magnitude reflects cumulative diesel costs over three decades, which outweigh transition capital.
+Every alternative saves `{python} f"${worst_savings:,.1f}"` to `{python} f"${best_savings:,.1f}"` billion in present value over `{python} f"{cba['end_year'] - cba['base_year']}"` years. `{python} SCENARIO_LABELS[best_sid]` leads; even `{python} SCENARIO_LABELS[worst_sid]` — the least advantageous — delivers substantial benefits. The magnitude reflects cumulative diesel costs over three decades, which outweigh transition capital.
 
 At the base `{python} f"{cba['discount_rate']*100:.0f}"`% discount rate, late-year benefits are heavily discounted. Lower rates (`{python} f"{param('Discount Rate', 'Low')*100:.0f}"`–4%) would increase savings further; at the high end (`{python} f"{param('Discount Rate', 'High')*100:.0f}"`%), all alternatives still dominate diesel — breakeven rates exceed `{python} f"{irr_min:.0f}"`%.
 

@@ -30,7 +30,7 @@ prob_beats = monte_carlo.get("prob_beats_bau", {})
 
 **All six alternatives outperform diesel BAU by wide margins.** NPV savings range from `{python} f"${savings_min_b:,.1f}"` to `{python} f"${savings_max_b:,.1f}"` billion, BCRs from `{python} f"{bcr_min:.1f}"`–`{python} f"{bcr_max:.1f}"`, and IRRs from `{python} f"{irr_min:.0f}"`–`{python} f"{irr_max:.0f}"` percent. These results hold across discount rates, time horizons, and stress tests.
 
-**`{python} SCENARIO_LABELS[best_sid]`** delivers the highest NPV (`{python} fmt_usd(get_incremental(best_sid)['npv_savings'])}`, BCR `{python} f"{best_bcr:.1f}"`, IRR `{python} f"{best_irr:.1f}"`%). However, the optimal strategy is a phased approach that captures near-certain benefits first while preserving flexibility on uncertain components (@sec-implementation).
+**`{python} SCENARIO_LABELS[best_sid]`** delivers the highest NPV (`{python} fmt_usd(get_incremental(best_sid)['npv_savings'])`, BCR `{python} f"{best_bcr:.1f}"`, IRR `{python} f"{best_irr:.1f}"`%). However, the optimal strategy is a phased approach that captures near-certain benefits first while preserving flexibility on uncertain components (@sec-implementation).
 
 **Robustness.** Monte Carlo with `{python} f"{n_mc_params}"` parameters confirms every alternative beats BAU in >`{python} f"{min(prob_beats.values())*100:.0f}" if prob_beats else "95"`% of iterations, across discount rates (`{python} f"{param('Discount Rate', 'Low')*100:.0f}"`–`{python} f"{param('Discount Rate', 'High')*100:.0f}"`%), horizons (20–50 years), and five MCA weight profiles.
 
