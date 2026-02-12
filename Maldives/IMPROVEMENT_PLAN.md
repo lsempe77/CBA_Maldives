@@ -1336,3 +1336,96 @@ The Roadmap reveals that fuel + operational subsidies reached **$200M/yr in 2023
 | **NDC/climate targets** | ✅ Aligned (emission calculations exist) | — |
 | **Island-level approach** | ✅ Strongly aligned (POISED = our S4, validated R10 ✅) | R10 ✅ |
 | **Policy relevance** | ✅ Strong: Roadmap citations prepared, scenario framing done (R14 ✅) | R14 ✅ |
+
+---
+
+## Tier 7 — REPORT WRITING QUALITY (LLM Pattern Removal)
+
+> **Added:** 11 February 2026  
+> **Scope:** Systematic removal of LLM writing patterns from all 15 `.qmd` files  
+> **Status:** 🔧 In progress
+
+### W.0 — Assessment Summary
+
+The Quarto report (~3,000+ lines of prose across 15 files) shows typical LLM writing markers:
+- Formulaic transitions ("This chapter presents...")
+- Hedging overload ("particularly", "especially", "significantly", "substantially")
+- Throat-clearing ("It is important to note that...", "A natural question arises...")
+- Excessive signposting ("The figure/table below shows...")
+- Artificial parallelism and repetitive sentence structures
+
+**Strengths to preserve:** Dynamic Python integration, clear structure, evidence-based claims, policy-relevant framing.
+
+---
+
+### W.1 — Phase 1: Mechanical Search-and-Replace (Global)
+
+Target patterns across all `.qmd` files. Each row = one grep/replace pass.
+
+| ID | Pattern | Action | Files Affected | Done |
+|---|---|---|---|---|
+| W1.1 | "It is important to note that" | Delete or rewrite as direct statement | 08-financing.qmd | ✅ |
+| W1.2 | "It is worth noting that" | Delete — just state the fact | 06-mca.qmd | ✅ |
+| W1.3 | "A natural question arises" | Just ask the question directly | 04-results.qmd | ✅ |
+| W1.4 | "Several patterns emerge" | Name the patterns directly | executive-summary.qmd | ✅ |
+| W1.5 | "This chapter presents/describes/examines/analyses" | Rewrite as active statement | 02, 03, 04, 08 | ✅ |
+| W1.6 | "This means that..." | Often deletable; merge sentences | 02, 05 | ✅ |
+| W1.7 | "The table/figure below shows" | Integrate naturally or delete | 03-scenarios.qmd | ✅ |
+| W1.8 | Excessive "particularly/especially" | Audited: 7 instances, all legitimate comparative uses | Throughout | ✅ |
+| W1.9 | Excessive "significantly/substantially" | Audited: 20+ instances; 1 quantified (04-results); rest are genuine comparisons | Throughout | ✅ |
+| W1.10 | "Importantly," as sentence opener | Rewrite or delete | 05-sensitivity.qmd | ✅ |
+
+---
+
+### W.2 — Phase 2: Chapter-by-Chapter Revisions
+
+| Chapter | Priority Issues | Est. Time | Done |
+|---|---|---|---|
+| `executive-summary.qmd` | Cut 21% (184→146 lines); tightened intros, recs | 1 hr | ✅ |
+| `01-introduction.qmd` | Cut 25% (~150→113 lines); tightened Roadmap, Report Structure | 1 hr | ✅ |
+| `02-methodology.qmd` | Already lean (94 lines); compressed "Not Covered" section → 91 lines | 1.5 hr | ✅ |
+| `03-scenarios.qmd` | Varied S3–S7 openers & structures; cut 28% (198→142 lines) | 2 hr | ✅ |
+| `04-results.qmd` | Cut signposting, tightened prose; 23% reduction (434→335 lines) | 1.5 hr | ✅ |
+| `05-sensitivity.qmd` | Cut tornado & MC prose; tightened all sections (296→290 lines, mostly code) | 1 hr | ✅ |
+| `06-mca.qmd` | Cut meta-commentary; compressed framework, results, weight sensitivity sections (192 lines, mostly code) | 1 hr | ✅ |
+| `07-distributional.qmd` | Compressed methodology, interpretation, policy sections (240→228 lines) | 1 hr | ✅ |
+| `08-financing.qmd` | Compressed all interpretive paragraphs (160→148 lines, ~7%) | 1 hr | ✅ |
+| `09-implementation.qmd` | Compressed all phase descriptions, risk mitigation (145→139 lines) | 1 hr | ✅ |
+| `10-conclusions.qmd` | Cut 52% (150→72 lines); tightened summary, recs, limitations, next steps | 1.5 hr | ✅ |
+| `A-methodology-detail.qmd` | Technical appendix (equations); no prose issues | 0.5 hr | ✅ |
+| `B-parameters.qmd` | Table-heavy; minimal prose — no changes needed | 0.5 hr | ✅ |
+| `C-supplementary.qmd` | Replaced 5 "substantially" → varied alternatives | 1 hr | ✅ |
+| `index.qmd` | Short; light polish only | 0.25 hr | ❌ |
+
+---
+
+### W.3 — Phase 3: Structural Tightening
+
+| ID | Task | Description | Done |
+|---|---|---|---|
+| W3.1 | Cut chapter-opening boilerplate | Many `::: {.chapter-opening}` blocks restate what the title says | ❌ |
+| W3.2 | Remove "what this section covers" paragraphs | Trust the ToC | ❌ |
+| W3.3 | Consolidate repeated methodology explanations | Discount rate, NPV, BCR re-explained multiple times | ❌ |
+| W3.4 | Tighten callouts | Some `::: {.callout-important}` have 3 sentences where 1 would do | ❌ |
+
+---
+
+### W.4 — Phase 4: Voice & Register Improvements
+
+| Current (LLM-ish) | Revised (more human) | File |
+|---|---|---|
+| "The central result is straightforward: every alternative pathway generates net economic benefits" | "Every alternative saves money. No exceptions." | 04-results |
+| "The fundamental concern with LNG, however, is fossil fuel lock-in" | "LNG locks in fossil fuel dependency for 30 years" | 03-scenarios |
+| "The evidence assembled in this report points to several policy priorities" | "The evidence points to six priorities:" | 10-conclusions |
+| "A common and legitimate concern with multi-criteria analysis is that..." | "Critics argue MCA results depend on weights. They're right — so we tested five profiles." | 06-mca |
+
+---
+
+### W.5 — Execution Order & Effort Estimate
+
+1. **Phase 1** (mechanical): ~2 hours — batch-fix ~30 instances
+2. **Phase 2** (chapter-by-chapter): ~15 hours — revise each chapter
+3. **Phase 3** (structural): ~2 hours — cut redundant sections
+4. **Phase 4** (voice): ~3 hours — final polish pass
+
+**Total estimated effort:** 20–22 hours

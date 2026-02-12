@@ -9,20 +9,20 @@ sys.path.insert(0, ".")
 from _common import *
 ```
 
-The Republic of Maldives faces a defining energy challenge. With **`{python} f"{baseline['diesel_share']*100:.0f}"`% of electricity generated from imported diesel**^[Government of Maldives, *Road Map for the Energy Sector 2024–2033* [-@gom_roadmap2024]; confirmed by @reglobal2023 and @irena_roadmap_maldives2015.], the country is exposed to volatile global fuel prices, high per-unit generation costs, and a carbon footprint incompatible with its climate leadership ambitions. This report presents a  **cost-benefit analysis (CBA)** of seven alternative electricity transition pathways over `{python} f"{cba['end_year'] - cba['base_year']}"` years (`{python} f"{cba['base_year']}"` – `{python} f"{cba['end_year']}"`  ).
+About `{python} f"{baseline['diesel_share']*100:.0f}"`% of the Maldives' electricity comes from imported diesel^[Government of Maldives, *Road Map for the Energy Sector 2024–2033* [-@gom_roadmap2024]; confirmed by @reglobal2023 and @irena_roadmap_maldives2015.], exposing the country to fuel price volatility and generation costs at odds with its climate commitments. This report presents a **cost-benefit analysis (CBA)** of seven alternative electricity transition pathways over `{python} f"{cba['end_year'] - cba['base_year']}"` years (`{python} f"{cba['base_year']}"` – `{python} f"{cba['end_year']}"`  ).
 
-The analysis is closely aligned with the Government of Maldives' **Road Map for the Energy Sector 2024–2033** [-@gom_roadmap2024], which sets a target of 33 per cent renewable energy by 2028, identifies 490 MW of solar deployment potential, and estimates $1.3 billion in required investment across 15 flagship interventions. The seven scenarios evaluated in this report provide the rigorous economic evidence base needed to prioritise among those interventions and to assess the long-term costs and benefits of pursuing them at different scales and speeds.
+The analysis builds on the Government of Maldives' **Road Map for the Energy Sector 2024–2033** [-@gom_roadmap2024], which targets 33% renewable energy by 2028 and identifies 490 MW of solar potential across 15 interventions ($1.3 billion estimated investment). The seven scenarios examined here provide the economic evidence base for prioritising among those interventions.
 
 ### What this report offers policymakers {.unnumbered}
 
 ::: {.callout-note appearance="simple"}
-**One number to remember:** Every alternative pathway we analyse saves the Maldives between **`{python} f"${savings_min_b:,.1f} billion and ${savings_max_b:,.1f} billion"`** in present-value terms compared to continuing with diesel.
+All six alternative pathways yield present-value savings of **`{python} f"${savings_min_b:,.1f} billion to ${savings_max_b:,.1f} billion"`** compared with continued diesel dependence.
 :::
 
-- **Seven scenarios** ranging from an India submarine cable to islanded solar+battery systems, evaluated on a common framework
-- **Transparent, reproducible analysis** — every parameter sourced, every equation documented, all code open
-- **Policy-relevant outputs** — financing structures, distributional equity, multi-criteria ranking, implementation roadmaps
-- **Robust uncertainty analysis** — `{python} f"{n_mc_params}"`-parameter Monte Carlo simulation, tornado diagrams, switching-value analysis
+- **Seven scenarios** — from an India submarine cable to islanded solar+battery systems, compared on a common framework
+- **Open, reproducible methods** — parameter sources documented; code available
+- **Policy-oriented outputs** — financing structures and distributional equity, with multi-criteria ranking to support decision-making
+- **Uncertainty analysis** — `{python} f"{n_mc_params}"`-parameter Monte Carlo, tornado diagrams, switching-value analysis
 
 ### How to read this report {.unnumbered}
 
@@ -33,7 +33,7 @@ The analysis is closely aligned with the Government of Maldives' **Road Map for 
 | **2 hours** | The complete report including policy chapters |
 | **Technical review** | Appendices A–C for full methodology, parameters, and supplementary analyses |
 
-### Key results at a glance {.unnumbered}
+### Headline comparison {.unnumbered}
 
 ```{python}
 #| label: fig-headline
@@ -53,4 +53,4 @@ fig.show()
 
 ### Statement on the use of AI tools {.unnumbered}
 
-This report was produced with the assistance of large language models (LLMs), specifically GitHub Copilot (powered by Claude, Anthropic). LLMs were used to support code development, literature synthesis, drafting of narrative text, and formatting of the Quarto book. All model parameters, analytical and provided assistance with text editing during manuscript preparation. All LLM-generated text was reviewed, revised, and approved by the author, who takes full responsibility for the accuracy and integrity of the final content. LLMs did not generate substantive intellectual contributions, interpret findings, or make analytical decisions — these remained under direct human control throughout the research process.
+This report was prepared with the aid of large language models (GitHub Copilot, powered by Claude, Anthropic). LLMs assisted with code development, literature search, and early drafting. All analytical decisions, parameter choices, and policy interpretations were made by the author. The author reviewed and revised all text and takes full responsibility for the final content.

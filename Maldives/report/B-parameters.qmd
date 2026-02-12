@@ -10,9 +10,9 @@ from _common import *
 from IPython.display import Markdown, HTML
 ```
 
-This appendix presents every parameter used in the Maldives Energy CBA model. All values are drawn from the central parameter registry (`parameters.csv`), which serves as the single source of truth for the entire analysis. The Low and High columns define the ranges used in sensitivity analysis and Monte Carlo simulation — these bounds are derived from the empirical literature and represent the plausible range of each parameter given current evidence, not arbitrary percentage variations around the base case.
+This appendix lists every parameter in the CBA model. All values come from `parameters.csv`, the single source of truth. Low and High columns define sensitivity and Monte Carlo ranges, derived from the literature rather than arbitrary percentage bands.
 
-The parameter table is organised by category, reflecting the model's functional structure: demand parameters govern electricity consumption projections; technology parameters specify the cost and performance of solar, battery, diesel, cable, and LNG systems; economics parameters control discounting and price escalation; and so forth. Every parameter carries a source citation, ensuring that the provenance of each value can be independently verified. The source quality analysis below provides a summary assessment of the overall evidence base.
+Parameters are grouped by category (demand, technology, economics, etc.). Each carries a source citation.
 
 ## Parameter Table
 
@@ -56,7 +56,7 @@ Markdown("\n".join(md_parts))
 
 ## Parameter Source Summary
 
-The credibility of any cost-benefit analysis depends fundamentally on the quality of its input data. Parameters derived from peer-reviewed academic research or institutional publications by organisations with established methodological standards (IRENA, IEA, ADB, World Bank, IPCC) carry greater evidential weight than assumed or estimated values. The following chart classifies every parameter by the quality of its source citation, providing a transparent assessment of the overall evidence base.
+CBA credibility rests on input data quality. Peer-reviewed and institutional sources (IRENA, IEA, ADB, World Bank, IPCC) outweigh assumed values. The chart below classifies each parameter by source quality.
 
 ## Validation Against the ADB Energy Roadmap 2024–2033 {#sec-roadmap-validation}
 

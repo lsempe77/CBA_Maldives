@@ -9,13 +9,13 @@ sys.path.insert(0, ".")
 from _common import *
 ```
 
-This appendix presents five supplementary analyses that extend the core CBA framework in distinct directions. Each analysis uses a specialised analytical method to address a question that the standard NPV framework cannot fully capture: technology learning dynamics, climate resilience, cross-sectoral synergies, investment timing under uncertainty, and positioning relative to the international evidence base. Together, these supplementary analyses strengthen the robustness of the main findings and provide additional evidence for the policy recommendations in @sec-conclusions.
+This appendix presents five supplementary analyses extending the core CBA: technology learning dynamics, climate resilience, cross-sectoral synergies, investment timing under uncertainty, and benchmarking against the international evidence base.
 
 ---
 
 ## C.1 Endogenous Learning Curves (P6) {#sec-learning}
 
-Technology costs in the main CBA decline at exogenous rates — a fixed percentage per year that is independent of deployment volumes. While this is the standard approach in most energy planning models, it ignores the well-documented empirical regularity known as **Wright's Law**: the cost of a manufactured product declines by a predictable percentage each time cumulative production doubles. This section applies endogenous (deployment-driven) learning curves to solar PV and battery storage costs, testing whether the Maldives' deployment volumes are large enough to meaningfully influence the cost trajectory.
+The main CBA uses exogenous cost declines (fixed %/yr). This section tests endogenous **Wright's Law** [@wright1936] learning: costs decline by a predictable percentage each time cumulative production doubles. Does the Maldives' deployment volume meaningfully influence cost trajectories?
 
 ```{python}
 #| label: fig-learning-trajectory
@@ -58,9 +58,9 @@ cum_savings = learning_curves.get("cumulative_savings", {})
 
 **Learning rates:** Solar PV `{python} f"{lr_solar*100:.0f}"`% and battery `{python} f"{lr_batt*100:.0f}"`% cost reduction per doubling of cumulative installed capacity, consistent with IRENA (2024) and BNEF (2025) global learning rate estimates.
 
-@fig-learning-trajectory and @fig-learning-battery compare the exogenous and endogenous cost trajectories for solar PV and battery storage, respectively. The dashed grey line represents the main CBA's assumption of a fixed annual cost decline, while the solid coloured line traces the endogenous trajectory implied by Wright's Law applied to cumulative deployment. The divergence between the two curves reveals an important insight: because the Maldives is a small market (contributing a tiny fraction of global cumulative deployment), endogenous costs are actually *higher* than exogenous projections in the near term. The global learning curve is driven overwhelmingly by deployment in China, India, the United States, and Europe — the Maldives' hundreds of megawatts are a rounding error in a global market deploying hundreds of gigawatts per year.
+@fig-learning-trajectory and @fig-learning-battery compare the exogenous and endogenous cost trajectories. The dashed grey line represents the main CBA’s assumption of a fixed annual cost decline; the solid coloured line traces what Wright’s Law predicts based on cumulative deployment. Because the Maldives is a small market (a tiny fraction of global cumulative deployment), endogenous costs are actually *higher* than exogenous projections in the near term. Global learning is driven overwhelmingly by deployment in China, India, the United States, and Europe; the Maldives’ hundreds of megawatts are a rounding error in a market deploying hundreds of gigawatts per year.
 
-However, the policy implication is unchanged: early deployment in the Maldives locks in the benefits of global learning by allowing the country to procure subsequent phases at costs that have been driven down by others' deployment. The Maldives is a price-taker in global solar and battery markets, and delaying deployment merely delays access to these falling costs without influencing the learning trajectory. This finding reinforces the main CBA's conclusion that early deployment is economically advantageous.
+However, the policy implication is unchanged: early deployment in the Maldives locks in the benefits of global learning by allowing the country to procure subsequent phases at costs that have been driven down by others' deployment. The Maldives is a price-taker in global solar and battery markets, and delaying deployment merely delays access to these falling costs without influencing the learning trajectory.
 
 ```{python}
 #| label: fig-learning-battery
@@ -94,7 +94,7 @@ if trajectory:
 
 ## C.2 Climate Damage Scenarios (P7) {#sec-climate}
 
-Solar photovoltaic generation depends on two climate-sensitive variables: global horizontal irradiance (GHI), which determines how much sunlight reaches the panels, and ambient temperature, which affects cell efficiency through temperature derating. Climate change affects both variables simultaneously but in opposing directions — reduced irradiance lowers output while higher temperatures also reduce efficiency, creating a compounding negative effect. This section quantifies the magnitude of these effects under two IPCC Representative Concentration Pathways to assess whether climate change could undermine the solar energy transition case.
+Solar photovoltaic generation depends on two climate-sensitive variables: global horizontal irradiance (GHI), which determines how much sunlight reaches the panels, and ambient temperature, which affects cell efficiency through temperature derating. Climate change affects both variables, reducing irradiance and raising temperatures — both reducing output.
 
 ```{python}
 #| label: climate-params
@@ -149,15 +149,15 @@ if traj:
     fig.show()
 ```
 
-@fig-climate-trajectory shows the solar generation trajectories under the three climate scenarios. The baseline (green) represents generation without climate change impacts beyond the temperature derating already embedded in the main model. RCP 4.5 (orange) represents a moderate climate pathway with global warming held to approximately two degrees Celsius by 2100, while RCP 8.5 (red, dashed) represents a high-emissions pathway with substantially greater warming.
+@fig-climate-trajectory shows the solar generation trajectories under the three climate scenarios. The baseline (green) represents generation without climate change impacts beyond the temperature derating already embedded in the main model. RCP 4.5 (orange) represents a moderate climate pathway with global warming held to approximately two degrees Celsius by 2100, while RCP 8.5 (red, dashed) represents a high-emissions pathway with much greater warming.
 
-The central finding is reassuring for policymakers: solar energy is robust to climate change. Even under the pessimistic RCP 8.5 scenario, the cumulative generation loss over thirty years is less than one percent. The temperature derating effect (higher ambient temperatures reduce panel efficiency through increased cell temperature) is real but modest in magnitude, and it is partially offset by the fact that panel degradation — already modelled in the main CBA at 0.5% per year — accounts for a much larger source of output decline than climate change. The 7.5% climate adaptation premium embedded in CAPEX estimates across the main CBA more than compensates for any climate-driven output reduction, providing a substantial buffer for infrastructure hardening against extreme weather events that are not captured in the GHI and temperature projections.
+Solar energy proves robust to climate change. Even under the pessimistic RCP 8.5 scenario, the cumulative generation loss over thirty years is less than one percent. The 7.5% climate adaptation premium embedded in CAPEX estimates across the main CBA more than compensates for any climate-driven output reduction.
 
 ---
 
 ## C.3 Transport Electrification (P8) {#sec-transport}
 
-This supplementary module analyses the electrification of the Maldives' land transport fleet as an adjacent benefit of grid decarbonisation. Transport electrification is treated separately from the electricity CBA because it depends on vehicle fleet turnover dynamics, consumer adoption behaviour, and fuel pricing decisions that are largely independent of the utility-sector planning addressed in the main analysis. Nevertheless, the synergy between the two sectors is significant: electric vehicles charged from a decarbonised grid deliver both transport emissions reductions and electricity demand growth that improves the utilisation of renewable energy assets.
+This supplementary module analyses land transport electrification. Transport is treated separately because it depends on vehicle fleet turnover, consumer adoption, and fuel pricing decisions largely independent of the utility sector. Nevertheless, the synergy is significant: EVs charged from a decarbonised grid deliver both transport emissions reductions and demand growth that improves RE asset utilisation.
 
 ```{python}
 #| label: transport-summary
@@ -213,23 +213,23 @@ if tp_scenarios:
 
 @fig-ev-adoption illustrates the three logistic S-curve adoption scenarios. The S-curve shape reflects the typical pattern of technology diffusion: slow initial adoption as early adopters take up the technology, rapid acceleration as costs fall and charging infrastructure expands, and eventual saturation as the remaining fleet turns over naturally. The three scenarios bracket a wide range of policy ambition, from minimal intervention (low) to aggressive incentives and infrastructure investment (high).
 
-The transport scenarios table above shows that even the medium adoption scenario generates substantial economic benefits. The positive NPV and BCR above one indicate that transport electrification is economically worthwhile in its own right, independent of the electricity sector transition — although the benefits are substantially larger when EVs are charged from renewable rather than diesel electricity. The CO₂ savings reflect the combined effect of more efficient electric drivetrains (which use approximately three to four times less energy per kilometre than internal combustion engines) and cleaner electricity generation. The health co-benefits from reduced urban air pollution — particularly important on the densely populated islands of Greater Malé — are captured in the NPV through the same health damage valuation methodology used in the main electricity CBA.
+The transport scenarios table above shows that even the medium adoption scenario generates substantial economic benefits. The positive NPV and BCR above one indicate that transport electrification is economically worthwhile, with benefits larger when EVs are charged from renewable rather than diesel electricity.
 
-The fundamental insight is one of cross-sectoral synergy: electricity decarbonisation and transport electrification are mutually reinforcing. A decarbonised grid makes EV adoption more environmentally beneficial, while EV adoption increases electricity demand and improves the utilisation of renewable energy assets, potentially shifting demand to periods of peak solar generation through smart charging. This "double decarbonisation dividend" strengthens the economic case for both transitions and argues for coordinated rather than siloed policy planning.
+Electricity decarbonisation and transport electrification are mutually reinforcing. A decarbonised grid makes EV adoption more environmentally beneficial, while EV adoption increases electricity demand and improves RE asset utilisation.
 
 ---
 
 ## C.4 Real Options Analysis {#sec-real-options}
 
-Standard NPV analysis treats each investment decision as a "now-or-never" proposition: the project is either undertaken immediately at today's estimated costs, or it is foregone entirely. Real options theory, as developed by Dixit and Pindyck (1994), recognises that this framing ignores a valuable asset that decision-makers actually possess — the ability to **wait and learn** before committing irreversible capital. This option to wait has quantifiable economic value when three conditions hold simultaneously: the investment is substantially irreversible, the future is genuinely uncertain, and the decision can be deferred without prohibitive cost. All three conditions apply to the India submarine cable.
+Standard NPV analysis treats each investment decision as a "now-or-never" proposition: the project is either undertaken immediately at today's estimated costs, or it is foregone entirely. Real options theory, as developed by Dixit and Pindyck (1994), recognises that this framing ignores a valuable asset — the ability to **wait and learn** before committing irreversible capital.
 
 ### Option Value of Waiting
 
-A submarine cable, once laid, cannot be redeployed to another location or repurposed for another function. The two-and-a-half billion dollars committed to the cable is effectively sunk from the moment construction begins. Meanwhile, the key determinants of the cable's value — battery storage costs, India's electricity export capacity and willingness, bilateral political relations, and the Maldives' own renewable energy performance — are all evolving rapidly and will be substantially clearer five to ten years from now than they are today.
+A submarine cable, once laid, cannot be redeployed to another location or repurposed for another function. The two-and-a-half billion dollars committed to the cable is effectively sunk from the moment construction begins. Meanwhile, the key determinants of the cable's value — battery storage costs, India's electricity export capacity and willingness, bilateral political relations, and the Maldives' own renewable energy performance — are all evolving rapidly and will be far clearer five to ten years from now than they are today.
 
 The cable's marginal BCR versus domestic renewable energy is below one, meaning that the additional investment beyond what a domestic renewable energy pathway would require does not generate commensurate additional benefits at current cost estimates. Each year of delay resolves additional uncertainty: battery costs decline at eighteen percent per capacity doubling (Wright's Law), revealing whether domestic storage can substitute for imported baseload power; India's export policies and grid composition become clearer; and the Maldives' own renewable energy deployment generates performance data that reduces projection uncertainty.
 
-The cost of delay is the foregone cable benefits — approximately one hundred and fifty to two hundred million dollars per year in fuel savings that could have been captured earlier. But these foregone benefits are substantially offset by the fuel savings captured through domestic renewable energy deployment, which can proceed in parallel with the cable deferral and which the model shows to be highly cost-effective in its own right.
+The cost of delay is the foregone cable benefits — approximately one hundred and fifty to two hundred million dollars per year in fuel savings that could have been captured earlier. But these foregone benefits are largely offset by the fuel savings captured through domestic renewable energy deployment, which can proceed in parallel with the cable deferral and which the model shows to be highly cost-effective in its own right.
 
 ### Staging Strategy
 
@@ -243,7 +243,7 @@ The real options perspective strengthens the case for S3 (National Grid) and S4 
 
 ## C.5 International Benchmarking {#sec-benchmarks}
 
-Situating this study within the broader landscape of published SIDS energy analyses serves two purposes. First, it validates the model's parameter choices and methodological framework against established practice, ensuring that the analysis is neither an outlier nor methodologically idiosyncratic. Second, it identifies where this study advances beyond existing work, contributing to the global evidence base that informs energy transition policy in small island developing states. The following table summarises ten published studies against which this analysis is benchmarked.
+Comparing this study with published SIDS energy analyses serves two purposes. First, it validates the model's parameter choices and methodological framework against established practice. Second, it identifies where this study advances beyond existing work, contributing to the global evidence base.
 
 ```{python}
 #| label: tbl-benchmarks
@@ -271,4 +271,4 @@ Markdown(md)
 
 This study's parameter values fall comfortably within the published ranges for SIDS energy analyses. The six-percent discount rate follows ADB SIDS practice and is consistent with the central tendency of the studies reviewed. The solar CAPEX of fifteen hundred dollars per kilowatt reflects the installation premium characteristic of island environments — above global utility-scale costs but below the upper end of the range observed in smaller Pacific island installations. The model's LCOE range of nine to thirty-four cents per kilowatt-hour spans the full spectrum from the most cost-effective outer-island solar-battery installations to the most expensive diesel generation on remote islands, consistent with the ranges reported across the benchmarked studies.
 
-Where this study makes its most distinctive contribution is in the breadth and depth of its uncertainty analysis and supplementary frameworks. The combination of Monte Carlo simulation, tornado diagrams, switching value analysis, multi-horizon sensitivity, and declining discount rate sensitivity provides a more comprehensive robustness assessment than any single published SIDS CBA identified in the literature review. The seven-scenario comparison exceeds the typical two-to-three scenario framework found in most SIDS energy studies, enabling robust ranking rather than binary comparison. The island-level least-cost engine with explicit land constraints provides spatial granularity that aggregate national models cannot capture. The distributional analysis using household-level microdata, the multi-criteria assessment, the real options framing, the endogenous learning curves, and the climate damage scenarios each address dimensions of the investment decision that standard CBA overlooks. Together, these extensions position the analysis at the frontier of SIDS energy CBA methodology while maintaining the transparency and reproducibility that publication-quality research demands.
+This study’s main contribution beyond the existing literature lies in the breadth of its uncertainty treatment and supplementary analyses. The combination of Monte Carlo, tornado diagrams, switching-value analysis, multi-horizon sensitivity, and declining discount rate schedules provides more comprehensive robustness testing than any single published SIDS CBA identified in the literature review. The seven-scenario comparison exceeds the typical two-to-three scenario framework, enabling ranking rather than binary comparison. The island-level least-cost engine with explicit land constraints provides spatial granularity that aggregate national models cannot capture. Distributional analysis using household microdata, multi-criteria scoring, real options framing, endogenous learning curves, and climate damage scenarios each address a dimension that standard CBA overlooks.

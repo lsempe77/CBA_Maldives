@@ -9,15 +9,15 @@ sys.path.insert(0, ".")
 from _common import *
 ```
 
-This appendix provides the complete mathematical specification of the Maldives Energy CBA model. Every equation implemented in the model code is documented here with full parameter traceability to the central parameter registry (`parameters.csv`). For the policy-oriented summary of the methodology, see @sec-methodology.
+This appendix documents the complete mathematical specification of the CBA model. Every equation is traced to its parameters in `parameters.csv`. For the policy summary, see @sec-methodology.
 
-The equations are organised to mirror the model's computational pipeline: demand projection feeds into cost and emissions calculations, which flow into the NPV framework, which in turn supports sensitivity analysis and multi-criteria assessment. Each equation is labelled with a prefix (EQ-D for demand, EQ-C for costs, EQ-E for emissions, EQ-N for NPV, EQ-L for least-cost) for cross-referencing with the model codebase and the full CBA methodology audit document.
+Equations follow the model's computation pipeline — demand, costs, emissions, NPV, sensitivity — and are labelled by prefix (EQ-D for demand, EQ-C for costs, EQ-E for emissions, EQ-N for NPV, EQ-L for least-cost).
 
 ## A.1 Model Architecture {#sec-arch}
 
-The model follows a strictly layered architecture in which a single parameter file serves as the authoritative source for every numeric value used in the analysis. This design ensures that changing any parameter — whether for sensitivity analysis, Monte Carlo simulation, or scenario calibration — propagates automatically through the entire computation chain without risk of inconsistency between different model components.
+A single parameter file (`parameters.csv`) serves as the authoritative source for every numeric value. Changing any parameter propagates automatically through the entire computation chain, ensuring consistency across sensitivity analysis, Monte Carlo, and scenario calibration.
 
-The model follows a strictly layered architecture:
+**Architecture:**
 
 ```
 parameters.csv  →  config.py  →  get_config()  →  model code
@@ -37,9 +37,9 @@ parameters.csv  →  config.py  →  get_config()  →  model code
 1. Every parameter lives in `parameters.csv` with 7 columns: Category, Parameter, Value, Low, High, Unit, Source
 2. `config.py` loads the CSV into typed Python dataclasses via `get_config()`
 3. No numeric parameter appears as a literal in any `.py` script — only mathematical constants (π, 8760 hours/year, unit conversions)
-4. Sensitivity analysis and Monte Carlo work by modifying the config object — the same parameter pipeline ensures consistency
+4. Sensitivity analysis and Monte Carlo work by modifying the config object, ensuring parameter consistency
 
-This architecture enforces a zero-hardcoded-values discipline that prevents the silent divergence between parameter files and code that plagues many energy models. Every numeric value that enters any calculation can be traced back to a specific row in the CSV file, with its source citation, low and high bounds for sensitivity analysis, and unit specification.
+Every numeric input can be traced to a specific CSV row with its source, bounds, and unit.
 
 **Horizons:** 20 years (2026–2046), 30 years (2026–2056, default), 50 years (2026–2076)
 
@@ -51,7 +51,7 @@ This architecture enforces a zero-hardcoded-values discipline that prevents the 
 
 ## A.2 Demand Module
 
-The demand module projects electricity consumption over the analysis horizon. The Maldives' electricity demand has grown at approximately five percent per year over the past decade, driven by population growth, urbanisation, rising incomes, and expanding tourism infrastructure. The demand equations translate this historical pattern into forward projections that account for scenario-specific growth rates and price-induced demand effects.
+Demand has grown at ~5%/yr (population, urbanisation, tourism). The equations project forward with scenario-specific growth and price-induced effects.
 
 ### EQ-D1: Compound Demand Growth
 
@@ -82,8 +82,6 @@ where $s_r = 0.52$, $s_c = 0.24$, $s_p = 0.24$ (SAARC 2005 Energy Balance for th
 ---
 
 ## A.3 Cost Module
-
-The cost module computes capital expenditure, operating expenditure, fuel costs, and generation output for each technology across the analysis horizon. Solar PV and battery costs incorporate both learning-curve-driven cost declines and climate adaptation premiums, while diesel costs incorporate the two-part fuel consumption curve validated against island-level operational data. The equations below specify each cost component with its full parameter set.
 
 ### EQ-C1: Solar PV CAPEX
 
@@ -149,8 +147,6 @@ where $C_{\text{HH}} = \$200$/household, $N_{\text{HH}} = 100{,}000$, $Y_{\text{
 
 ## A.4 Emissions Module
 
-The emissions module quantifies the environmental impact of each scenario in terms of carbon dioxide emissions and their monetised social cost. Diesel generation produces direct emissions at a rate determined by the IPCC Tier 1 emission factor, while imported electricity from the Indian grid carries an attributed emission factor that declines over time as India decarbonises its power sector. The social cost of carbon follows the US EPA's interim schedule, growing over time to reflect increasing marginal climate damages.
-
 ### EQ-E1: Diesel CO₂ Emissions
 
 $$E_{\text{diesel}} = G_{\text{kWh}} \times EF_{\text{CO}_2}$$
@@ -178,8 +174,6 @@ where $C_{\text{noise}} = \$5$/MWh, $C_{\text{spill}} = \$3$/MWh, $C_{\text{biod
 ---
 
 ## A.5 NPV / CBA Calculator
-
-The NPV calculator is the central aggregation engine that combines all cost and benefit streams into the summary metrics reported in @sec-results. It implements the standard discounted cash flow framework recommended by the Asian Development Bank for infrastructure appraisal in developing countries, augmented with five distinct benefit streams that capture both market and non-market values of the energy transition.
 
 ### EQ-N1: Net Present Value
 
@@ -239,7 +233,7 @@ $$PV_t = \frac{1}{\prod_{s=0}^{t-1}(1 + r_s)}$$
 
 ## A.6 Least-Cost Electrification Engine
 
-The least-cost engine determines the optimal generation technology for each of the Maldives' approximately one hundred and seventy inhabited islands, based on the full-lifecycle levelised cost of electricity (LCOE) for each technology option. This per-island approach is essential because the economics of small-island power generation vary dramatically with island size, population, solar resource, land availability, and diesel transport costs. An island with five hundred residents has fundamentally different optimal technology from one with fifty thousand.
+Per-island technology assignment is essential because the economics of small-island power generation vary dramatically with island size, population, solar resource, land availability, and diesel transport costs. An island with five hundred residents has fundamentally different optimal technology from one with fifty thousand.
 
 The per-island technology assignment uses discounted LCOE computed over the project lifetime with reinvestment:
 
@@ -267,8 +261,6 @@ where $f_{\text{solar}}$ is the usable land fraction for solar (varies by island
 ---
 
 ## A.7 Sensitivity & Monte Carlo
-
-The sensitivity and Monte Carlo modules systematically explore how parameter uncertainty affects the model's conclusions. One-way sensitivity analysis identifies which individual parameters have the greatest influence on results, while Monte Carlo simulation captures the joint effect of simultaneous variation in all uncertain parameters, accounting for correlations between related variables.
 
 ### One-Way Sensitivity
 

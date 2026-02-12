@@ -13,12 +13,12 @@ import numpy as np
 # Results {#sec-results}
 
 ::: {.chapter-opening}
-This chapter presents the core economic findings of the cost-benefit analysis. It examines the present-value costs, savings, benefit-cost ratios, levelised costs of electricity, and emissions trajectories for all seven scenarios, and provides a detailed incremental analysis comparing the India cable against domestic renewable alternatives.
+Savings of `{python} f"${savings_min_b:,.1f}B to ${savings_max_b:,.1f}B"` in present value, across every alternative. This chapter quantifies the gap: present-value costs, benefit-cost ratios, levelised costs, and emissions trajectories.
 :::
 
 ## The Big Picture: All Alternatives Beat Diesel
 
-The most important finding of this analysis can be stated simply: every single alternative pathway generates billions of dollars in net economic benefits compared to continued diesel dependence. This result is not marginal or ambiguous — the savings are large, they are consistent across scenarios, and as demonstrated in @sec-sensitivity, they are robust to wide variation in key parameters.
+Every alternative pathway generates net economic benefits compared to continued diesel dependence.
 
 ```{python}
 #| label: fig-npv-savings
@@ -43,13 +43,13 @@ best_savings = get_incremental(best_sid)["npv_savings"] / 1e9
 worst_savings = get_incremental(worst_sid)["npv_savings"] / 1e9
 ```
 
-The figure above displays the net present value of savings for each alternative scenario relative to the diesel business-as-usual counterfactual. The results are unambiguous: every alternative saves the Maldives between `{python} f"${worst_savings:,.1f}"` billion and `{python} f"${best_savings:,.1f}"` billion in present value over the `{python} f"{cba['end_year'] - cba['base_year']}"`-year analysis period. The `{python} SCENARIO_LABELS[best_sid]` scenario achieves the highest NPV savings, while even `{python} SCENARIO_LABELS[worst_sid]` — the least advantageous alternative — delivers substantial net benefits. The magnitude of these savings reflects the enormous cumulative cost of diesel fuel over three decades, which dwarfs the upfront capital investment required for any of the transition pathways.
+Every alternative saves `{python} f"${worst_savings:,.1f}"` to `{python} f"${best_savings:,.1f}"` billion in present value over `{python} f"{cba['end_year'] - cba['base_year']}"` years. `{python} SCENARIO_LABELS[best_sid]` leads; even `{python} SCENARIO_LABELS[worst_sid]}` — the least advantageous — delivers substantial benefits. The magnitude reflects cumulative diesel costs over three decades, which outweigh transition capital.
 
-It is worth emphasising that these savings are calculated at a `{python} f"{cba['discount_rate']*100:.0f}"` per cent real discount rate, which heavily discounts benefits occurring in later years. At lower discount rates (`{python} f"{param('Discount Rate', 'Low')*100:.0f}"`–4 per cent, as used by several OECD development agencies), the savings would be even larger, because the long tail of fuel cost avoidance in the 2040s and 2050s receives greater weight. Conversely, even at the high end of the ADB range (`{python} f"{param('Discount Rate', 'High')*100:.0f}"` per cent), all alternatives still dominate diesel — the breakeven discount rate for every scenario is well above `{python} f"{irr_min:.0f}"` per cent.
+At the base `{python} f"{cba['discount_rate']*100:.0f}"`% discount rate, late-year benefits are heavily discounted. Lower rates (`{python} f"{param('Discount Rate', 'Low')*100:.0f}"`–4%) would increase savings further; at the high end (`{python} f"{param('Discount Rate', 'High')*100:.0f}"`%), all alternatives still dominate diesel — breakeven rates exceed `{python} f"{irr_min:.0f}"`%.
 
 ## Cost Breakdown by Component
 
-Understanding *why* the alternatives are cheaper requires examining the composition of costs under each pathway. The stacked bar chart below decomposes the present value of total system costs into four components: capital expenditure (the upfront investment in solar panels, batteries, cables, generators, and other infrastructure), operating expenditure (annual maintenance, labour, and non-fuel running costs), fuel costs (diesel and LNG purchases), and power purchase agreement imports (the cost of electricity imported via the India cable).
+The cost advantage of renewables becomes clear when lifetime costs are decomposed by component. The stacked chart below separates present-value costs into CAPEX, OPEX, fuel, and PPA imports.
 
 ```{python}
 #| label: fig-cost-breakdown
@@ -79,11 +79,11 @@ fig.update_layout(
 fig.show()
 ```
 
-The cost structure reveals a fundamental shift between diesel and renewable pathways. Under business-as-usual, the dominant cost component is fuel, which accounts for `{python} f"${cba['npv_results']['bau']['pv_fuel']/1e9:,.1f}"` billion or approximately `{python} f"{cba['npv_results']['bau']['pv_fuel']/cba['npv_results']['bau']['pv_total_costs']*100:.0f}"` per cent of total lifetime system costs. This reflects the inherent economics of diesel generation: the capital cost of generators is relatively modest, but the ongoing fuel expenditure compounds relentlessly over `{python} f"{cba['end_year'] - cba['base_year']}"` years, especially as diesel prices escalate and demand grows.
+The cost composition differs sharply between diesel and renewable pathways. Under BAU, fuel dominates at `{python} f"${cba['npv_results']['bau']['pv_fuel']/1e9:,.1f}"` billion — roughly `{python} f"{cba['npv_results']['bau']['pv_fuel']/cba['npv_results']['bau']['pv_total_costs']*100:.0f}"` per cent of total lifetime costs.
 
-The renewable scenarios invert this cost structure. Capital expenditure — for solar panels, battery systems, and in some cases submarine cables and LNG terminals — becomes the dominant cost component, while fuel costs shrink dramatically or disappear entirely. The critical insight is that even though the upfront CAPEX of the renewable pathways is higher than the BAU generator replacement cost, the total lifetime system cost is substantially lower because the avoided fuel expenditure far outweighs the additional capital investment. Solar panels and batteries, once installed, generate electricity at near-zero marginal cost for decades, whereas diesel generators require a continuous stream of expensive imported fuel.
+Renewable scenarios invert this. Capital expenditure becomes the largest component, while fuel costs shrink or disappear. Total lifetime system cost falls because avoided fuel outweighs additional capital. Once installed, solar and battery systems have near-zero marginal operating cost.
 
-The Full Integration scenario (S2) is unique in exhibiting significant PPA import costs alongside CAPEX, reflecting the ongoing payments for electricity imported through the India cable. While these import costs are far lower than the diesel fuel costs they displace, they represent a continuing outflow that the purely domestic renewable scenarios avoid entirely.
+Full Integration (S2) also exhibits significant PPA import costs alongside CAPEX, reflecting ongoing payments for electricity imported through the India cable. These are lower than diesel fuel costs but represent a continuing outflow that domestic renewable scenarios avoid.
 
 ### Why Fuel Costs Remain Substantial Even Under Renewable Scenarios {#sec-fuel-persistence}
 
@@ -107,7 +107,7 @@ _worst_re_sid = min(ALT_SCENARIOS, key=lambda s: _re_finals[s])
 _worst_re_pct = _re_finals[_worst_re_sid]
 ```
 
-A natural question arises from @fig-cost-breakdown: if all alternative scenarios involve substantial renewable energy investment, why does fuel still constitute between `{python} f"{min(_fuel_pcts[s] for s in ALT_SCENARIOS):.0f}"` and `{python} f"{max(_fuel_pcts[s] for s in ALT_SCENARIOS):.0f}"` per cent of total lifetime costs in the domestic scenarios (S3–S7)? The answer lies in a set of binding physical, geographic, and technical constraints that limit the achievable renewable energy penetration on small coral islands.
+Why does fuel still constitute `{python} f"{min(_fuel_pcts[s] for s in ALT_SCENARIOS):.0f}"`–`{python} f"{max(_fuel_pcts[s] for s in ALT_SCENARIOS):.0f}"` per cent of total lifetime costs in the domestic scenarios (S3–S7), even with major renewable investment? The answer: binding physical, geographic, and technical constraints limit achievable RE penetration on small coral islands.
 
 **Land scarcity.** The most fundamental constraint is that the Maldives has only `{python} f"{param('Total Inhabited Island Area'):.0f}"` km² of total inhabited island area, spread across nearly 200 islands. Solar PV requires approximately `{python} f"{param('Area Per kW'):.0f}"` m² per installed kW (including panel spacing and access), and the model caps the usable share of island area at `{python} f"{param('Max Land Fraction')*100:.0f}"` per cent to preserve land for housing, agriculture, vegetation, and public use. On the smallest and most densely populated islands, solar demand for space exceeds this limit, forcing them into diesel-hybrid configurations regardless of economics. Across all inhabited islands, this physical ceiling means that rooftop and ground-mount solar alone cannot supply the growing national demand.
 
@@ -117,9 +117,9 @@ A natural question arises from @fig-cost-breakdown: if all alternative scenarios
 
 Note that the Government of Maldives targets **33 per cent** renewable energy in electricity consumption by 2028 (ADB Energy Roadmap 2024–2033), which requires approximately 800 GWh from renewable sources against projected demand of 2,400 GWh. The model's deployment trajectory is calibrated to this near-term target, and the scenarios explore what happens as the transition continues beyond 2028 toward 2056, with the ultimate RE share determined by the interplay of deployment speed, land constraints, and demand growth.
 
-**Storage duration.** Solar panels produce electricity for roughly six to eight hours per day, concentrated around midday. The model assumes `{python} f"{param('Storage Hours'):.0f}"` hours of battery storage per site, which covers the evening demand peak but cannot carry load through the entire night. With a maximum depth of discharge of `{python} f"{param('Battery DoD Max')*100:.0f}"` per cent and round-trip efficiency of `{python} f"{param('Round-trip Efficiency')*100:.0f}"` per cent, the usable energy per cycle is further reduced. Diesel backup therefore remains essential for overnight and extended cloudy-period generation. Increasing storage to eight or more hours would substantially raise RE penetration, but at current battery prices (`{python} f"${param('CAPEX 2026', category='Battery'):.0f}"`/kWh installed), the cost of doubling storage duration exceeds the fuel savings it would displace.
+**Storage duration.** Solar panels produce electricity for roughly six to eight hours per day, concentrated around midday. The model assumes `{python} f"{param('Storage Hours'):.0f}"` hours of battery storage per site, which covers the evening demand peak but cannot carry load through the entire night. With a maximum depth of discharge of `{python} f"{param('Battery DoD Max')*100:.0f}"` per cent and round-trip efficiency of `{python} f"{param('Round-trip Efficiency')*100:.0f}"` per cent, the usable energy per cycle is further reduced. Diesel backup therefore remains essential for overnight and extended cloudy-period generation. Doubling storage duration to eight hours could push RE penetration toward 70–75 per cent on favourable sites, but at current battery prices (`{python} f"${param('CAPEX 2026', category='Battery'):.0f}"`/kWh installed), the additional storage cost exceeds the fuel savings it would displace.
 
-**The net effect** is that even the most ambitious technically feasible scenario (S6 Maximum RE) reaches only `{python} f"{_best_re_pct:.0f}"` per cent renewable penetration by `{python} f"{cba['end_year']}"`, while the more conservative pathways (S3, S4) plateau around `{python} f"{_re_finals['national_grid']:.0f}"` to `{python} f"{_re_finals['islanded_green']:.0f}"` per cent. The remaining generation gap — ranging from `{python} f"{_diesel_shares[_best_re_sid]:.0f}"` to `{python} f"{_diesel_shares[_worst_re_sid]:.0f}"` per cent — must be filled by diesel (or LNG in S7), and the cumulative fuel cost of that residual fossil generation over `{python} f"{cba['end_year'] - cba['base_year']}"` years is what produces the large red bars visible in every scenario. This persistent fuel exposure is precisely why the sensitivity analysis (@sec-sensitivity) identifies diesel price as the single most influential parameter across all pathways: even after transition, the Maldives remains partially dependent on imported fuel, and the economic case for transition is strengthened — not weakened — by this reality, because the alternative is *total* dependence under BAU.
+**In aggregate,** even the most ambitious scenario (S6 Maximum RE) reaches only `{python} f"{_best_re_pct:.0f}"` per cent renewable penetration by `{python} f"{cba['end_year']}"`, while S3 and S4 plateau around `{python} f"{_re_finals['national_grid']:.0f}"` to `{python} f"{_re_finals['islanded_green']:.0f}"` per cent. The remaining gap (`{python} f"{_diesel_shares[_best_re_sid]:.0f}"` to `{python} f"{_diesel_shares[_worst_re_sid]:.0f}"` per cent) must be filled by diesel (or LNG in S7), and the cumulative fuel cost of that residual fossil generation over `{python} f"{cba['end_year'] - cba['base_year']}"` years produces the large red bars visible in every scenario. This persistent fuel exposure is why the sensitivity analysis (@sec-sensitivity) identifies diesel price as the single most influential parameter: even after transition, the Maldives remains partially dependent on imported fuel. The economic case for transition is strengthened, not weakened, by this reality, because the alternative is *total* dependence under BAU.
 
 ## Renewable Energy Ceiling: Can the Maldives Reach 70–80 Per Cent? {#sec-re-ceiling}
 
@@ -234,7 +234,7 @@ fig.update_layout(
 fig.show()
 ```
 
-@fig-re-trajectory reveals a striking and counterintuitive pattern: **the RE share does not rise monotonically** but instead peaks in the late 2030s before gradually declining. Under the Maximum RE scenario, renewable energy reaches approximately `{python} f"{re_2035:.0f}"` per cent by 2035 and peaks around `{python} f"{re_2040:.0f}"` per cent by 2040 — temporarily exceeding the 70 per cent threshold — before falling back to `{python} f"{re_2050:.0f}"` per cent by 2050 and `{python} f"{re_2056:.0f}"` per cent by `{python} f"{cba['end_year']}"`. This phenomenon occurs because renewable energy capacity is bounded by physical constraints (land area, deployment speed, technology availability), while electricity demand continues growing at approximately `{python} f"{growth_rate*100:.0f}"` per cent per year.
+@fig-re-trajectory shows that **the RE share does not rise monotonically**. Under the Maximum RE scenario, renewable energy reaches approximately `{python} f"{re_2035:.0f}"` per cent by 2035 and peaks around `{python} f"{re_2040:.0f}"` per cent by 2040, temporarily exceeding the 70 per cent threshold, before falling back to `{python} f"{re_2050:.0f}"` per cent by 2050 and `{python} f"{re_2056:.0f}"` per cent by `{python} f"{cba['end_year']}"`. This occurs because renewable energy capacity is bounded by physical constraints (land area, deployment speed, technology availability), while electricity demand continues growing at approximately `{python} f"{growth_rate*100:.0f}"` per cent per year.
 
 ### Supply-Side RE Potential
 
@@ -255,7 +255,7 @@ The combined Malé-region RE potential (rooftop + near-shore + floating + wind) 
 
 At `{python} f"{growth_rate*100:.0f}"` per cent annual growth, national electricity demand roughly doubles every 14 years. By 2050, demand is projected to reach approximately `{python} f"{demand_2050:,.0f}"` GWh — nearly four times the 2026 level. Even if every available renewable technology is deployed at maximum capacity, the fixed RE generation ceiling means that the *share* of renewable energy in total supply inevitably declines once the deployment programme is complete and demand continues growing.
 
-This is the fundamental arithmetic challenge: **renewable capacity is area-constrained; electricity demand is not.** The Maldives cannot manufacture more island area, and floating solar and wind capacity — while helpful — are bounded by lagoon area, environmental constraints, and technical feasibility.
+The arithmetic is clear: **renewable capacity is area-constrained; electricity demand is not.** The Maldives cannot manufacture more island area, and floating solar and wind capacity, while helpful, are bounded by lagoon area, environmental constraints, and technical feasibility.
 
 ### Pathways to Sustained 70 Per Cent or Higher
 
@@ -276,7 +276,7 @@ The Maximum RE scenario demonstrates that 70 per cent renewable energy penetrati
 
 ## Benefit-Cost Ratios and Returns
 
-The benefit-cost ratio and internal rate of return provide complementary perspectives on the economic attractiveness of each transition pathway. The BCR indicates the total present value of benefits generated per dollar of incremental cost, with any value above 1.0 indicating that the investment creates net value for society. The IRR identifies the discount rate at which the project breaks even, with values exceeding the `{python} f"{cba['discount_rate']*100:.0f}"` per cent hurdle rate confirming economic viability.
+BCR >1 means net value creation; IRR above the `{python} f"{cba['discount_rate']*100:.0f}"`% hurdle confirms viability.
 
 ```{python}
 #| label: fig-bcr-irr
@@ -314,7 +314,7 @@ fig.update_layout(height=400)
 fig.show()
 ```
 
-The left panel shows that all six alternatives achieve BCRs well above the 1.0 threshold, meaning that society receives substantially more in benefits than it pays in costs under every transition pathway. The right panel shows that the IRR for every scenario exceeds the `{python} f"{cba['discount_rate']*100:.0f}"` per cent hurdle rate (indicated by the dashed red line), confirming that the transition investments would generate returns above the social opportunity cost of capital even under more conservative assumptions about the discount rate. The scenarios with the highest BCRs tend to be those that achieve the deepest displacement of diesel fuel, because the avoided fuel costs constitute the largest benefit stream. The LNG scenario (S7) achieves the highest IRR, reflecting its combination of relatively modest CAPEX and rapid, large fuel cost savings from replacing expensive diesel with cheaper gas — even though it does not achieve the highest absolute NPV savings.
+All six alternatives achieve BCRs well above 1.0 and IRRs above the `{python} f"{cba['discount_rate']*100:.0f}"`% hurdle (dashed red line). Highest BCRs go to scenarios with deepest diesel displacement. LNG (S7) achieves the highest IRR — modest CAPEX plus rapid fuel savings — though not the highest absolute NPV.
 
 The full results table below consolidates all key metrics for ready comparison across scenarios.
 
@@ -336,11 +336,11 @@ from IPython.display import Markdown
 Markdown(tbl_fmt.to_markdown(index=False))
 ```
 
-The summary table reinforces the central finding that every alternative pathway is economically superior to continued diesel dependence, and it allows the reader to see the trade-offs among them. The scenarios with the highest renewable energy shares tend to deliver the largest NPV savings, the lowest LCOE, and the deepest emissions reductions, but they may also require more capital and involve greater technological risk (as with floating solar in S6). The LNG scenario stands out for its combination of fast payback and high IRR, which reflects its bridging character — it achieves rapid cost savings by swapping one fossil fuel for a cheaper one, rather than by fundamentally transforming the technology base.
+Every alternative beats diesel. Highest RE shares deliver largest NPV, lowest LCOE, deepest emissions cuts — but may involve more capital and tech risk (floating solar in S6). LNG stands out for fast payback: it swaps fuels rather than transforming the technology base.
 
 ## LCOE Comparison
 
-The levelised cost of electricity provides the most intuitive metric for comparing generation costs across technologies and scenarios. Unlike total system cost or NPV, which are sensitive to demand projections and discount rates, LCOE expresses the average cost of producing one unit of electricity over the project lifetime, making it directly comparable to retail tariffs, benchmark studies, and international experience.
+Levelised cost expresses average cost per kWh over project lifetime — directly comparable to tariffs and benchmarks.
 
 ```{python}
 #| label: fig-lcoe
@@ -381,11 +381,11 @@ fig.update_layout(
 fig.show()
 ```
 
-The LCOE comparison chart places the Maldives scenarios in the context of international benchmarks. The diesel BAU LCOE substantially exceeds global diesel mini-grid averages, reflecting the particular cost penalties of small-island generation: fuel transport surcharges, scale inefficiencies of small generators, and high labour costs for maintenance on remote islands. The renewable-based scenarios achieve LCOEs that approach the SIDS average for renewable generation and, in some cases, come close to global utility-scale solar benchmarks — a remarkable achievement for a small island nation with severe logistical constraints. The gap between the BAU LCOE and the best alternative LCOEs represents the per-unit cost advantage of transition, which compounds into the billions of dollars of NPV savings documented above.
+Diesel BAU LCOE exceeds global mini-grid averages — fuel transport, scale inefficiencies, remote maintenance. Renewable scenarios approach SIDS averages and, in some cases, near global utility-scale solar — remarkable for a small island nation. The gap represents the per-unit cost advantage that compounds into billions in NPV savings.
 
 ## Emissions Trajectories
 
-Climate impact is a critical dimension of the energy transition decision, both because the Maldives has committed to ambitious emissions reduction targets under the Paris Agreement and because, as the world's lowest-lying nation, it has an existential stake in global climate action. The figure below compares cumulative CO₂ emissions across all seven scenarios over the 30-year analysis period.
+The Maldives has Paris Agreement commitments and, as the lowest-lying nation, an existential stake in climate action.
 
 ```{python}
 #| label: fig-emissions
@@ -410,13 +410,13 @@ best_em = summaries[best_em_sid]["total_emissions_mtco2"]
 reduction_pct = (1 - best_em / bau_em) * 100
 ```
 
-The emissions comparison reveals the enormous environmental dividend of transition. Under diesel BAU, the Maldives electricity sector would emit `{python} f"{bau_em:,.1f}"` million tonnes of CO₂ over the `{python} f"{cba['end_year'] - cba['base_year']}"`-year period. The cleanest scenario, `{python} SCENARIO_SHORT[best_em_sid]`, reduces cumulative emissions by `{python} f"{reduction_pct:.0f}"` per cent to just `{python} f"{best_em:,.1f}"` million tonnes. Even the scenarios that retain some fossil fuel component — such as the LNG Transition (S7), which achieves a `{python} f"{(1 - param('LNG Emission Factor') / 0.72)*100:.0f}"` per cent reduction in emission intensity by switching from diesel to natural gas — deliver substantial climate benefits relative to the status quo.
+Under diesel BAU, the electricity sector would emit `{python} f"{bau_em:,.1f}"` million tonnes of CO₂ over `{python} f"{cba['end_year'] - cba['base_year']}"` years. The cleanest scenario, `{python} SCENARIO_SHORT[best_em_sid]`, cuts cumulative emissions by `{python} f"{reduction_pct:.0f}"` per cent to `{python} f"{best_em:,.1f}"` million tonnes. Even S7 (LNG), which retains fossil fuel, achieves a `{python} f"{(1 - param('LNG Emission Factor') / 0.72)*100:.0f}"` per cent reduction in emission intensity by switching from diesel to gas.
 
-The emissions ranking does not perfectly mirror the economic ranking, which creates an interesting policy tension. Some scenarios that are slightly less cost-optimal deliver substantially deeper decarbonisation, meaning that policymakers face a genuine choice about how much additional cost (if any) they are willing to accept to achieve greater emissions reduction. However, the trade-off is modest: the cost difference between the most economically efficient scenario and the most environmentally ambitious one is small relative to the savings both deliver versus diesel.
+The emissions ranking does not perfectly mirror the economic ranking. Some slightly less cost-optimal scenarios deliver substantially deeper decarbonisation, but the trade-off is modest: the cost difference between the most efficient and the most ambitious scenario is small relative to the savings both deliver versus diesel.
 
 ## The India Cable vs. Domestic Alternatives
 
-A question of particular strategic importance is whether the India submarine cable (S2) justifies its substantial cost premium over domestic renewable alternatives. While the cable clearly dominates diesel BAU (as do all alternatives), the relevant policy comparison is against the next-best option that does not require international infrastructure. The incremental analysis comparing S2 (Full Integration) against S3 (National Grid, the best domestic alternative) directly addresses this question.
+The cable beats diesel, but the more informative comparison is whether it beats the next-best domestic option.
 
 ```{python}
 #| label: fi-vs-ng
@@ -430,4 +430,4 @@ The incremental analysis reveals that the India cable requires `{python} fmt_usd
 While S2 saves money versus *diesel* (BCR `{python} f"{get_incremental('full_integration')['bcr']:.1f}"` ×), it does *not* save money versus *domestic solar+battery* (S3). The cable's marginal BCR of `{python} f"{fi_vs_ng['bcr']:.2f}"` means that every additional dollar invested in the cable yields only `{python} f"{fi_vs_ng['bcr']*100:.0f}"` cents of additional benefit. Domestic RE is more cost-effective.
 :::
 
-This finding does not categorically rule out the India cable — there may be strategic, geopolitical, or energy security arguments that fall outside the scope of economic CBA. However, it does establish that from a pure cost-effectiveness standpoint, the Maldives would be better served by investing the same capital in domestic solar, battery, and near-shore solar capacity. The cable's marginal economics would improve if India were to share the construction cost (the sensitivity analysis explores a 50 per cent cost-sharing scenario), if Indian electricity export prices were lower than assumed, or if domestic solar deployment encountered unforeseen cost escalation. These conditions are possible but uncertain, which reinforces the real-options argument for deferring the cable decision presented in @sec-real-options.
+Geopolitical or strategic considerations could override the economic analysis, but the cost-effectiveness evidence points clearly toward domestic alternatives. The same capital yields more benefit if invested in solar, battery, and near-shore capacity. The cable’s marginal economics would improve under 50 per cent cost-sharing with India, lower export prices, or domestic solar cost escalation. These conditions are plausible but speculative, which reinforces the real-options argument for deferring the cable decision (@sec-real-options).

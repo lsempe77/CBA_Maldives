@@ -12,12 +12,12 @@ from plotly.subplots import make_subplots
 # Sensitivity & Robustness {#sec-sensitivity}
 
 ::: {.chapter-opening}
-No cost-benefit analysis is more reliable than its underlying assumptions. Energy transition investments involve projecting costs, demand, fuel prices, and technology performance over three decades — a horizon over which substantial uncertainty is unavoidable. This chapter subjects the results presented in @sec-results to an unusually comprehensive suite of robustness tests: one-way sensitivity analysis across `{python} f"{n_mc_params}"` parameters, a `{python} f"{monte_carlo['n_iterations']:,}"`-iteration Monte Carlo simulation with correlated parameters, switching-value analysis that identifies the precise thresholds at which recommendations would change, multi-horizon comparison, and declining discount rate sensitivity.
+How far can the assumptions bend before the conclusions break? One-way sensitivity (`{python} f"{n_mc_params}"` parameters), `{python} f"{monte_carlo['n_iterations']:,}"`-iteration Monte Carlo, switching-value analysis, multi-horizon comparison, and declining discount rate schedules all test the same question.
 :::
 
 ## One-Way Sensitivity Analysis
 
-One-way sensitivity analysis examines how the NPV savings of each scenario respond when individual parameters are varied between their low and high bounds while all other parameters are held at their base values. This approach identifies the parameters to which the results are most sensitive, directing attention to the assumptions that matter most for the policy decision. The tornado diagram below displays the 15 most influential parameters for the National Grid scenario (S3), ranked by the total swing in NPV savings between the low and high parameter bounds.
+Varying individual parameters between low and high bounds (others at base) reveals which assumptions matter most. The tornado diagram ranks the 15 most influential parameters for the National Grid scenario (S3) by total NPV swing.
 
 ```{python}
 #| label: fig-tornado
@@ -78,9 +78,7 @@ else:
     print(f"No sensitivity data for {ref_scenario}")
 ```
 
-The tornado diagram reveals a clear hierarchy of parameter importance. The discount rate and diesel fuel price consistently emerge as the two most influential parameters across all scenarios, which is intuitive: the analysis compares a pathway that is heavily weighted toward upfront capital expenditure (renewables) against one that is dominated by ongoing fuel costs (diesel). The discount rate determines how aggressively future fuel savings are discounted relative to near-term capital outlays, while the diesel price directly determines the magnitude of the fuel savings being compared. Solar PV and battery capital costs also appear among the most influential parameters, though their impact is substantially smaller than the discount rate and fuel price. The growth rate of electricity demand matters because higher demand increases the total volume of fuel that would need to be purchased under BAU, thereby amplifying the fuel savings from transition.
-
-Importantly, even when the most sensitive parameters are pushed to their most adverse bounds — high discount rates combined with low diesel prices and high solar costs — the NPV savings remain positive for all alternative scenarios. This means that no single-parameter variation, within the credible range defined by the literature, can reverse the fundamental conclusion that transition dominates diesel. The one-way analysis thus provides initial evidence of robustness, which the Monte Carlo simulation below extends to multi-parameter simultaneous variation.
+Discount rate and diesel price dominate, which follows from the comparison of upfront capital (renewables) against ongoing fuel costs (diesel). Solar and battery CAPEX also matter, though less. No single-parameter variation reverses the case for transition.
 
 ## Monte Carlo Simulation
 
@@ -91,9 +89,7 @@ prob_beats = monte_carlo.get("prob_beats_bau", {})
 convergence = monte_carlo.get("convergence_diagnostics", {})
 ```
 
-While one-way sensitivity analysis varies parameters individually, real-world uncertainty involves many parameters changing simultaneously and often in correlated ways. The Monte Carlo simulation addresses this by varying `{python} f"{n_mc_params}"` parameters simultaneously across `{python} f"{n_iter:,}"` iterations, drawing from triangular distributions defined by the low, base, and high values in the parameter table. Crucially, the simulation employs Iman-Conover rank correlations to preserve realistic dependencies between parameters — for example, solar PV capital costs and battery capital costs tend to move together because they are driven by common factors such as global manufacturing scale, supply chain constraints, and commodity prices. Similarly, diesel price and LNG price are positively correlated because both are fossil fuels influenced by global energy market conditions.
-
-Each iteration produces a complete set of NPV calculations for all seven scenarios, enabling the construction of full probability distributions rather than single point estimates. The table below reports the probability that each alternative scenario generates positive NPV savings relative to diesel BAU across all iterations.
+Monte Carlo varies `{python} f"{n_mc_params}"` parameters simultaneously across `{python} f"{n_iter:,}"` iterations (triangular distributions, Iman-Conover rank correlations for realistic dependencies). Each iteration yields a complete NPV distribution across all seven scenarios.
 
 ```{python}
 #| label: tbl-mc-prob
@@ -108,14 +104,13 @@ if prob_beats:
     Markdown(mc_tbl.to_markdown(index=False))
 ```
 
-The results are striking in their consistency. Every alternative scenario beats diesel BAU in more than `{python} f"{min(prob_beats.values())*100:.0f}" if prob_beats else "95"` per cent of iterations, meaning that even when all `{python} f"{n_mc_params}"` parameters are simultaneously varied across their full uncertainty ranges, the fundamental conclusion holds: transition dominates diesel in virtually every plausible combination of circumstances. This is an exceptionally strong result by the standards of public investment appraisal, where BCRs barely above 1.0 and probability-of-success rates of 60–70 per cent are often considered sufficient to justify proceeding^[@adb_guidelines2017; @boardman2018.].
+Every alternative beats diesel BAU in >`{python} f"{min(prob_beats.values())*100:.0f}" if prob_beats else "95"`% of iterations — well above the 60–70% threshold typical in public investment appraisal^[@adb_guidelines2017; @boardman2018.].
 
 ::: {.callout-tip}
-## Result: Extremely robust
-Every alternative scenario beats BAU in **>`{python} f"{min(prob_beats.values())*100:.0f}" if prob_beats else "95"`%** of Monte Carlo iterations. The transition decision is insensitive to parameter uncertainty — the only question is *which* pathway to choose.
+Every alternative beats BAU in **>`{python} f"{min(prob_beats.values())*100:.0f}" if prob_beats else "95"`%** of Monte Carlo iterations. The case for leaving diesel does not depend on getting any individual parameter right.
 :::
 
-The figure below examines a more nuanced question: across the Monte Carlo iterations, which scenario is most frequently ranked as the best-performing alternative? This addresses not the binary question of whether to transition (which is settled) but the comparative question of which pathway is most likely to prove optimal.
+Beyond beating BAU, the Monte Carlo results also reveal which scenario ranks first most frequently:
 
 ```{python}
 #| label: fig-mc-ranking
@@ -145,11 +140,9 @@ if ranking_probs:
     fig.show()
 ```
 
-The ranking probability chart reveals whether any single scenario consistently dominates across the full range of parametric uncertainty, or whether the top position shifts depending on which combination of parameter values is drawn. A scenario that ranks first in the majority of iterations can be recommended with higher confidence than one whose top ranking depends on specific parameter configurations. The distribution of ranking probabilities also indicates how close the competition is among the top alternatives — a situation where two scenarios are nearly tied at 30–35 per cent each calls for different policy advice than one where a single scenario dominates with 60 per cent or more.
-
 ## Switching Values
 
-Switching-value analysis takes a different approach to robustness testing by asking a precise and policy-relevant question: by how much would a specific parameter need to change from its base value for the ranking between two scenarios to reverse? This provides decision-makers with concrete thresholds they can monitor — if a particular parameter reaches its switching value, the policy recommendation should be revisited.
+By how much must a parameter change to reverse a scenario ranking? These thresholds give policymakers concrete monitoring targets.
 
 ```{python}
 #| label: switching-values
@@ -198,11 +191,11 @@ else:
     print("Switching value analysis not available in outputs.")
 ```
 
-The switching values provide policymakers with a practical monitoring framework. Where the required change is large (for example, a parameter would need to double or halve from its base value to trigger a ranking reversal), the recommendation can be made with high confidence. Where the required change is small, the recommendation is more tentative and the parameter should be actively monitored as new data become available. In general, the switching values for the most important rankings in this analysis — specifically, the dominance of renewables over diesel and the superiority of domestic RE over the India cable on the margin — require very large parameter shifts to reverse, confirming the robustness of the core findings.
+The core findings — renewables dominate diesel, domestic RE beats the cable on the margin — require very large parameter shifts to reverse.
 
 ## Multi-Horizon Robustness
 
-The choice of analysis horizon is itself a source of uncertainty. A 30-year period is long enough to capture the lifecycle of most energy infrastructure but short enough to remain within the range of credible projection. However, policymakers may reasonably ask whether the results would look different under shorter or longer horizons. The figure below compares NPV savings across three time frames: a conservative 20-year window (which captures only the most certain near-term costs and benefits), the default 30-year period, and an extended 50-year horizon (which encompasses the full useful life of submarine cables and allows for second-generation solar and battery replacements).
+The figure below compares NPV savings at 20, 30, and 50 years to confirm that results are not an artefact of the chosen time horizon.
 
 ```{python}
 #| label: fig-multi-horizon
@@ -246,11 +239,11 @@ fig.update_layout(
 fig.show()
 ```
 
-The multi-horizon analysis confirms that the scenario ranking is stable across all three time frames, and that the magnitude of savings grows with the horizon length. This pattern is expected and reflects the fundamental economics of the comparison: renewable pathways front-load their costs (capital expenditure occurs in the early years) and generate benefits throughout the analysis period (fuel savings accrue every year as long as the solar panels and batteries are operating), while diesel BAU distributes costs more evenly but at a higher cumulative total. Extending the horizon to 50 years captures additional decades of fuel savings with only modest additional capital for equipment replacement, substantially amplifying the NPV advantage of renewables. Even under the conservative 20-year horizon, which captures only two-thirds of the solar panel's useful life and barely one cycle of battery replacement, all alternatives generate large positive NPV savings relative to diesel. This means that the case for transition does not depend on optimistic assumptions about the distant future — it is compelling even under the most conservative analytical framework.
+Rankings hold across all horizons. Even the conservative 20-year window shows large positive NPV savings.
 
 ## Declining Discount Rate Sensitivity
 
-The declining discount rate (DDR) sensitivity test addresses a methodological debate that is particularly relevant for long-lived infrastructure investments. Standard CBA uses a constant discount rate, which implies that society's time preference for near-term consumption over future consumption is fixed and unchanging. However, a substantial body of economic theory — beginning with @weitzman2001 and supported by the empirical survey of expert discount rate estimates by @drupp2018 — argues that the effective discount rate should decline over time. The rationale is that uncertainty about future economic growth rates and interest rates creates an effective certainty-equivalent rate that falls as the horizon lengthens. This matters enormously for investments like energy infrastructure, where benefits extend 30 to 50 years into the future: under a DDR, distant benefits receive more weight than under a constant rate.
+Standard CBA uses a constant discount rate, but @weitzman2001 and @drupp2018 argue the effective rate should decline over time as uncertainty about distant growth rates compounds. Under DDR, long-horizon benefits receive more weight.
 
 ```{python}
 #| label: fig-ddr
@@ -289,8 +282,6 @@ else:
     print("Declining discount rate analysis not found in outputs.")
 ```
 
-The DDR analysis reveals an asymmetric effect that strengthens the case for transition. Under declining discount rates, the present value of costs increases for all scenarios because future expenditures are discounted less aggressively. However, the increase is much larger for the diesel BAU pathway, whose costs are dominated by ongoing fuel purchases that extend throughout the analysis period and beyond. The renewable pathways, whose costs are concentrated in the early years of capital investment, are less affected by the change in discounting methodology. The net effect is that the NPV advantage of transition over diesel grows under declining discount rates, meaning that the standard constant-rate analysis is actually conservative in its assessment of the benefits of transition.
+DDR increases PV of costs for all scenarios, but diesel (fuel-heavy, distributed over time) rises more than renewables (capital-heavy, front-loaded). The NPV advantage of transition *grows* under DDR — the constant-rate analysis is conservative. For a nation existentially threatened by climate change, frameworks giving appropriate weight to long-term outcomes only strengthen the case for transition^[@stern2006].
 
-This finding has important implications for the policy debate about intergenerational equity. The Maldives, as a nation existentially threatened by climate change, has a strong interest in analytical frameworks that give appropriate weight to long-term outcomes. The DDR analysis demonstrates that such frameworks only strengthen the case for rapid energy transition — a conclusion that aligns with the @stern2006 argument that failing to account for the long-term costs of climate change represents a market failure in intertemporal valuation.
-
-Taken together, the sensitivity, Monte Carlo, switching-value, multi-horizon, and DDR analyses provide overwhelming evidence that the core findings of this report are robust. The decision to transition away from diesel is insensitive to any plausible combination of parameter values, analytical horizons, or discounting methodologies. The more nuanced question of which specific pathway to pursue shows somewhat more sensitivity to parameter assumptions, but the top-performing domestic renewable scenarios consistently outperform the India cable on the margin across the vast majority of tested conditions.
+No tested combination of parameters, horizon, or discounting method reverses the conclusion that transition from diesel is warranted. The choice among alternative pathways shows more variation, but domestic RE consistently outperforms the India cable on cost-effectiveness grounds.
